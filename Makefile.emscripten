@@ -1,0 +1,90 @@
+TARGET = retroarch.js
+
+OS = Emscripten
+OBJ :=
+DEFINES := -DRARCH_INTERNAL -DHAVE_OVERLAY
+DEFINES += -DHAVE_OPENGL -DHAVE_OPENGLES -DHAVE_OPENGLES2 -DHAVE_EGL -DHAVE_OVERLAY -DHAVE_GLSL
+
+HAVE_OPENGL = 1
+HAVE_EMSCRIPTEN = 1
+HAVE_RGUI = 1
+HAVE_SDL = 0
+HAVE_ZLIB = 1
+HAVE_FBO = 1
+WANT_MINIZ = 1
+MEMORY = 67108864
+LTO = 0
+# XXX: setting this to 1/2 currently crashes Firefox nightly
+PRECISE_F32 = 2
+
+ifneq ($(NATIVE_ZLIB),)
+   WANT_MINIZ = 0
+endif
+
+LIBS    :=
+LDFLAGS := -L. -s TOTAL_MEMORY=$(MEMORY) -s OUTLINING_LIMIT=50000 --js-library emscripten/library_rwebaudio.js --js-library emscripten/library_rwebinput.js --js-library emscripten/library_rwebcam.js --no-heap-copy
+
+include Makefile.common
+
+libretro = libretro_emscripten.bc
+
+ifneq ($(V), 1)
+   Q := @
+endif
+
+ifeq ($(DEBUG), 1)
+   LDFLAGS += -O0 -g
+   CFLAGS += -O0 -g
+else
+   LDFLAGS += -O2
+   # WARNING: some optimizations can break some cores (ex: LTO breaks tyrquake)
+   LDFLAGS += -s PRECISE_F32=$(PRECISE_F32)
+   ifeq ($(LTO), 1)
+      LDFLAGS += --llvm-lto 3
+   endif
+   CFLAGS += -O2
+endif
+
+CFLAGS += -Wall -Wno-unused-result -Wno-unused-variable -I. -Ilibretro-sdk/include -std=gnu99
+
+all: $(TARGET)
+
+$(TARGET): $(OBJ)
+	@$(if $(Q), $(shell echo echo LD $@),)
+	$(Q)$(LD) -o $@ $(OBJ) $(libretro) $(LIBS) $(LDFLAGS)
+
+%.o: %.c
+	@$(if $(Q), $(shell echo echo CC $<),)
+	$(Q)$(CC) $(CFLAGS) $(DEFINES) -c -o $@ $<
+
+%.o: %.cpp
+	@$(if $(Q), $(shell echo echo CXX $<),)
+	$(Q)$(CXX) $(CXXFLAGS) $(DEFINES) -c -o $@ $<
+
+clean:
+	rm -f *.o
+	rm -f deps/rzlib/*.o
+	rm -f frontend/*.o
+	rm -f frontend/menu/*.o
+	rm -f frontend/menu/disp/*.o
+	rm -f audio/*.o
+	rm -f audio/xaudio-c/*.o
+	rm -f compat/*.o
+	rm -f compat/rxml/*.o
+	rm -f conf/*.o
+	rm -f gfx/scaler/*.o
+	rm -f gfx/*.o
+	rm -f gfx/d3d/*.o
+	rm -f gfx/context/*.o
+	rm -f gfx/math/*.o
+	rm -f gfx/fonts/*.o
+	rm -f gfx/py_state/*.o
+	rm -f gfx/rpng/*.o
+	rm -f gfx/glsym/*.o
+	rm -f record/*.o
+	rm -f input/*.o
+	rm -f tools/*.o
+	rm -f $(TARGET)
+
+.PHONY: all clean
+
