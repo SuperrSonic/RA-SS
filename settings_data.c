@@ -4130,7 +4130,7 @@ static bool setting_data_append_list_video_options(
          general_write_handler,
          general_read_handler);
 
-#ifndef HAVE_FILTERS_BUILTIN
+#ifdef HAVE_FILTERS_BUILTIN
    CONFIG_PATH(
          g_settings.video.softfilter_plugin,
          "video_filter",
