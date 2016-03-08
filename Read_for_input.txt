@@ -1,0 +1,5 @@
+menu_common.c
+;has RGUI input.
+
+gx_input_joypad.c
+;has game input.
