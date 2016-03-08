@@ -53,7 +53,7 @@ static void get_title(const char *label, const char *dir,
    else if (!strcmp(label, "disk_options"))
       strlcpy(title, "DISK OPTIONS", sizeof_title);
    else if (!strcmp(label, "core_options"))
-      strlcpy(title, "CORE OPTIONS", sizeof_title);
+      strlcpy(title, "SYSTEM OPTIONS", sizeof_title);
    else if (!strcmp(label, "core_information"))
       strlcpy(title, "CORE INFO", sizeof_title);
    else if (!strcmp(label, "Privacy Options"))
@@ -216,7 +216,7 @@ static void disp_set_label(file_list_t* list,
                type - MENU_SETTINGS_CORE_OPTION_START),
             type_str_size);
    else if (type == MENU_FILE_PUSH || type == MENU_FILE_LINEFEED_SWITCH)
-      strlcpy(type_str, "...", type_str_size);
+      strlcpy(type_str, " ", type_str_size);
    else if (driver.menu_ctx && driver.menu_ctx->backend &&
          driver.menu_ctx->backend->setting_set_label)
       driver.menu_ctx->backend->setting_set_label(type_str,

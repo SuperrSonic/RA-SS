@@ -252,7 +252,7 @@ void menu_ticker_line(char *buf, size_t len, unsigned idx,
    if (!selected)
    {
       strlcpy(buf, str, len + 1 - 3);
-      strlcat(buf, "...", len + 1);
+      strlcat(buf, " ", len + 1);
       return;
    }
 
@@ -285,7 +285,7 @@ void menu_ticker_line(char *buf, size_t len, unsigned idx,
    }
 }
 
-static unsigned input_frame(uint64_t trigger_state) // SM is YBA, standard is BAY
+static unsigned input_frame(uint64_t trigger_state) // Sailor Moon is YBA, standard is BAY
 {
    if (trigger_state & (1ULL << RETRO_DEVICE_ID_JOYPAD_UP))
       return MENU_ACTION_UP;

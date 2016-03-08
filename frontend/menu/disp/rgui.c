@@ -84,7 +84,7 @@ static uint16_t green_filler(unsigned x, unsigned y)
    y >>= 1;
    unsigned col = ((x + y) & 1) + 1;
 #if defined(GEKKO) || defined(PSP)
-   return (6 << 12) | (col << 8) | (col << 5) | (col << 0);
+   return (6 << 12) | (col << 8) | (col << 4) | (col << 0);
 #else
    return (col << 13) | (col << 10) | (col << 5) | (12 << 0);
 #endif
@@ -324,7 +324,7 @@ static void rgui_render(void)
    if (!core_version)
       core_version = "";
 
-   snprintf(title_msg, sizeof(title_msg), "%s - %s %s", PACKAGE_VERSION,
+   snprintf(title_msg, sizeof(title_msg), " ", PACKAGE_VERSION,
          core_name, core_version);
    blit_line(
          RGUI_TERM_START_X + RGUI_TERM_START_X,

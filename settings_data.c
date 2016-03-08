@@ -687,10 +687,10 @@ void setting_data_get_string_representation(rarch_setting_t* setting,
       case ST_HEX:
          break;
       case ST_GROUP:
-         strlcpy(buf, "...", sizeof_buf);
+         strlcpy(buf, " ", sizeof_buf);
          break;
       case ST_SUB_GROUP:
-         strlcpy(buf, "...", sizeof_buf);
+         strlcpy(buf, " ", sizeof_buf);
          break;
       case ST_END_GROUP:
          break;
@@ -2492,7 +2492,7 @@ static int get_fallback_label(char *type_str,
       case MENU_SETTINGS_CUSTOM_VIEWPORT:
       case MENU_SETTINGS_CUSTOM_BIND_ALL:
       case MENU_SETTINGS_CUSTOM_BIND_DEFAULT_ALL:
-         strlcpy(type_str, "...", type_str_size);
+         strlcpy(type_str, " ", type_str_size);
          break;
       case MENU_SETTINGS_CORE_DISK_OPTIONS_DISK_INDEX:
          {
