@@ -6,3 +6,4 @@
 - Removed options that never worked with RA Wii.
 - Renamed settings for convenience.
 - Single game loading via arguments only, no game browsing screen, no core selection screen and no game history screen.
+- Added Normal2x for sharper bilinear.
