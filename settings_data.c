@@ -3890,18 +3890,6 @@ static bool setting_data_append_list_video_options(
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
-
-   CONFIG_BOOL(
-         g_settings.video.ps,
-         "video_ps",
-         "Use Progressive Scan",
-         video_ps,
-         "Interlaced",
-         "Progressive Scan",
-         group_info.name,
-         subgroup_info.name,
-         general_write_handler,
-         general_read_handler);
 #endif
 
    CONFIG_BOOL(
