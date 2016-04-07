@@ -357,8 +357,9 @@ static void config_set_defaults(void)
    g_settings.video.viwidth = video_viwidth;
    g_settings.video.vfilter = video_vfilter;
    g_settings.video.vres = video_vres;
-   g_settings.video.ps = video_ps;
 #endif
+   g_settings.video.hover_color = hover_color;
+   g_settings.video.text_color = text_color;
    g_settings.video.smooth = video_smooth;
    g_settings.video.force_aspect = force_aspect;
    g_settings.video.scale_integer = scale_integer;
@@ -904,8 +905,9 @@ static bool config_load_file(const char *path, bool set_defaults)
    CONFIG_GET_INT(video.viwidth, "video_viwidth");
    CONFIG_GET_BOOL(video.vfilter, "video_vfilter");
    CONFIG_GET_INT(video.vres, "video_vres");
-   CONFIG_GET_BOOL(video.ps, "video_ps");
 #endif
+   CONFIG_GET_INT(video.hover_color, "hover_color");
+   CONFIG_GET_INT(video.text_color, "text_color");
    CONFIG_GET_BOOL(video.smooth, "video_smooth");
    CONFIG_GET_BOOL(video.force_aspect, "video_force_aspect");
    CONFIG_GET_BOOL(video.scale_integer, "video_scale_integer");
@@ -1558,8 +1560,9 @@ bool config_save_file(const char *path)
    config_set_int(conf,   "video_viwidth", g_settings.video.viwidth);
    config_set_bool(conf,  "video_vfilter", g_settings.video.vfilter);
    config_set_int(conf,   "video_vres", g_settings.video.vres);
-   config_set_bool(conf,  "video_ps", g_settings.video.ps);
 #endif
+   config_set_int(conf,   "hover_color", g_settings.video.hover_color);
+   config_set_int(conf,   "text_color", g_settings.video.text_color);
    config_set_bool(conf,  "video_smooth", g_settings.video.smooth);
    config_set_int(conf, "aspect_ratio_index", g_settings.video.aspect_ratio_idx);
    config_set_bool(conf,  "video_threaded", g_settings.video.threaded);

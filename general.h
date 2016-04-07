@@ -244,8 +244,9 @@ struct settings
       unsigned viwidth;
       bool vfilter;
 	  unsigned vres;
-	  bool ps;
 #endif
+      unsigned hover_color;
+	  unsigned text_color;
       bool smooth;
       bool force_aspect;
       bool crop_overscan;

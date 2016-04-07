@@ -124,7 +124,7 @@ static void blit_line(int x, int y, const char *message, bool green)
                driver.menu->frame_buf[(y + j) *
                   (driver.menu->frame_buf_pitch >> 1) + (x + i)] = green ?
 #if defined(GEKKO)|| defined(PSP)
-               (3 << 0) | (10 << 4) | (3 << 8) | (7 << 12) : 0x7FFF;
+               g_settings.video.hover_color : g_settings.video.text_color;
 #else
                (15 << 0) | (7 << 4) | (15 << 8) | (7 << 12) : 0xFFFF;
 #endif

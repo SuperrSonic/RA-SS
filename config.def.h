@@ -402,11 +402,14 @@ static const bool video_vfilter = true;
 /* Saves screen resolution. */
 static unsigned video_vres = 38;
 
-/* Force Progressive Scan */
-static const bool video_ps = false;
-
 /* Smooths picture. */
 static const bool video_smooth = true;
+
+/* Hover text color. */
+static const unsigned hover_color = 32767;
+
+/* Text color. */
+static const unsigned text_color = 54965;
 
 /* On resize and fullscreen, rendering area will stay 4:3 */
 static const bool force_aspect = false; 

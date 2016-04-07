@@ -1189,8 +1189,9 @@ static void init_video_input(void)
    video.viwidth = g_settings.video.viwidth;
    video.vfilter = g_settings.video.vfilter;
    video.vres = g_settings.video.vres;
-   video.ps = g_settings.video.ps;
 #endif
+   video.hover_color = g_settings.video.hover_color;
+   video.text_color = g_settings.video.text_color;
    video.smooth = g_settings.video.smooth;
    video.input_scale = scale;
    video.rgb32 = g_extern.filter.filter ? 
