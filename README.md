@@ -13,7 +13,9 @@
 
 *Default values are gray(54965) and white(32767) respectively, you may write them in hex, they will be converted to decimal on exit.
 To convert RGB8 to the required ARGB5 you must first convert to 15-bit values and then follow this formula:
+
 R * 1024 + G * 32 + B + 32768
 
 Example converting red; in 24-bit is 255,0,0(0xFF0000), converted into 15-bit values it's 31,0,0
-31*1024+0*32+0+32768 = 64512 (0xFC00)
+
+31 * 1024 + 0 * 32 + 0 + 32768 = 64512(0xFC00)
