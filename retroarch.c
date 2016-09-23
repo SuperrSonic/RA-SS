@@ -1482,8 +1482,8 @@ static void load_auto_state(void)
 
       RARCH_LOG("Found auto savestate in: %s\n", savestate_name_auto);
 
-      snprintf(msg, sizeof(msg), "Auto-loading savestate from \"%s\" %s.",
-            savestate_name_auto, ret ? "succeeded" : "failed");
+      RARCH_LOG("Loaded auto save",
+            savestate_name_auto, ret ? "success" : "failed");
       msg_queue_push(g_extern.msg_queue, msg, 1, 180);
       RARCH_LOG("%s\n", msg);
    }
@@ -1515,11 +1515,11 @@ static void rarch_load_state(const char *path,
    if (load_state(path))
    {
       if (g_settings.state_slot < 0)
-         snprintf(msg, sizeof_msg,
-               "Loaded state from slot #-1 (auto).");
+         RARCH_LOG(
+               "Success");
       else
-         snprintf(msg, sizeof_msg,
-               "Loaded state from slot #%d.", g_settings.state_slot);
+         RARCH_LOG(
+               "Failed", g_settings.state_slot);
    }
    else
       snprintf(msg, sizeof_msg,
@@ -1532,11 +1532,11 @@ static void rarch_save_state(const char *path,
    if (save_state(path))
    {
       if (g_settings.state_slot < 0)
-         snprintf(msg, sizeof_msg,
-               "Saved state to slot #-1 (auto).");
+         RARCH_LOG(
+               "Success");
       else
-         snprintf(msg, sizeof_msg,
-               "Saved state to slot #%d.", g_settings.state_slot);
+         RARCH_LOG(
+               "Failed", g_settings.state_slot);
    }
    else
       snprintf(msg, sizeof_msg,
@@ -2167,7 +2167,7 @@ static void history_playlist_new(void)
 
 bool rarch_main_command(unsigned cmd)
 {
-   bool boolean = false;
+   //bool boolean = false;
 
    switch (cmd)
    {
@@ -2443,24 +2443,24 @@ bool rarch_main_command(unsigned cmd)
                && driver.video_poke->apply_state_changes)
             driver.video_poke->apply_state_changes(driver.video_data);
          break;
-      case RARCH_CMD_VIDEO_SET_NONBLOCKING_STATE:
-         boolean = true; /* fall-through */
-      case RARCH_CMD_VIDEO_SET_BLOCKING_STATE:
+      //case RARCH_CMD_VIDEO_SET_NONBLOCKING_STATE:
+         //boolean = true; /* fall-through */
+      /*case RARCH_CMD_VIDEO_SET_BLOCKING_STATE:
          if (driver.video && driver.video->set_nonblock_state)
             driver.video->set_nonblock_state(driver.video_data, boolean);
-         break;
+         break;*/
 	  case RARCH_CMD_VIDEO_SET_ASPECT_RATIO:
          if (driver.video_data && driver.video_poke
                && driver.video_poke->set_aspect_ratio)
             driver.video_poke->set_aspect_ratio(driver.video_data,
                   g_settings.video.aspect_ratio_idx);
 		 break;
-      case RARCH_CMD_AUDIO_SET_NONBLOCKING_STATE:
-         boolean = true; /* fall-through */
-      case RARCH_CMD_AUDIO_SET_BLOCKING_STATE:
+      //case RARCH_CMD_AUDIO_SET_NONBLOCKING_STATE:
+         //boolean = true; /* fall-through */
+      /*case RARCH_CMD_AUDIO_SET_BLOCKING_STATE:
          if (driver.audio && driver.audio->set_nonblock_state)
             driver.audio->set_nonblock_state(driver.audio_data, boolean);
-         break;
+         break;*/
       case RARCH_CMD_OVERLAY_SET_SCALE_FACTOR:
 #ifdef HAVE_OVERLAY
          input_overlay_set_scale_factor(driver.overlay,
