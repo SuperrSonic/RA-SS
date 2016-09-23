@@ -19,3 +19,5 @@ R * 1024 + G * 32 + B + 32768
 Example converting red; in 24-bit is 255,0,0(0xFF0000), converted into 15-bit values it's 31,0,0
 
 31 * 1024 + 0 * 32 + 0 + 32768 = 64512(0xFC00)
+
+https://cloud.githubusercontent.com/assets/6880539/15104810/2dba7020-158a-11e6-883c-92b0f3119156.jpg
