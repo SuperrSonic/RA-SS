@@ -133,6 +133,9 @@ OSCond g_video_cond;
 volatile bool g_draw_done;
 uint32_t g_orientation;
 
+static uint32_t retraceCount;
+static uint32_t referenceRetraceCount;
+
 static struct
 {
    uint32_t *data; /* needs to be resizable. */
@@ -177,9 +180,13 @@ u8 color_ptr[16] ATTRIBUTE_ALIGN(32)  = {
 
 static void retrace_callback(u32 retrace_count)
 {
-   (void)retrace_count;
+  // (void)retrace_count;
    g_draw_done = true;
    OSSignalCond(g_video_cond);
+   u32 level = 0;
+   _CPU_ISR_Disable(level);
+   retraceCount = retrace_count;
+   _CPU_ISR_Restore(level);
 }
 
 #ifdef HAVE_OVERLAY
@@ -206,7 +213,7 @@ void gx_set_video_mode(void *data, unsigned fbWidth, unsigned lines)
    VIDEO_SetPostRetraceCallback(NULL);
    g_draw_done = false;
    /* wait for next even field */
-   /* this prevents screen artefacts when switching between interlaced & non-interlaced modes */
+   /* this prevents screen artifacts when switching between interlaced & non-interlaced modes */
    do VIDEO_WaitVSync();
    while (!VIDEO_GetNextField());
 
@@ -249,13 +256,13 @@ void gx_set_video_mode(void *data, unsigned fbWidth, unsigned lines)
          max_height = VI_MAX_HEIGHT_MPAL;
          break;
       case VI_EURGB60:
-         max_width = VI_MAX_WIDTH_NTSC;
-         max_height = VI_MAX_HEIGHT_NTSC;
+         max_width = VI_MAX_WIDTH_EURGB60;
+         max_height = VI_MAX_HEIGHT_EURGB60;
          break;
       default:
          tvmode = VI_NTSC;
-         max_width = VI_MAX_WIDTH_EURGB60;
-         max_height = VI_MAX_HEIGHT_EURGB60;
+         max_width = VI_MAX_WIDTH_NTSC;
+         max_height = VI_MAX_HEIGHT_NTSC;
          break;
    }
 
@@ -468,6 +475,10 @@ static void init_texture(void *data, unsigned width, unsigned height)
 static void init_vtx(void *data, const video_info_t *video)
 {
    gx_video_t *gx = (gx_video_t*)data;
+   u32 level = 0;
+   _CPU_ISR_Disable(level);
+   referenceRetraceCount = retraceCount;
+   _CPU_ISR_Restore(level);
 
    GX_SetCullMode(GX_CULL_NONE);
    GX_SetClipMode(GX_CLIP_DISABLE);
@@ -991,6 +1002,7 @@ static bool gx_frame(void *data, const void *frame,
 
    gx_video_t *gx = (gx_video_t*)data;
    u8 clear_efb = GX_FALSE;
+   u32 level = 0;
 
    RARCH_PERFORMANCE_INIT(gx_frame);
    RARCH_PERFORMANCE_START(gx_frame);
@@ -1066,6 +1078,13 @@ static bool gx_frame(void *data, const void *frame,
       gx_render_overlay(gx);
 #endif
 
+   _CPU_ISR_Disable(level);
+   if (referenceRetraceCount > retraceCount) {
+		VIDEO_WaitVSync();
+    }
+	referenceRetraceCount = retraceCount;
+   _CPU_ISR_Restore(level);
+
    GX_DrawDone();
 
    char fps_txt[128], fps_text_buf[128];
@@ -1106,6 +1125,10 @@ static bool gx_frame(void *data, const void *frame,
    VISetNextFrameBuffer(g_framebuf[g_current_framebuf]);
    VIFlush();
 
+   _CPU_ISR_Disable(level);
+   ++referenceRetraceCount;
+   _CPU_ISR_Restore(level);
+   
    g_extern.frame_count++;
 
    RARCH_PERFORMANCE_STOP(gx_frame);
