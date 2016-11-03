@@ -22,4 +22,4 @@ Example converting red; in 24-bit is 255,0,0(0xFF0000), converted into 15-bit va
 
 ![Alt text](https://cloud.githubusercontent.com/assets/6880539/15104810/2dba7020-158a-11e6-883c-92b0f3119156.jpg?raw=true "Example image")
 
-[Download link to example cores] (https://www.dropbox.com/s/kx9hcdll95gu0i3/RA_backup2.zip?dl=1)
+[Download link to example cores] (http://www.mediafire.com/file/cw863hlp0nsmblp/RA_SS.zip)
