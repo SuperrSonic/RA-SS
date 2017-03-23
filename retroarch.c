@@ -1976,6 +1976,8 @@ int rarch_main_init(int argc, char *argv[])
              && driver.video_poke->set_aspect_ratio)
          driver.video_poke->set_aspect_ratio(driver.video_data,
              g_settings.video.aspect_ratio_idx);
+
+   rarch_main_command(RARCH_CMD_DSP_FILTER_INIT);
 #endif
 
    g_extern.error_in_init = false;
