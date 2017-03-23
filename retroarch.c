@@ -1978,6 +1978,7 @@ int rarch_main_init(int argc, char *argv[])
              g_settings.video.aspect_ratio_idx);
 
    rarch_main_command(RARCH_CMD_DSP_FILTER_INIT);
+   msg_queue_clear(g_extern.msg_queue);
 #endif
 
    g_extern.error_in_init = false;
