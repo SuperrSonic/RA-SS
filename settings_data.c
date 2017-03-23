@@ -4137,7 +4137,7 @@ static bool setting_data_append_list_video_options(
    CONFIG_BOOL(
          g_extern.console.softfilter_enable,
          "soft_filter",
-         "Soft Filter Enable",
+         "Trap Filter",
          false,
          "OFF",
          "ON",
