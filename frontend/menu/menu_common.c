@@ -285,7 +285,7 @@ void menu_ticker_line(char *buf, size_t len, unsigned idx,
    }
 }
 
-static unsigned input_frame(uint64_t trigger_state) // Sailor Moon is YBA, standard is BAY
+static unsigned input_frame(uint64_t trigger_state) // SNES alt is YBA, standard is BAY, MJ is YAB
 {
    if (trigger_state & (1ULL << RETRO_DEVICE_ID_JOYPAD_UP))
       return MENU_ACTION_UP;
