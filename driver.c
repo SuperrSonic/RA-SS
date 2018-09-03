@@ -1188,6 +1188,7 @@ static void init_video_input(void)
 #ifdef GEKKO
    video.viwidth = g_settings.video.viwidth;
    video.vfilter = g_settings.video.vfilter;
+   video.rgui_reset = g_settings.video.rgui_reset;
    video.vres = g_settings.video.vres;
 #endif
    video.hover_color = g_settings.video.hover_color;

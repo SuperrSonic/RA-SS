@@ -356,6 +356,7 @@ static void config_set_defaults(void)
 #ifdef GEKKO
    g_settings.video.viwidth = video_viwidth;
    g_settings.video.vfilter = video_vfilter;
+   g_settings.video.rgui_reset = rgui_reset;
    g_settings.video.vres = video_vres;
 #endif
    g_settings.video.hover_color = hover_color;
@@ -904,6 +905,7 @@ static bool config_load_file(const char *path, bool set_defaults)
 #ifdef GEKKO
    CONFIG_GET_INT(video.viwidth, "video_viwidth");
    CONFIG_GET_BOOL(video.vfilter, "video_vfilter");
+   CONFIG_GET_BOOL(video.rgui_reset, "rgui_reset");
    CONFIG_GET_INT(video.vres, "video_vres");
 #endif
    CONFIG_GET_INT(video.hover_color, "hover_color");
@@ -1559,6 +1561,7 @@ bool config_save_file(const char *path)
 #ifdef GEKKO
    config_set_int(conf,   "video_viwidth", g_settings.video.viwidth);
    config_set_bool(conf,  "video_vfilter", g_settings.video.vfilter);
+   config_set_bool(conf,  "rgui_reset", g_settings.video.rgui_reset);
    config_set_int(conf,   "video_vres", g_settings.video.vres);
 #endif
    config_set_int(conf,   "hover_color", g_settings.video.hover_color);

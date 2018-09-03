@@ -3962,6 +3962,18 @@ static bool setting_data_append_list_video_options(
          group_info.name,
          subgroup_info);
 
+   CONFIG_BOOL(
+         g_settings.video.rgui_reset,
+         "rgui_reset",
+         "Open Menu with Reset",
+         rgui_reset,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
 #if defined(HAVE_THREADS) && !defined(RARCH_CONSOLE)
    CONFIG_BOOL(
          g_settings.video.threaded,
@@ -4173,7 +4185,7 @@ static bool setting_data_append_list_shader_options(
       rarch_setting_t **list,
       rarch_setting_info_t *list_info)
 {
-   rarch_setting_group_info_t group_info;
+   /*rarch_setting_group_info_t group_info;
    rarch_setting_group_info_t subgroup_info;
 
    START_GROUP(group_info, "Shader Options");
@@ -4203,7 +4215,7 @@ static bool setting_data_append_list_shader_options(
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_ALLOW_EMPTY);
 
    END_SUB_GROUP(list, list_info);
-   END_GROUP(list, list_info);
+   END_GROUP(list, list_info);*/
 
    return true;
 }
@@ -4212,7 +4224,7 @@ static bool setting_data_append_list_font_options(
       rarch_setting_t **list,
       rarch_setting_info_t *list_info)
 {
-   rarch_setting_group_info_t group_info;
+   /*rarch_setting_group_info_t group_info;
    rarch_setting_group_info_t subgroup_info;
 
    START_GROUP(group_info, "Font Options");
@@ -4279,7 +4291,7 @@ static bool setting_data_append_list_font_options(
    settings_list_current_add_range(list, list_info, 0, 1, 0.01, true, true);
 
    END_SUB_GROUP(list, list_info);
-   END_GROUP(list, list_info);
+   END_GROUP(list, list_info);*/
 
    return true;
 }
@@ -4830,7 +4842,7 @@ static bool setting_data_append_list_menu_options(
       rarch_setting_info_t *list_info)
 {
 #ifdef HAVE_MENU
-   rarch_setting_group_info_t group_info;
+   /*rarch_setting_group_info_t group_info;
    rarch_setting_group_info_t subgroup_info;
 
    START_GROUP(group_info, "Menu Options");
@@ -4863,7 +4875,7 @@ static bool setting_data_append_list_menu_options(
    settings_list_current_add_cmd(list, list_info, RARCH_CMD_MENU_PAUSE_LIBRETRO);
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_CMD_APPLY_AUTO);
    END_SUB_GROUP(list, list_info);
-   END_GROUP(list, list_info);
+   END_GROUP(list, list_info);*/
 #endif
 
    return true;
@@ -4962,7 +4974,7 @@ static bool setting_data_append_list_playlist_options(
       rarch_setting_t **list,
       rarch_setting_info_t *list_info)
 {
-   rarch_setting_group_info_t group_info;
+   /*rarch_setting_group_info_t group_info;
    rarch_setting_group_info_t subgroup_info;
 
    START_GROUP(group_info, "Playlist Options");
@@ -4993,7 +5005,7 @@ static bool setting_data_append_list_playlist_options(
    settings_list_current_add_range(list, list_info, 0, 0, 1.0, true, false);
 
    END_SUB_GROUP(list, list_info);
-   END_GROUP(list, list_info);
+   END_GROUP(list, list_info);*/
 
    return true;
 }
@@ -5002,7 +5014,7 @@ static bool setting_data_append_list_user_options(
       rarch_setting_t **list,
       rarch_setting_info_t *list_info)
 {
-   rarch_setting_group_info_t group_info;
+   /*rarch_setting_group_info_t group_info;
    rarch_setting_group_info_t subgroup_info;
 
    START_GROUP(group_info, "User Options");
@@ -5040,7 +5052,7 @@ static bool setting_data_append_list_user_options(
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_ALLOW_INPUT);
 
    END_SUB_GROUP(list, list_info);
-   END_GROUP(list, list_info);
+   END_GROUP(list, list_info);*/
 
    return true;
 }
@@ -5374,7 +5386,7 @@ static bool setting_data_append_list_privacy_options(
       rarch_setting_t **list,
       rarch_setting_info_t *list_info)
 {
-   rarch_setting_group_info_t group_info;
+   /*rarch_setting_group_info_t group_info;
    rarch_setting_group_info_t subgroup_info;
 
    START_GROUP(group_info, "Privacy Options");
@@ -5405,7 +5417,7 @@ static bool setting_data_append_list_privacy_options(
          general_write_handler,
          general_read_handler);
    END_SUB_GROUP(list, list_info);
-   END_GROUP(list, list_info);
+   END_GROUP(list, list_info);*/
 
    return true;
 }

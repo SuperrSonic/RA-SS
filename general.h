@@ -126,6 +126,7 @@ enum basic_event
    RARCH_CMD_VIDEO_SET_BLOCKING_STATE,
    RARCH_CMD_VIDEO_SET_NONBLOCKING_STATE,
    RARCH_CMD_VIDEO_SET_ASPECT_RATIO,
+   RARCH_CMD_AUTO_LOAD_STATE,
    RARCH_CMD_VIDEO_SET_GX_RESOLUTION,
    RARCH_CMD_VIDEO_RESOLUTION,
    RARCH_CMD_RESET_CONTEXT,
@@ -243,6 +244,7 @@ struct settings
 #ifdef GEKKO
       unsigned viwidth;
       bool vfilter;
+	  bool rgui_reset;
 	  unsigned vres;
 #endif
       unsigned hover_color;

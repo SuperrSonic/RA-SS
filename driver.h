@@ -179,6 +179,7 @@ typedef struct video_info
    unsigned hover_color;
    unsigned text_color;
    bool vfilter;
+   bool rgui_reset;
    unsigned vres;
    bool smooth;
    /* Maximum input size: RARCH_SCALE_BASE * input_scale */

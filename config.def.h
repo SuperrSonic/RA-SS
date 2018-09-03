@@ -399,6 +399,9 @@ static const unsigned video_viwidth = 640;
 /* Removes 480i flicker, smooths picture a little. */
 static const bool video_vfilter = true;
 
+/* Menu toggle with the Reset button */
+static const bool rgui_reset = true;
+
 /* Saves screen resolution. */
 static unsigned video_vres = 38;
 
@@ -494,7 +497,7 @@ static const uint32_t message_color = 0xffff00;
 static const bool post_filter_record = false;
 
 /* Screenshots post-shaded GPU output if available. */
-static const bool gpu_screenshot = true;
+static const bool gpu_screenshot = false;
 
 /* Record post-shaded GPU output instead of raw game footage if available. */
 static const bool gpu_record = false;
@@ -638,7 +641,7 @@ static const unsigned turbo_duty_cycle = 3;
 
 /* Enable input auto-detection. Will attempt to autoconfigure
  * gamepads, plug-and-play style. */
-static const bool input_autodetect_enable = true;
+static const bool input_autodetect_enable = false;
 
 #ifndef IS_SALAMANDER
 #include "intl/intl.h"

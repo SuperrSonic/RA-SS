@@ -100,7 +100,7 @@ enum
    GX_QUIT_KEY             = 60,
 };
 
-#define GC_JOYSTICK_THRESHOLD (40 * 256)
+#define GC_JOYSTICK_THRESHOLD (48 * 256)
 #define WII_JOYSTICK_THRESHOLD (40 * 256)
 
 static uint64_t pad_state[MAX_PADS];
@@ -109,6 +109,17 @@ static int16_t analog_state[MAX_PADS][2][2];
 static bool g_menu;
 #ifdef HW_RVL
 static bool g_quit;
+static bool g_reset;
+
+static void reset_cb(void)
+{
+   if(g_settings.video.rgui_reset) {
+   g_menu = true;
+   }
+   else {
+   g_reset = true;
+   }
+}
 
 static void power_callback(void)
 {
@@ -133,10 +144,10 @@ void removal_cb(void *usrdata)
 
 #endif
 
-static void reset_cb(void)
+/*static void reset_cb(void)
 {
    g_menu = true;
-}
+}*/
 
 static const char *gx_joypad_name(unsigned pad)
 {
@@ -417,6 +428,65 @@ static void gx_joypad_poll(void)
             analog_state[port][RETRO_DEVICE_INDEX_ANALOG_LEFT][RETRO_DEVICE_ID_ANALOG_Y] = y;
 
          }
+
+		 if (gcpad & (1 << port))
+         {
+            int16_t ls_x, ls_y, rs_x, rs_y;
+
+            down = PAD_ButtonsHeld(port);
+
+//Default
+            *state_cur |= (down & PAD_BUTTON_A) ? (1ULL << GX_WIIMOTE_2) : 0;
+            *state_cur |= (down & PAD_BUTTON_B) ? (1ULL << GX_WIIMOTE_1) : 0;
+            *state_cur |= (down & PAD_BUTTON_X) ? (1ULL << GX_WIIMOTE_2) : 0;
+            *state_cur |= (down & PAD_BUTTON_Y) ? (1ULL << GX_WIIMOTE_1) : 0;
+            *state_cur |= (down & PAD_BUTTON_UP) ? (1ULL << GX_WIIMOTE_UP) : 0;
+            *state_cur |= (down & PAD_BUTTON_DOWN) ? (1ULL << GX_WIIMOTE_DOWN) : 0;
+            *state_cur |= (down & PAD_BUTTON_LEFT) ? (1ULL << GX_WIIMOTE_LEFT) : 0;
+            *state_cur |= (down & PAD_BUTTON_RIGHT) ? (1ULL << GX_WIIMOTE_RIGHT) : 0;
+            *state_cur |= (down & PAD_BUTTON_START) ? (1ULL << GX_WIIMOTE_PLUS) : 0;
+            *state_cur |= (down & PAD_TRIGGER_Z) ? (1ULL << GX_WIIMOTE_MINUS) : 0;
+            *state_cur |= ((down & PAD_TRIGGER_L) || PAD_TriggerL(port) > 80) ? (1ULL << GX_WIIMOTE_B) : 0;
+            *state_cur |= ((down & PAD_TRIGGER_R) || PAD_TriggerR(port) > 80) ? (1ULL << GX_WIIMOTE_A) : 0;
+
+//SNES direct
+            /**state_cur |= (down & PAD_BUTTON_A) ? (1ULL << GX_WIIMOTE_2) : 0;
+            *state_cur |= (down & PAD_BUTTON_B) ? (1ULL << GX_WIIMOTE_1) : 0;
+            *state_cur |= (down & PAD_BUTTON_X) ? (1ULL << GX_WIIMOTE_B) : 0;
+            *state_cur |= (down & PAD_BUTTON_Y) ? (1ULL << GX_WIIMOTE_A) : 0;
+            *state_cur |= (down & PAD_BUTTON_UP) ? (1ULL << GX_WIIMOTE_UP) : 0;
+            *state_cur |= (down & PAD_BUTTON_DOWN) ? (1ULL << GX_WIIMOTE_DOWN) : 0;
+            *state_cur |= (down & PAD_BUTTON_LEFT) ? (1ULL << GX_WIIMOTE_LEFT) : 0;
+            *state_cur |= (down & PAD_BUTTON_RIGHT) ? (1ULL << GX_WIIMOTE_RIGHT) : 0;
+            *state_cur |= (down & PAD_BUTTON_START) ? (1ULL << GX_WIIMOTE_PLUS) : 0;
+            *state_cur |= (down & PAD_TRIGGER_Z) ? (1ULL << GX_WIIMOTE_MINUS) : 0;
+            *state_cur |= ((down & PAD_TRIGGER_L) || PAD_TriggerL(port) > 80) ? (1ULL << GX_GC_L_TRIGGER) : 0;
+            *state_cur |= ((down & PAD_TRIGGER_R) || PAD_TriggerR(port) > 80) ? (1ULL << GX_GC_R_TRIGGER) : 0;*/
+
+//SNES alt
+            /**state_cur |= (down & PAD_BUTTON_A) ? (1ULL << GX_WIIMOTE_2) : 0;
+            *state_cur |= (down & PAD_BUTTON_B) ? (1ULL << GX_WIIMOTE_1) : 0;
+            *state_cur |= (down & PAD_BUTTON_X) ? (1ULL << GX_WIIMOTE_A) : 0;
+            *state_cur |= (down & PAD_BUTTON_Y) ? (1ULL << GX_WIIMOTE_B) : 0;
+            *state_cur |= (down & PAD_BUTTON_UP) ? (1ULL << GX_WIIMOTE_UP) : 0;
+            *state_cur |= (down & PAD_BUTTON_DOWN) ? (1ULL << GX_WIIMOTE_DOWN) : 0;
+            *state_cur |= (down & PAD_BUTTON_LEFT) ? (1ULL << GX_WIIMOTE_LEFT) : 0;
+            *state_cur |= (down & PAD_BUTTON_RIGHT) ? (1ULL << GX_WIIMOTE_RIGHT) : 0;
+            *state_cur |= (down & PAD_BUTTON_START) ? (1ULL << GX_WIIMOTE_PLUS) : 0;
+            *state_cur |= (down & PAD_TRIGGER_Z) ? (1ULL << GX_WIIMOTE_MINUS) : 0;
+            *state_cur |= ((down & PAD_TRIGGER_L) || PAD_TriggerL(port) > 80) ? (1ULL << GX_GC_L_TRIGGER) : 0;
+            *state_cur |= ((down & PAD_TRIGGER_R) || PAD_TriggerR(port) > 80) ? (1ULL << GX_GC_R_TRIGGER) : 0;*/
+
+            ls_x = (int16_t)PAD_StickX(port) * 256;
+            ls_y = (int16_t)PAD_StickY(port) * -256;
+            rs_x = (int16_t)PAD_SubStickX(port) * 256;
+            rs_y = (int16_t)PAD_SubStickY(port) * -256;
+
+            analog_state[port][RETRO_DEVICE_INDEX_ANALOG_LEFT][RETRO_DEVICE_ID_ANALOG_X] = ls_x;
+            analog_state[port][RETRO_DEVICE_INDEX_ANALOG_LEFT][RETRO_DEVICE_ID_ANALOG_Y] = ls_y;
+            analog_state[port][RETRO_DEVICE_INDEX_ANALOG_RIGHT][RETRO_DEVICE_ID_ANALOG_X] = rs_x;
+            analog_state[port][RETRO_DEVICE_INDEX_ANALOG_RIGHT][RETRO_DEVICE_ID_ANALOG_Y] = rs_y;
+         }
       }
 #else
       ptype = WPAD_EXP_GAMECUBE;
@@ -426,11 +496,53 @@ static void gx_joypad_poll(void)
          if (gcpad & (1 << port))
          {
             int16_t ls_x, ls_y, rs_x, rs_y;
-            uint64_t menu_combo = 0;
+            //uint64_t menu_combo = 0;
 
             down = PAD_ButtonsHeld(port);
 
-            *state_cur |= (down & PAD_BUTTON_A) ? (1ULL << GX_GC_A) : 0;
+//Default
+            *state_cur |= (down & PAD_BUTTON_A) ? (1ULL << GX_WIIMOTE_2) : 0;
+            *state_cur |= (down & PAD_BUTTON_B) ? (1ULL << GX_WIIMOTE_1) : 0;
+            *state_cur |= (down & PAD_BUTTON_X) ? (1ULL << GX_WIIMOTE_2) : 0;
+            *state_cur |= (down & PAD_BUTTON_Y) ? (1ULL << GX_WIIMOTE_1) : 0;
+            *state_cur |= (down & PAD_BUTTON_UP) ? (1ULL << GX_WIIMOTE_UP) : 0;
+            *state_cur |= (down & PAD_BUTTON_DOWN) ? (1ULL << GX_WIIMOTE_DOWN) : 0;
+            *state_cur |= (down & PAD_BUTTON_LEFT) ? (1ULL << GX_WIIMOTE_LEFT) : 0;
+            *state_cur |= (down & PAD_BUTTON_RIGHT) ? (1ULL << GX_WIIMOTE_RIGHT) : 0;
+            *state_cur |= (down & PAD_BUTTON_START) ? (1ULL << GX_WIIMOTE_PLUS) : 0;
+            *state_cur |= (down & PAD_TRIGGER_Z) ? (1ULL << GX_WIIMOTE_MINUS) : 0;
+            *state_cur |= ((down & PAD_TRIGGER_L) || PAD_TriggerL(port) > 80) ? (1ULL << GX_WIIMOTE_B) : 0;
+            *state_cur |= ((down & PAD_TRIGGER_R) || PAD_TriggerR(port) > 80) ? (1ULL << GX_WIIMOTE_A) : 0;
+
+//SNES direct
+			/**state_cur |= (down & PAD_BUTTON_A) ? (1ULL << GX_WIIMOTE_2) : 0;
+            *state_cur |= (down & PAD_BUTTON_B) ? (1ULL << GX_WIIMOTE_1) : 0;
+            *state_cur |= (down & PAD_BUTTON_X) ? (1ULL << GX_WIIMOTE_B) : 0;
+            *state_cur |= (down & PAD_BUTTON_Y) ? (1ULL << GX_WIIMOTE_A) : 0;
+            *state_cur |= (down & PAD_BUTTON_UP) ? (1ULL << GX_WIIMOTE_UP) : 0;
+            *state_cur |= (down & PAD_BUTTON_DOWN) ? (1ULL << GX_WIIMOTE_DOWN) : 0;
+            *state_cur |= (down & PAD_BUTTON_LEFT) ? (1ULL << GX_WIIMOTE_LEFT) : 0;
+            *state_cur |= (down & PAD_BUTTON_RIGHT) ? (1ULL << GX_WIIMOTE_RIGHT) : 0;
+            *state_cur |= (down & PAD_BUTTON_START) ? (1ULL << GX_WIIMOTE_PLUS) : 0;
+            *state_cur |= (down & PAD_TRIGGER_Z) ? (1ULL << GX_WIIMOTE_MINUS) : 0;
+            *state_cur |= ((down & PAD_TRIGGER_L) || PAD_TriggerL(port) > 80) ? (1ULL << GX_GC_L_TRIGGER) : 0;
+            *state_cur |= ((down & PAD_TRIGGER_R) || PAD_TriggerR(port) > 80) ? (1ULL << GX_GC_R_TRIGGER) : 0;*/
+
+//SNES alt
+            /**state_cur |= (down & PAD_BUTTON_A) ? (1ULL << GX_WIIMOTE_2) : 0;
+            *state_cur |= (down & PAD_BUTTON_B) ? (1ULL << GX_WIIMOTE_1) : 0;
+            *state_cur |= (down & PAD_BUTTON_X) ? (1ULL << GX_WIIMOTE_A) : 0;
+            *state_cur |= (down & PAD_BUTTON_Y) ? (1ULL << GX_WIIMOTE_B) : 0;
+            *state_cur |= (down & PAD_BUTTON_UP) ? (1ULL << GX_WIIMOTE_UP) : 0;
+            *state_cur |= (down & PAD_BUTTON_DOWN) ? (1ULL << GX_WIIMOTE_DOWN) : 0;
+            *state_cur |= (down & PAD_BUTTON_LEFT) ? (1ULL << GX_WIIMOTE_LEFT) : 0;
+            *state_cur |= (down & PAD_BUTTON_RIGHT) ? (1ULL << GX_WIIMOTE_RIGHT) : 0;
+            *state_cur |= (down & PAD_BUTTON_START) ? (1ULL << GX_WIIMOTE_PLUS) : 0;
+            *state_cur |= (down & PAD_TRIGGER_Z) ? (1ULL << GX_WIIMOTE_MINUS) : 0;
+            *state_cur |= ((down & PAD_TRIGGER_L) || PAD_TriggerL(port) > 80) ? (1ULL << GX_GC_L_TRIGGER) : 0;
+            *state_cur |= ((down & PAD_TRIGGER_R) || PAD_TriggerR(port) > 80) ? (1ULL << GX_GC_R_TRIGGER) : 0;*/
+
+            /**state_cur |= (down & PAD_BUTTON_A) ? (1ULL << GX_GC_A) : 0;
             *state_cur |= (down & PAD_BUTTON_B) ? (1ULL << GX_GC_B) : 0;
             *state_cur |= (down & PAD_BUTTON_X) ? (1ULL << GX_GC_X) : 0;
             *state_cur |= (down & PAD_BUTTON_Y) ? (1ULL << GX_GC_Y) : 0;
@@ -441,7 +553,7 @@ static void gx_joypad_poll(void)
             *state_cur |= (down & PAD_BUTTON_START) ? (1ULL << GX_GC_START) : 0;
             *state_cur |= (down & PAD_TRIGGER_Z) ? (1ULL << GX_GC_Z_TRIGGER) : 0;
             *state_cur |= ((down & PAD_TRIGGER_L) || PAD_TriggerL(port) > 80) ? (1ULL << GX_GC_L_TRIGGER) : 0;
-            *state_cur |= ((down & PAD_TRIGGER_R) || PAD_TriggerR(port) > 80) ? (1ULL << GX_GC_R_TRIGGER) : 0;
+            *state_cur |= ((down & PAD_TRIGGER_R) || PAD_TriggerR(port) > 80) ? (1ULL << GX_GC_R_TRIGGER) : 0;*/
 
             ls_x = (int16_t)PAD_StickX(port) * 256;
             ls_y = (int16_t)PAD_StickY(port) * -256;
@@ -453,11 +565,11 @@ static void gx_joypad_poll(void)
             analog_state[port][RETRO_DEVICE_INDEX_ANALOG_RIGHT][RETRO_DEVICE_ID_ANALOG_X] = rs_x;
             analog_state[port][RETRO_DEVICE_INDEX_ANALOG_RIGHT][RETRO_DEVICE_ID_ANALOG_Y] = rs_y;
 
-            menu_combo = (1ULL << GX_GC_START) | (1ULL << GX_GC_Z_TRIGGER) | 
+            /*menu_combo = (1ULL << GX_GC_START) | (1ULL << GX_GC_Z_TRIGGER) | 
                (1ULL << GX_GC_L_TRIGGER) | (1ULL << GX_GC_R_TRIGGER);
 
             if ((*state_cur & menu_combo) == menu_combo)
-               *state_cur |= (1ULL << GX_WIIMOTE_HOME);
+               *state_cur |= (1ULL << GX_WIIMOTE_HOME);*/
 
             ptype = WPAD_EXP_GAMECUBE;
          }
@@ -512,7 +624,19 @@ static void gx_joypad_poll(void)
    uint64_t *state_p1 = &pad_state[0];
    uint64_t *lifecycle_state = &g_extern.lifecycle_state;
 
-   *lifecycle_state &= ~((1ULL << RARCH_QUIT_KEY));
+   *lifecycle_state &= ~((1ULL << RARCH_RESET));
+
+   if (g_reset)
+   {
+      *state_p1 |= (1ULL << RARCH_RESET);
+      g_reset = false;
+   }
+   
+   if (*state_p1 & ((1ULL << RARCH_RESET)))
+   
+   *lifecycle_state |= (1ULL << RARCH_RESET);
+
+   *lifecycle_state &= ~((1ULL << RARCH_QUIT_KEY)); // RARCH_QUIT_KEY
 
    if (g_quit)
    {

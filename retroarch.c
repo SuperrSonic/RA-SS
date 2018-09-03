@@ -57,6 +57,8 @@
 #endif
 #endif
 
+bool first_run_state = true;
+
 static bool take_screenshot_viewport(void)
 {
    char screenshot_path[PATH_MAX];
@@ -1477,15 +1479,15 @@ static void load_auto_state(void)
 
    if (path_file_exists(savestate_name_auto))
    {
-      char msg[PATH_MAX];
+     // char msg[PATH_MAX];
       bool ret = load_state(savestate_name_auto);
 
       RARCH_LOG("Found auto savestate in: %s\n", savestate_name_auto);
 
       RARCH_LOG("Loaded auto save",
             savestate_name_auto, ret ? "success" : "failed");
-      msg_queue_push(g_extern.msg_queue, msg, 1, 180);
-      RARCH_LOG("%s\n", msg);
+      //msg_queue_push(g_extern.msg_queue, msg, 1, 180);
+      //RARCH_LOG("%s\n", msg);
    }
 }
 
@@ -1502,7 +1504,7 @@ static bool save_auto_state(void)
 
    bool ret = save_state(savestate_name_auto);
    RARCH_LOG("Auto save state to \"%s\" %s.\n", savestate_name_auto, ret ?
-         "succeeded" : "failed");
+         "success" : "failed");
     
    return true;
 }
@@ -1560,15 +1562,22 @@ static void main_state(unsigned cmd)
    {
       if (cmd == RARCH_CMD_SAVE_STATE)
          rarch_save_state(path, msg, sizeof(msg));
-      else if (cmd == RARCH_CMD_LOAD_STATE)
-         rarch_load_state(path, msg, sizeof(msg));
+      else if (cmd == RARCH_CMD_LOAD_STATE) {      // Solution for auto .state loading failing with FBAlpha
+		if (!g_settings.savestate_auto_load) {
+    		rarch_load_state(path, msg, sizeof(msg));
+	   } else {
+		snprintf(path, sizeof(path), "%s.auto",
+            g_extern.savestate_name);
+		rarch_load_state(path, msg, sizeof(msg));
+		}
+	}
    }
    else
       strlcpy(msg, "Core does not support save states.", sizeof(msg));
 
    msg_queue_clear(g_extern.msg_queue);
-   msg_queue_push(g_extern.msg_queue, msg, 2, 180);
-   RARCH_LOG("%s\n", msg);
+   //msg_queue_push(g_extern.msg_queue, msg, 2, 180);
+   //RARCH_LOG("%s\n", msg);
 }
 
 void rarch_disk_control_append_image(const char *path)
@@ -1913,7 +1922,7 @@ static bool init_core(void)
          if (load_save_files())
             RARCH_LOG("Skipping SRAM load.\n");
 
-         load_auto_state();
+         //load_auto_state();
 
          rarch_main_command(RARCH_CMD_BSV_MOVIE_INIT);
          rarch_main_command(RARCH_CMD_NETPLAY_INIT);
@@ -1978,6 +1987,11 @@ int rarch_main_init(int argc, char *argv[])
              g_settings.video.aspect_ratio_idx);
 
    rarch_main_command(RARCH_CMD_DSP_FILTER_INIT);
+
+   if (first_run_state && g_settings.savestate_auto_load) { //&& (g_extern.frame_count > 140)) {
+     rarch_main_command(RARCH_CMD_LOAD_STATE);
+     first_run_state = false;
+   }
    msg_queue_clear(g_extern.msg_queue);
 #endif
 
@@ -2457,6 +2471,8 @@ bool rarch_main_command(unsigned cmd)
                && driver.video_poke->set_aspect_ratio)
             driver.video_poke->set_aspect_ratio(driver.video_data,
                   g_settings.video.aspect_ratio_idx);
+	   case RARCH_CMD_AUTO_LOAD_STATE:
+			 load_auto_state();
 		 break;
       //case RARCH_CMD_AUDIO_SET_NONBLOCKING_STATE:
          //boolean = true; /* fall-through */
