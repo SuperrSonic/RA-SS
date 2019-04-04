@@ -552,7 +552,7 @@ bool rarch_environment_cb(unsigned cmd, void *data)
          if (!*options_path && *g_extern.config_path)
          {
             fill_pathname_resolve_relative(buf, g_extern.config_path,
-                  "retroarch-core-options.cfg", sizeof(buf));
+                  "core-options.cfg", sizeof(buf));
             options_path = buf;
          }
          g_extern.system.core_options = core_option_new(options_path, vars);

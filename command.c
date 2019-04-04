@@ -185,36 +185,37 @@ static const struct cmd_map map[] = {
    { "FAST_FORWARD_HOLD",      RARCH_FAST_FORWARD_HOLD_KEY },
    { "LOAD_STATE",             RARCH_LOAD_STATE_KEY },
    { "SAVE_STATE",             RARCH_SAVE_STATE_KEY },
-   { "FULLSCREEN_TOGGLE",      RARCH_FULLSCREEN_TOGGLE_KEY },
+  // { "FULLSCREEN_TOGGLE",      RARCH_FULLSCREEN_TOGGLE_KEY },
    { "QUIT",                   RARCH_QUIT_KEY },
    { "STATE_SLOT_PLUS",        RARCH_STATE_SLOT_PLUS },
    { "STATE_SLOT_MINUS",       RARCH_STATE_SLOT_MINUS },
    { "REWIND",                 RARCH_REWIND },
-   { "MOVIE_RECORD_TOGGLE",    RARCH_MOVIE_RECORD_TOGGLE },
-   { "PAUSE_TOGGLE",           RARCH_PAUSE_TOGGLE },
-   { "FRAMEADVANCE",           RARCH_FRAMEADVANCE },
+  // { "PAUSE_TOGGLE",           RARCH_PAUSE_TOGGLE },
+  // { "FRAMEADVANCE",           RARCH_FRAMEADVANCE },
    { "RESET",                  RARCH_RESET },
-   { "SHADER_NEXT",            RARCH_SHADER_NEXT },
-   { "SHADER_PREV",            RARCH_SHADER_PREV },
-   { "CHEAT_INDEX_PLUS",       RARCH_CHEAT_INDEX_PLUS },
-   { "CHEAT_INDEX_MINUS",      RARCH_CHEAT_INDEX_MINUS },
-   { "CHEAT_TOGGLE",           RARCH_CHEAT_TOGGLE },
+  // { "SHADER_NEXT",            RARCH_SHADER_NEXT },
+  // { "SHADER_PREV",            RARCH_SHADER_PREV },
+  // { "CHEAT_INDEX_PLUS",       RARCH_CHEAT_INDEX_PLUS },
+  // { "CHEAT_INDEX_MINUS",      RARCH_CHEAT_INDEX_MINUS },
+  // { "CHEAT_TOGGLE",           RARCH_CHEAT_TOGGLE },
    { "SCREENSHOT",             RARCH_SCREENSHOT },
    { "MUTE",                   RARCH_MUTE },
-   { "NETPLAY_FLIP",           RARCH_NETPLAY_FLIP },
+  // { "NETPLAY_FLIP",           RARCH_NETPLAY_FLIP },
    { "SLOWMOTION",             RARCH_SLOWMOTION },
    { "VOLUME_UP",              RARCH_VOLUME_UP },
    { "VOLUME_DOWN",            RARCH_VOLUME_DOWN },
-   { "OVERLAY_NEXT",           RARCH_OVERLAY_NEXT },
+  // { "OVERLAY_NEXT",           RARCH_OVERLAY_NEXT },
    { "DISK_EJECT_TOGGLE",      RARCH_DISK_EJECT_TOGGLE },
    { "DISK_NEXT",              RARCH_DISK_NEXT },
    { "DISK_PREV",              RARCH_DISK_PREV },   
-   { "GRAB_MOUSE_TOGGLE",      RARCH_GRAB_MOUSE_TOGGLE },
+  // { "GRAB_MOUSE_TOGGLE",      RARCH_GRAB_MOUSE_TOGGLE },
    { "MENU_TOGGLE",            RARCH_MENU_TOGGLE },
-   { "MENU_UP",                RETRO_DEVICE_ID_JOYPAD_UP },
-   { "MENU_DOWN",              RETRO_DEVICE_ID_JOYPAD_DOWN },
-   { "MENU_A",                 RETRO_DEVICE_ID_JOYPAD_A },
-   { "MENU_B",                 RETRO_DEVICE_ID_JOYPAD_B },
+   { "MENU_UP",                RARCH_MENU_UP },
+   { "MENU_DOWN",              RARCH_MENU_DOWN },
+   { "MENU_A",                 RARCH_MENU_OK },
+   { "MENU_B",                 RARCH_MENU_CANCEL },
+   { "MENU_START",             RARCH_MENU_START },
+   { "MENU_INFO",              RARCH_MENU_INFO },
 };
 
 static bool cmd_set_shader(const char *arg)
@@ -591,7 +592,7 @@ static bool verify_command(const char *cmd)
    if (command_get_arg(cmd, NULL, NULL))
       return true;
 
-   RARCH_ERR("Command \"%s\" is not recognized by RetroArch.\n", cmd);
+   RARCH_ERR("Command \"%s\" is not recognized.\n", cmd);
    RARCH_ERR("\tValid commands:\n");
    for (i = 0; i < sizeof(map) / sizeof(map[0]); i++)
       RARCH_ERR("\t\t%s\n", map[i].str);

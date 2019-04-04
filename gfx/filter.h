@@ -21,11 +21,9 @@
 
 #include "filters/softfilter.h"
 
-#define RARCH_SOFTFILTER_THREADS_AUTO 0
 typedef struct rarch_softfilter rarch_softfilter_t;
 
 rarch_softfilter_t *rarch_softfilter_new(const char *filter_path,
-      unsigned threads,
       enum retro_pixel_format in_pixel_format,
       unsigned max_width, unsigned max_height);
 

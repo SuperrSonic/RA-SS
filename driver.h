@@ -100,34 +100,41 @@ enum
    RARCH_FAST_FORWARD_HOLD_KEY,
    RARCH_LOAD_STATE_KEY,
    RARCH_SAVE_STATE_KEY,
-   RARCH_FULLSCREEN_TOGGLE_KEY,
+  // RARCH_FULLSCREEN_TOGGLE_KEY,
    RARCH_QUIT_KEY,
    RARCH_STATE_SLOT_PLUS,
    RARCH_STATE_SLOT_MINUS,
    RARCH_REWIND,
-   RARCH_MOVIE_RECORD_TOGGLE,
-   RARCH_PAUSE_TOGGLE,
-   RARCH_FRAMEADVANCE,
+  // RARCH_PAUSE_TOGGLE,
+  // RARCH_FRAMEADVANCE,
    RARCH_RESET,
-   RARCH_SHADER_NEXT,
-   RARCH_SHADER_PREV,
-   RARCH_CHEAT_INDEX_PLUS,
-   RARCH_CHEAT_INDEX_MINUS,
-   RARCH_CHEAT_TOGGLE,
+   //RARCH_SHADER_NEXT,
+   //RARCH_SHADER_PREV,
+  // RARCH_CHEAT_INDEX_PLUS,
+  // RARCH_CHEAT_INDEX_MINUS,
+  // RARCH_CHEAT_TOGGLE,
    RARCH_SCREENSHOT,
    RARCH_MUTE,
-   RARCH_NETPLAY_FLIP,
+  // RARCH_NETPLAY_FLIP,
    RARCH_SLOWMOTION,
-   RARCH_ENABLE_HOTKEY,
+  // RARCH_ENABLE_HOTKEY,
    RARCH_VOLUME_UP,
    RARCH_VOLUME_DOWN,
-   RARCH_OVERLAY_NEXT,
+  // RARCH_OVERLAY_NEXT,
    RARCH_DISK_EJECT_TOGGLE,
    RARCH_DISK_NEXT,
    RARCH_DISK_PREV,
-   RARCH_GRAB_MOUSE_TOGGLE,
+  // RARCH_GRAB_MOUSE_TOGGLE,
 
    RARCH_MENU_TOGGLE,
+   RARCH_MENU_UP,
+   RARCH_MENU_DOWN,
+   RARCH_MENU_LEFT,
+   RARCH_MENU_RIGHT,
+   RARCH_MENU_OK,
+   RARCH_MENU_CANCEL,
+   RARCH_MENU_START,
+   RARCH_MENU_INFO,
 
    RARCH_BIND_LIST_END,
    RARCH_BIND_LIST_END_NULL
@@ -174,14 +181,19 @@ typedef struct video_info
     * kind of publicly accessible driver implementation
     * video struct for specific things like this.
     */
+   bool drawdone;
    unsigned viwidth;
-#endif
-   unsigned hover_color;
-   unsigned text_color;
    bool vfilter;
-   bool rgui_reset;
+   bool dither;
+   float vbright;
    unsigned vres;
+#ifdef HAVE_RENDERSCALE
+   unsigned renderscale;
+#endif
+#endif
+   unsigned filter_idx;
    bool smooth;
+   bool menu_smooth;
    /* Maximum input size: RARCH_SCALE_BASE * input_scale */
    unsigned input_scale;
    /* Use 32bit RGBA rather than native XBGR1555. */
@@ -380,7 +392,7 @@ typedef struct video_poke_interface
          const struct font_params *params);
 
    void (*show_mouse)(void *data, bool state);
-   void (*grab_mouse_toggle)(void *data);
+  // void (*grab_mouse_toggle)(void *data);
 
    struct gfx_shader *(*get_current_shader)(void *data);
 } video_poke_interface_t;
@@ -706,7 +718,7 @@ extern menu_ctx_driver_backend_t menu_ctx_backend_lakka;
 
 extern rarch_joypad_driver_t *joypad_drivers[];
 
-#define check_overlay_func(input, old_input) rarch_check_overlay(BIT64_GET(input, RARCH_OVERLAY_NEXT), BIT64_GET(old_input, RARCH_OVERLAY_NEXT))
+//#define check_overlay_func(input, old_input) rarch_check_overlay(BIT64_GET(input, RARCH_OVERLAY_NEXT), BIT64_GET(old_input, RARCH_OVERLAY_NEXT))
 #define check_oneshot_func(trigger_input) (check_is_oneshot(BIT64_GET(trigger_input, RARCH_FRAMEADVANCE), BIT64_GET(trigger_input, RARCH_REWIND)))
 #define check_slowmotion_func(input) check_slowmotion(BIT64_GET(input, RARCH_SLOWMOTION))
 #define check_shader_dir_func(trigger_input) check_shader_dir(BIT64_GET(trigger_input, RARCH_SHADER_NEXT), BIT64_GET(trigger_input, RARCH_SHADER_PREV))
@@ -715,7 +727,7 @@ extern rarch_joypad_driver_t *joypad_drivers[];
 #define check_fast_forward_button_func(input, old_input, trigger_input) check_fast_forward_button(BIT64_GET(trigger_input, RARCH_FAST_FORWARD_KEY), BIT64_GET(input, RARCH_FAST_FORWARD_HOLD_KEY), BIT64_GET(old_input, RARCH_FAST_FORWARD_HOLD_KEY))
 #define check_rewind_func(input) check_rewind(BIT64_GET(input, RARCH_REWIND))
 #define check_stateslots_func(trigger_input) check_stateslots(BIT64_GET(trigger_input, RARCH_STATE_SLOT_PLUS), BIT64_GET(trigger_input, RARCH_STATE_SLOT_MINUS))
-#define check_pause_func(input) check_pause(BIT64_GET(input, RARCH_PAUSE_TOGGLE), BIT64_GET(input, RARCH_FRAMEADVANCE))
+//#define check_pause_func(input) check_pause(BIT64_GET(input, RARCH_PAUSE_TOGGLE), BIT64_GET(input, RARCH_FRAMEADVANCE))
 #define check_quit_key_func(input) BIT64_GET(input, RARCH_QUIT_KEY)
 
 #ifdef __cplusplus

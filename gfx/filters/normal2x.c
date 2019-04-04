@@ -1,6 +1,6 @@
 /*  RetroArch - A frontend for libretro.
  *  Copyright (C) 2010-2014 - Hans-Kristian Arntzen
- *  Copyright (C) 2011-2014 - Daniel De Matteis
+ *  Copyright (C) 2011-2018 - Daniel De Matteis
  *
  *  RetroArch is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU General Public License as published by the Free Software Found-
@@ -14,7 +14,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Compile: gcc -o normal2x.so -shared normal2x.c -std=c99 -O3 -Wall -pedantic -fPIC
+/* Compile: gcc -o normal2x.so -shared normal2x.c -std=c99 -O3 -Wall -pedantic -fPIC */
 
 #include "softfilter.h"
 #include <stdlib.h>
@@ -24,8 +24,6 @@
 #define softfilter_thread_data normal2x_softfilter_thread_data
 #define filter_data normal2x_filter_data
 #endif
-
-#define NORMAL2X_SCALE 2
 
 struct softfilter_thread_data
 {
@@ -46,57 +44,6 @@ struct filter_data
    struct softfilter_thread_data *workers;
    unsigned in_fmt;
 };
-
-#define NORMAL2X_GENERIC(typename_t, width, height, first, last, src, src_stride, dst, dst_stride, out0, out1) \
-   for (y = 0; y < height; ++y) \
-   { \
-      const int prevline = ((y == 0) && first) ? 0 : src_stride; \
-      const int nextline = ((y == height - 1) && last) ? 0 : src_stride; \
-      \
-      for (x = 0; x < width; ++x) \
-      { \
-         const typename_t A = *(src - prevline); \
-         const typename_t B = (x > 0) ? *(src - 1) : *src; \
-         const typename_t C = *src; \
-         const typename_t D = (x < width - 1) ? *(src + 1) : *src; \
-         const typename_t E = *(src++ + nextline); \
-         \
-         *out0++ = C; \
-         *out0++ = C; \
-         *out1++ = C; \
-         *out1++ = C; \
-      } \
-      \
-      src += src_stride - width; \
-      out0 += dst_stride + dst_stride - (width * NORMAL2X_SCALE); \
-      out1 += dst_stride + dst_stride - (width * NORMAL2X_SCALE); \
-   }
-
-static void normal2x_generic_rgb565(unsigned width, unsigned height,
-      int first, int last,
-      const uint16_t *src, unsigned src_stride,
-      uint16_t *dst, unsigned dst_stride)
-{
-   unsigned x, y;
-   uint16_t *out0, *out1;
-   out0 = (uint16_t*)dst;
-   out1 = (uint16_t*)(dst + dst_stride);
-   NORMAL2X_GENERIC(uint16_t, width, height, first, last,
-         src, src_stride, dst, dst_stride, out0, out1);
-}
-
-static void normal2x_generic_xrgb8888(unsigned width, unsigned height,
-      int first, int last,
-      const uint32_t *src, unsigned src_stride,
-      uint32_t *dst, unsigned dst_stride)
-{
-   unsigned x, y;
-   uint32_t *out0 = (uint32_t*)dst;
-   uint32_t *out1 = (uint32_t*)(dst + dst_stride);
-
-   NORMAL2X_GENERIC(uint32_t, width, height, first, last,
-         src, src_stride, dst, dst_stride, out0, out1);
-}
 
 static unsigned normal2x_generic_input_fmts(void)
 {
@@ -119,19 +66,20 @@ static void *normal2x_generic_create(const struct softfilter_config *config,
       unsigned max_width, unsigned max_height,
       unsigned threads, softfilter_simd_mask_t simd, void *userdata)
 {
+   struct filter_data *filt = (struct filter_data*)calloc(1, sizeof(*filt));
    (void)simd;
    (void)config;
    (void)userdata;
-
-   struct filter_data *filt = (struct filter_data*)calloc(1, sizeof(*filt));
-   if (!filt)
+   
+   if (!filt) {
       return NULL;
-   filt->workers = (struct softfilter_thread_data*)
-      calloc(threads, sizeof(struct softfilter_thread_data));
+   }
+   /* Apparently the code is not thread-safe,
+    * so force single threaded operation... */
+   filt->workers = (struct softfilter_thread_data*)calloc(1, sizeof(struct softfilter_thread_data));
    filt->threads = 1;
    filt->in_fmt  = in_fmt;
-   if (!filt->workers)
-   {
+   if (!filt->workers) {
       free(filt);
       return NULL;
    }
@@ -142,51 +90,74 @@ static void normal2x_generic_output(void *data,
       unsigned *out_width, unsigned *out_height,
       unsigned width, unsigned height)
 {
-   *out_width = width * NORMAL2X_SCALE;
-   *out_height = height * NORMAL2X_SCALE;
+   *out_width = width << 1;
+   *out_height = height << 1;
 }
 
 static void normal2x_generic_destroy(void *data)
 {
    struct filter_data *filt = (struct filter_data*)data;
-
-   if (!filt)
+   if (!filt) {
       return;
-
+   }
    free(filt->workers);
    free(filt);
 }
 
 static void normal2x_work_cb_xrgb8888(void *data, void *thread_data)
 {
-   struct softfilter_thread_data *thr = 
-      (struct softfilter_thread_data*)thread_data;
+   struct softfilter_thread_data *thr = (struct softfilter_thread_data*)thread_data;
    const uint32_t *input = (const uint32_t*)thr->in_data;
    uint32_t *output = (uint32_t*)thr->out_data;
-   unsigned width = thr->width;
-   unsigned height = thr->height;
-
-   normal2x_generic_xrgb8888(width, height,
-         thr->first, thr->last, input,
-         thr->in_pitch / SOFTFILTER_BPP_XRGB8888,
-         output,
-         thr->out_pitch / SOFTFILTER_BPP_XRGB8888);
+   unsigned in_stride = (unsigned)(thr->in_pitch >> 2);
+   unsigned out_stride = (unsigned)(thr->out_pitch >> 2);
+   unsigned x, y;
+   
+   for (y = 0; y < thr->height; ++y)
+   {
+      uint32_t *out_ptr = output;
+      for (x = 0; x < thr->width; ++x)
+      {
+         uint64_t colour = (uint64_t)*(input + x);
+         colour |= colour << 32;
+         
+         *(uint64_t *)(out_ptr) = colour;
+         *(uint64_t *)(out_ptr + out_stride) = colour;
+         
+         out_ptr += 2;
+      }
+      
+      input += in_stride;
+		output += out_stride << 1;
+   }
 }
 
 static void normal2x_work_cb_rgb565(void *data, void *thread_data)
 {
-   struct softfilter_thread_data *thr = 
-      (struct softfilter_thread_data*)thread_data;
+   struct softfilter_thread_data *thr = (struct softfilter_thread_data*)thread_data;
    const uint16_t *input = (const uint16_t*)thr->in_data;
    uint16_t *output = (uint16_t*)thr->out_data;
-   unsigned width = thr->width;
-   unsigned height = thr->height;
-
-   normal2x_generic_rgb565(width, height,
-         thr->first, thr->last, input, 
-         thr->in_pitch / SOFTFILTER_BPP_RGB565,
-         output,
-         thr->out_pitch / SOFTFILTER_BPP_RGB565);
+   unsigned in_stride = (unsigned)(thr->in_pitch >> 1);
+   unsigned out_stride = (unsigned)(thr->out_pitch >> 1);
+   unsigned x, y;
+   
+   for (y = 0; y < thr->height; ++y)
+   {
+      uint16_t * out_ptr = output;
+      for (x = 0; x < thr->width; ++x)
+      {
+         uint32_t colour = (uint32_t)*(input + x);
+         colour |= colour << 16;
+         
+         *(uint32_t *)(out_ptr) = colour;
+         *(uint32_t *)(out_ptr + out_stride) = colour;
+         
+         out_ptr += 2;
+      }
+      
+      input += in_stride;
+		output += out_stride << 1;
+   }
 }
 
 static void normal2x_generic_packets(void *data,
@@ -194,46 +165,39 @@ static void normal2x_generic_packets(void *data,
       void *output, size_t output_stride,
       const void *input, unsigned width, unsigned height, size_t input_stride)
 {
+   /* We are guaranteed single threaded operation
+    * (filt->threads = 1) so we don't need to loop
+    * over threads and can cull some code. This only
+    * makes the tiniest performance difference. */
    struct filter_data *filt = (struct filter_data*)data;
-   unsigned i;
-   for (i = 0; i < filt->threads; i++)
-   {
-      struct softfilter_thread_data *thr = 
-         (struct softfilter_thread_data*)&filt->workers[i];
-
-      unsigned y_start = (height * i) / filt->threads;
-      unsigned y_end = (height * (i + 1)) / filt->threads;
-      thr->out_data = (uint8_t*)output + y_start * 
-         NORMAL2X_SCALE * output_stride;
-      thr->in_data = (const uint8_t*)input + y_start * input_stride;
-      thr->out_pitch = output_stride;
-      thr->in_pitch = input_stride;
-      thr->width = width;
-      thr->height = y_end - y_start;
-
-      /* Workers need to know if they can access pixels 
-       * outside their given buffer. */
-      thr->first = y_start;
-      thr->last = y_end == height;
-
-      if (filt->in_fmt == SOFTFILTER_FMT_XRGB8888)
-         packets[i].work = normal2x_work_cb_xrgb8888;
-      else if (filt->in_fmt == SOFTFILTER_FMT_RGB565)
-         packets[i].work = normal2x_work_cb_rgb565;
-      packets[i].thread_data = thr;
+   struct softfilter_thread_data *thr = (struct softfilter_thread_data*)&filt->workers[0];
+   
+   thr->out_data = (uint8_t*)output;
+   thr->in_data = (const uint8_t*)input;
+   thr->out_pitch = output_stride;
+   thr->in_pitch = input_stride;
+   thr->width = width;
+   thr->height = height;
+   
+   if (filt->in_fmt == SOFTFILTER_FMT_XRGB8888) {
+      packets[0].work = normal2x_work_cb_xrgb8888;
+   } else if (filt->in_fmt == SOFTFILTER_FMT_RGB565) {
+      packets[0].work = normal2x_work_cb_rgb565;
    }
+   packets[0].thread_data = thr;
 }
 
 static const struct softfilter_implementation normal2x_generic = {
    normal2x_generic_input_fmts,
    normal2x_generic_output_fmts,
-
+   
    normal2x_generic_create,
    normal2x_generic_destroy,
-
+   
    normal2x_generic_threads,
    normal2x_generic_output,
    normal2x_generic_packets,
+   
    SOFTFILTER_API_VERSION,
    "Normal2x",
    "normal2x",

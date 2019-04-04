@@ -76,8 +76,8 @@ int menu_action_setting_set_current_string(
 int menu_action_set_current_string_based_on_label(
       const char *label, const char *str)
 {
-   if (!strcmp(label, "video_shader_preset_save_as"))
-      menu_shader_manager_save_preset(str, false);
+  // if (!strcmp(label, "video_shader_preset_save_as"))
+    //  menu_shader_manager_save_preset(str, false);
 
    return 0;
 }

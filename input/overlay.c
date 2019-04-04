@@ -282,14 +282,14 @@ static bool input_overlay_load_desc(input_overlay_t *ol,
             desc->key_mask |= UINT64_C(1) << input_translate_str_to_bind_id(tmp);
       }
 
-      if (desc->key_mask & (UINT64_C(1) << RARCH_OVERLAY_NEXT))
+     /* if (desc->key_mask & (UINT64_C(1) << RARCH_OVERLAY_NEXT))
       {
          char overlay_target_key[64];
          snprintf(overlay_target_key, sizeof(overlay_target_key),
                "overlay%u_desc%u_next_target", ol_idx, desc_idx);
          config_get_array(conf, overlay_target_key,
                desc->next_index_name, sizeof(desc->next_index_name));
-      }
+      }*/
    }
 
    float width_mod = by_pixel ? (1.0f / width) : 1.0f;
@@ -739,8 +739,8 @@ void input_overlay_poll(input_overlay_t *ol, input_overlay_state_t *out,
          uint64_t mask = desc->key_mask;
          out->buttons |= mask;
 
-         if (mask & (UINT64_C(1) << RARCH_OVERLAY_NEXT))
-            ol->next_index = desc->next_index;
+        // if (mask & (UINT64_C(1) << RARCH_OVERLAY_NEXT))
+          //  ol->next_index = desc->next_index;
       }
       else if (desc->type == OVERLAY_TYPE_KEYBOARD)
       {

@@ -1,10 +1,10 @@
 #!/bin/sh
 
-make -C ../ -f Makefile.wii.salamander clean || exit 1
+#make -C ../ -f Makefile.wii.salamander clean || exit 1
 make -C ../ -f Makefile.griffin platform=wii clean || exit 1
 
-make -C ../ -f Makefile.wii.salamander || exit 1
-make -C ../ -f Makefile.wii.salamander pkg || exit 1
+#make -C ../ -f Makefile.wii.salamander || exit 1
+#make -C ../ -f Makefile.wii.salamander pkg || exit 1
 
 for f in *_wii.a ; do
    name=`echo "$f" | sed 's/\(_libretro_wii\|\).a$//'`

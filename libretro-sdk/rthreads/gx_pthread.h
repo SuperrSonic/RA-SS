@@ -59,10 +59,6 @@
 #define OSInitCond(cond) LWP_CondInit(cond)
 #endif
 
-#ifndef OSSignalCond
-#define OSSignalCond(cond) LWP_ThreadSignal(cond)
-#endif
-
 #ifndef OSWaitCond
 #define OSWaitCond(cond, mutex) LWP_CondWait(cond, mutex)
 #endif

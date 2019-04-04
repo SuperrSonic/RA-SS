@@ -44,14 +44,14 @@ static void set_volume(float gain)
 
    g_extern.audio_data.volume_gain = db_to_gain(g_settings.audio.volume);
 }
-
+/*
 static bool check_pause(bool pressed, bool frameadvance_pressed)
 {
    static bool old_focus    = true;
    bool focus               = true;
    bool old_is_paused       = g_extern.is_paused;
 
-   /* FRAMEADVANCE will set us into pause mode. */
+   // FRAMEADVANCE will set us into pause mode.
    pressed |= !g_extern.is_paused && frameadvance_pressed;
 
    if (g_settings.pause_nonactive)
@@ -70,7 +70,7 @@ static bool check_pause(bool pressed, bool frameadvance_pressed)
       return false;
    
    return true;
-}
+}*/
 
 /* Rewind buttons works like FRAMEREWIND when paused.
  * We will one-shot in that case. */
@@ -225,7 +225,7 @@ static void check_slowmotion(bool pressed)
    msg_queue_push(g_extern.msg_queue, g_extern.frame_is_reverse ?
          "Slow motion rewind." : "Slow motion.", 0, 30);
 }
-
+/*
 static bool check_movie_init(void)
 {
    char path[PATH_MAX], msg[PATH_MAX];
@@ -305,8 +305,8 @@ static bool check_movie(void)
    if (!g_extern.bsv.movie)
       return check_movie_init();
    return check_movie_record();
-}
-
+}*/
+/*
 static void check_shader_dir(bool pressed_next, bool pressed_prev)
 {
    char msg[PATH_MAX];
@@ -350,7 +350,7 @@ static void check_shader_dir(bool pressed_next, bool pressed_prev)
 
    if (!driver.video->set_shader(driver.video_data, type, shader))
       RARCH_WARN("Failed to apply shader.\n");
-}
+}*/
 
 /* 
  * Checks for stuff like fullscreen, save states, etc.
@@ -375,33 +375,33 @@ static int do_state_checks(
    else if (BIT64_GET(input, RARCH_VOLUME_DOWN))
       set_volume(-0.5f);
 
-   if (BIT64_GET(trigger_input, RARCH_GRAB_MOUSE_TOGGLE))
-      rarch_main_command(RARCH_CMD_GRAB_MOUSE_TOGGLE);
+  // if (BIT64_GET(trigger_input, RARCH_GRAB_MOUSE_TOGGLE))
+    //  rarch_main_command(RARCH_CMD_GRAB_MOUSE_TOGGLE);
 
-   if (BIT64_GET(trigger_input, RARCH_OVERLAY_NEXT))
-      rarch_main_command(RARCH_CMD_OVERLAY_NEXT);
+   //if (BIT64_GET(trigger_input, RARCH_OVERLAY_NEXT))
+     // rarch_main_command(RARCH_CMD_OVERLAY_NEXT);
 
-   if (!g_extern.is_paused)
+   /*if (!g_extern.is_paused)
    {
       if (BIT64_GET(trigger_input, RARCH_FULLSCREEN_TOGGLE_KEY))
          rarch_main_command(RARCH_CMD_FULLSCREEN_TOGGLE);
-   }
-
+   }*/
+/*
 #ifdef HAVE_NETPLAY
    if (driver.netplay_data)
    {
-      if (BIT64_GET(trigger_input, RARCH_NETPLAY_FLIP))
-         rarch_main_command(RARCH_CMD_NETPLAY_FLIP_PLAYERS);
+     // if (BIT64_GET(trigger_input, RARCH_NETPLAY_FLIP))
+       //  rarch_main_command(RARCH_CMD_NETPLAY_FLIP_PLAYERS);
 
       if (BIT64_GET(trigger_input, RARCH_FULLSCREEN_TOGGLE_KEY))
          rarch_main_command(RARCH_CMD_FULLSCREEN_TOGGLE);
       return 0;
    }
-#endif
-   if (check_pause_func(trigger_input))
-      rarch_main_command(RARCH_CMD_PAUSE_TOGGLE);
+#endif*/
+ //  if (check_pause_func(trigger_input))
+   //   rarch_main_command(RARCH_CMD_PAUSE_TOGGLE);
 
-   if (g_extern.is_paused)
+  /* if (g_extern.is_paused)
    {
       if (BIT64_GET(trigger_input, RARCH_FULLSCREEN_TOGGLE_KEY))
       {
@@ -411,7 +411,7 @@ static int do_state_checks(
 
       if (!check_oneshot_func(trigger_input))
          return 1;
-   }
+   }*/
 
    check_fast_forward_button_func(input, old_input, trigger_input);
 
@@ -426,17 +426,17 @@ static int do_state_checks(
 
    check_slowmotion_func(input);
 
-   if (BIT64_GET(trigger_input, RARCH_MOVIE_RECORD_TOGGLE))
-      check_movie();
+  // if (BIT64_GET(trigger_input, RARCH_MOVIE_RECORD_TOGGLE))
+    //  check_movie();
 
-   check_shader_dir_func(trigger_input);
+   //check_shader_dir_func(trigger_input);
 
-   if (BIT64_GET(trigger_input, RARCH_CHEAT_INDEX_PLUS))
+  /* if (BIT64_GET(trigger_input, RARCH_CHEAT_INDEX_PLUS))
       cheat_manager_index_next(g_extern.cheat);
    else if (BIT64_GET(trigger_input, RARCH_CHEAT_INDEX_MINUS))
       cheat_manager_index_prev(g_extern.cheat);
    else if (BIT64_GET(trigger_input, RARCH_CHEAT_TOGGLE))
-      cheat_manager_toggle(g_extern.cheat);
+      cheat_manager_toggle(g_extern.cheat);*/
 
    if (BIT64_GET(trigger_input, RARCH_DISK_EJECT_TOGGLE))
       rarch_main_command(RARCH_CMD_DISK_EJECT_TOGGLE);
@@ -460,8 +460,12 @@ static inline int time_to_exit(retro_input_t input)
             g_extern.max_frames)
          || (g_extern.bsv.movie_end && g_extern.bsv.eof_exit)
          || !driver.video->alive(driver.video_data)
-      )
-      return 1;
+      ) {
+          if (g_settings.exit_fade && !exit_safe)
+             start_exitfade = true;
+          else
+		  return 1;
+    }
    return 0;
 }
 
@@ -485,6 +489,8 @@ static void update_frame_time(void)
 #ifdef HAVE_MENU
 static void do_state_check_menu_toggle(void)
 {
+   g_settings.load_to_menu = false;
+
    if (g_extern.is_menu)
    {
       if (g_extern.main_is_init && !g_extern.libretro_dummy)
@@ -524,25 +530,25 @@ static void limit_frame_time(void)
 
 static void check_block_hotkey(bool enable_hotkey)
 {
-   bool use_hotkey_enable;
-   static const struct retro_keybind *bind = 
-      &g_settings.input.binds[0][RARCH_ENABLE_HOTKEY];
+  // bool use_hotkey_enable;
+  // static const struct retro_keybind *bind = 
+    //  &g_settings.input.binds[0][RARCH_ENABLE_HOTKEY];
 
    /* Don't block the check to RARCH_ENABLE_HOTKEY
     * unless we're really supposed to. */
    driver.block_hotkey = driver.block_input;
 
    // If we haven't bound anything to this, always allow hotkeys.
-   use_hotkey_enable = bind->key != RETROK_UNKNOWN ||
-      bind->joykey != NO_BTN ||
-      bind->joyaxis != AXIS_NONE;
+ //  use_hotkey_enable = bind->key != RETROK_UNKNOWN ||
+   //   bind->joykey != NO_BTN ||
+     // bind->joyaxis != AXIS_NONE;
 
    driver.block_hotkey = driver.block_input ||
-      (use_hotkey_enable && !enable_hotkey);
+      (enable_hotkey);
 
    /* If we hold ENABLE_HOTKEY button, block all libretro input to allow 
     * hotkeys to be bound to same keys as RetroPad. */
-   driver.block_libretro_input = use_hotkey_enable && enable_hotkey;
+   driver.block_libretro_input = enable_hotkey;
 }
 
 /* We query all known keys per frame. Returns a 64-bit mask 
@@ -578,8 +584,7 @@ static inline retro_input_t input_keys_pressed(void)
 
    g_extern.turbo_count++;
 
-   check_block_hotkey(driver.input->key_pressed(driver.input_data,
-            RARCH_ENABLE_HOTKEY));
+   check_block_hotkey(0);
 
    input_push_analog_dpad((struct retro_keybind*)binds[0],
          (g_settings.input.analog_dpad_mode[0] == ANALOG_DPAD_NONE) ?
@@ -630,8 +635,8 @@ static bool input_flush(retro_input_t *input)
 
    /* If core was paused before entering menu, evoke
     * pause toggle to wake it up. */
-   if (g_extern.is_paused)
-      BIT64_SET(*input, RARCH_PAUSE_TOGGLE);
+  // if (g_extern.is_paused)
+    //  BIT64_SET(*input, RARCH_PAUSE_TOGGLE);
 
    return true;
 }
@@ -668,7 +673,7 @@ int rarch_main_iterate(void)
       update_frame_time();
 
 #ifdef HAVE_MENU
-   if (check_enter_menu_func(trigger_input) || (g_extern.libretro_dummy))
+   if (check_enter_menu_func(trigger_input) || (g_extern.libretro_dummy) || g_settings.load_to_menu)
       do_state_check_menu_toggle();
 
    if (g_extern.is_menu)
@@ -706,11 +711,11 @@ int rarch_main_iterate(void)
       netplay_pre_frame((netplay_t*)driver.netplay_data);
 #endif
 
-   if (g_extern.bsv.movie)
+  /* if (g_extern.bsv.movie)
       bsv_movie_set_frame_start(g_extern.bsv.movie);
 
    if (g_extern.system.camera_callback.caps)
-      driver_camera_poll();
+      driver_camera_poll(); */
 
    /* Update binds for analog dpad modes. */
    for (i = 0; i < MAX_PLAYERS; i++)
@@ -730,6 +735,14 @@ int rarch_main_iterate(void)
 
    /* Run libretro for one frame. */
    pretro_run();
+   /* Optionally boot to the menu when loading states. */
+   if ((g_settings.autoload_safe && g_settings.stateload_pause && g_settings.savestate_auto_load) ||
+          (g_settings.regular_load_safe && g_settings.regular_state_pause)) {
+        g_settings.load_to_menu = true;
+        g_settings.autoload_safe = false;
+        g_settings.regular_load_safe = false;
+        VIDEO_SetBlack(false);
+   }
 
    for (i = 0; i < MAX_PLAYERS; i++)
    {

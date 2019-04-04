@@ -31,46 +31,6 @@ struct rarch_soft_plug
    const struct softfilter_implementation *impl;
 };
 
-#ifdef HAVE_THREADS
-#include <rthreads/rthreads.h>
-
-struct filter_thread_data
-{
-   sthread_t *thread;
-   const struct softfilter_work_packet *packet;
-   scond_t *cond;
-   slock_t *lock;
-   void *userdata;
-   bool die;
-   bool done;
-};
-
-static void filter_thread_loop(void *data)
-{
-   struct filter_thread_data *thr = (struct filter_thread_data*)data;
-
-   for (;;)
-   {
-      slock_lock(thr->lock);
-      while (thr->done && !thr->die)
-         scond_wait(thr->cond, thr->lock);
-      bool die = thr->die;
-      slock_unlock(thr->lock);
-
-      if (die)
-         break;
-
-      if (thr->packet && thr->packet->work)
-         thr->packet->work(thr->userdata, thr->packet->thread_data);
-
-      slock_lock(thr->lock);
-      thr->done = true;
-      scond_signal(thr->cond);
-      slock_unlock(thr->lock);
-   }
-}
-#endif
-
 struct rarch_softfilter
 {
    config_file_t *conf;
@@ -85,11 +45,6 @@ struct rarch_softfilter
    enum retro_pixel_format pix_fmt, out_pix_fmt;
 
    struct softfilter_work_packet *packets;
-   unsigned threads;
-
-#ifdef HAVE_THREADS
-   struct filter_thread_data *thread_data;
-#endif
 };
 
 static const struct softfilter_implementation *
@@ -179,58 +134,20 @@ static bool create_softfilter_graph(rarch_softfilter_t *filt,
    filt->max_height = max_height;
 
    filt->impl_data = filt->impl->create(
-         &softfilter_config, input_fmt, input_fmt, max_width, max_height,
-         threads != RARCH_SOFTFILTER_THREADS_AUTO ? threads : 
-         rarch_get_cpu_cores(), cpu_features,
-         &userdata);
+         &softfilter_config, input_fmt, input_fmt, max_width, max_height, 1, cpu_features, &userdata);
+   //filt->impl_data = filt->impl->create(input_fmt, input_fmt, max_width, max_height, 1, cpu_features);
    if (!filt->impl_data)
    {
       RARCH_ERR("Failed to create softfilter state.\n");
       return false;
    }
 
-   threads = filt->impl->query_num_threads(filt->impl_data);
-   if (!threads)
-   {
-      RARCH_ERR("Invalid number of threads.\n");
-      return false;
-   }
-
-   RARCH_LOG("Using %u threads for softfilter.\n", threads);
-
-   filt->packets = (struct softfilter_work_packet*)
-      calloc(threads, sizeof(*filt->packets));
+   filt->packets = (struct softfilter_work_packet*)calloc(1, sizeof(*filt->packets));
    if (!filt->packets)
    {
       RARCH_ERR("Failed to allocate softfilter packets.\n");
       return false;
    }
-
-#ifdef HAVE_THREADS
-   filt->thread_data = (struct filter_thread_data*)
-      calloc(threads, sizeof(*filt->thread_data));
-   if (!filt->thread_data)
-      return false;
-   filt->threads = threads;
-
-   unsigned i;
-   for (i = 0; i < threads; i++)
-   {
-      filt->thread_data[i].userdata = filt->impl_data;
-      filt->thread_data[i].done = true;
-
-      filt->thread_data[i].lock = slock_new();
-      if (!filt->thread_data[i].lock)
-         return false;
-      filt->thread_data[i].cond = scond_new();
-      if (!filt->thread_data[i].cond)
-         return false;
-      filt->thread_data[i].thread = sthread_create(
-            filter_thread_loop, &filt->thread_data[i]);
-      if (!filt->thread_data[i].thread)
-         return false;
-   }
-#endif
 
    return true;
 }
@@ -339,7 +256,7 @@ static bool append_softfilter_plugs(rarch_softfilter_t *filt)
 #endif
 
 rarch_softfilter_t *rarch_softfilter_new(const char *filter_config,
-      unsigned threads,
+     // unsigned threads,
       enum retro_pixel_format in_pixel_format,
       unsigned max_width, unsigned max_height)
 {
@@ -378,7 +295,7 @@ rarch_softfilter_t *rarch_softfilter_new(const char *filter_config,
 #endif
 
    if (!create_softfilter_graph(filt, in_pixel_format,
-            max_width, max_height, cpu_features, threads))
+            max_width, max_height, cpu_features, 1))
       goto error;
 
    return filt;
@@ -391,8 +308,8 @@ error:
 
 void rarch_softfilter_free(rarch_softfilter_t *filt)
 {
-   unsigned i = 0;
-   (void)i;
+ //  unsigned i = 0;
+//   (void)i;
 
    if (!filt)
       return;
@@ -410,21 +327,6 @@ void rarch_softfilter_free(rarch_softfilter_t *filt)
    free(filt->plugs);
 #endif
 
-#ifdef HAVE_THREADS
-   for (i = 0; i < filt->threads; i++)
-   {
-      if (!filt->thread_data[i].thread)
-         continue;
-      slock_lock(filt->thread_data[i].lock);
-      filt->thread_data[i].die = true;
-      scond_signal(filt->thread_data[i].cond);
-      slock_unlock(filt->thread_data[i].lock);
-      sthread_join(filt->thread_data[i].thread);
-      slock_free(filt->thread_data[i].lock);
-      scond_free(filt->thread_data[i].cond);
-   }
-   free(filt->thread_data);
-#endif
    free(filt);
 }
 
@@ -454,40 +356,14 @@ void rarch_softfilter_process(rarch_softfilter_t *filt,
       void *output, size_t output_stride,
       const void *input, unsigned width, unsigned height, size_t input_stride)
 {
-   unsigned i;
+   //unsigned i;
 
    if (filt && filt->impl && filt->impl->get_work_packets)
+   {
       filt->impl->get_work_packets(filt->impl_data, filt->packets,
             output, output_stride, input, width, height, input_stride);
-   
-#ifdef HAVE_THREADS
-   /* Fire off workers */
-   for (i = 0; i < filt->threads; i++)
-   {
-#if 0
-      RARCH_LOG("Firing off filter thread %u ...\n", i);
-#endif
-      filt->thread_data[i].packet = &filt->packets[i];
-      slock_lock(filt->thread_data[i].lock);
-      filt->thread_data[i].done = false;
-      scond_signal(filt->thread_data[i].cond);
-      slock_unlock(filt->thread_data[i].lock);
-   }
 
-   /* Wait for workers */
-   for (i = 0; i < filt->threads; i++)
-   {
-#if 0
-      RARCH_LOG("Waiting for filter thread %u ...\n", i);
-#endif
-      slock_lock(filt->thread_data[i].lock);
-      while (!filt->thread_data[i].done)
-         scond_wait(filt->thread_data[i].cond, filt->thread_data[i].lock);
-      slock_unlock(filt->thread_data[i].lock);
+      filt->packets->work(filt->impl_data, filt->packets->thread_data);
    }
-#else
-   for (i = 0; i < filt->threads; i++)
-      filt->packets[i].work(filt->impl_data, filt->packets[i].thread_data);
-#endif
 }
 

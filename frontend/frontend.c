@@ -85,6 +85,10 @@ void main_exit(args_type() args)
       if (*g_extern.core_specific_config_path &&
             g_settings.core_specific_config)
          config_save_file(g_extern.core_specific_config_path);
+
+      /* Wii Message Board */
+      if (g_settings.single_mode)
+         rarch_main_command(RARCH_CMD_WII_MESSAGE_BOARD);
    }
 
    if (g_extern.main_is_init)
@@ -96,7 +100,7 @@ void main_exit(args_type() args)
       rarch_main_deinit();
    }
 
-   rarch_main_command(RARCH_CMD_PERFCNT_REPORT_FRONTEND_LOG);
+  // rarch_main_command(RARCH_CMD_PERFCNT_REPORT_FRONTEND_LOG);
 
 #if defined(HAVE_LOGGER) && !defined(ANDROID)
    logger_shutdown();
@@ -121,6 +125,10 @@ static void check_defaults_dirs(void)
       path_mkdir(g_defaults.autoconfig_dir);
    if (*g_defaults.audio_filter_dir)
       path_mkdir(g_defaults.audio_filter_dir);
+   if (*g_defaults.video_filter_dir)
+      path_mkdir(g_defaults.video_filter_dir);
+   if (*g_defaults.screenshot_dir)
+      path_mkdir(g_defaults.screenshot_dir);
    if (*g_defaults.assets_dir)
       path_mkdir(g_defaults.assets_dir);
    if (*g_defaults.playlist_dir)
@@ -143,6 +151,8 @@ static void check_defaults_dirs(void)
       path_mkdir(g_defaults.system_dir);
    if (*g_defaults.resampler_dir)
       path_mkdir(g_defaults.resampler_dir);
+   if (*g_defaults.extract_dir)
+      path_mkdir(g_defaults.extract_dir);
 }
 
 static void history_playlist_push(content_playlist_t *playlist,

@@ -151,7 +151,7 @@ static void cheat_manager_apply_cheats(cheat_manager_t *handle)
          pretro_cheat_set(idx++, true, handle->cheats[i].code);
    }
 }
-
+/*
 static void cheat_manager_load_config(cheat_manager_t *handle,
       const char *path, const char *sha256)
 {
@@ -189,8 +189,8 @@ static void cheat_manager_load_config(cheat_manager_t *handle,
    config_file_free(conf);
 
    cheat_manager_apply_cheats(handle);
-}
-
+}*/
+/*
 static void cheat_manager_save_config(cheat_manager_t *handle,
       const char *path, const char *sha256)
 {
@@ -221,7 +221,7 @@ static void cheat_manager_save_config(cheat_manager_t *handle,
    }
 
    if (*conf_str)
-      conf_str[strlen(conf_str) - 1] = '\0'; /* Remove the trailing ';' */
+      conf_str[strlen(conf_str) - 1] = '\0'; // Remove the trailing ';' 
 
    config_set_string(conf, sha256, conf_str);
 
@@ -229,7 +229,7 @@ static void cheat_manager_save_config(cheat_manager_t *handle,
       RARCH_ERR("Failed to write XML cheat settings to \"%s\". Check permissions.\n", path);
 
    config_file_free(conf);
-}
+}*/
 
 cheat_manager_t *cheat_manager_new(const char *path)
 {
@@ -327,8 +327,8 @@ cheat_manager_t *cheat_manager_new(const char *path)
       goto error;
    }
 
-   cheat_manager_load_config(handle,
-         g_settings.cheat_settings_path, g_extern.sha256);
+  /* cheat_manager_load_config(handle,
+         g_settings.cheat_settings_path, g_extern.sha256);*/
 
    xmlFreeDoc(doc);
    xmlFreeParserCtxt(ctx);
@@ -351,8 +351,8 @@ void cheat_manager_free(cheat_manager_t *handle)
 
    if (handle->cheats)
    {
-      cheat_manager_save_config(handle,
-            g_settings.cheat_settings_path, g_extern.sha256);
+     /* cheat_manager_save_config(handle,
+            g_settings.cheat_settings_path, g_extern.sha256);*/
       for (i = 0; i < handle->size; i++)
       {
          xmlFree(handle->cheats[i].desc);

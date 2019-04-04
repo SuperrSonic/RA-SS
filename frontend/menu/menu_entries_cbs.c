@@ -92,12 +92,12 @@ static int action_ok_push_path_list(const char *path,
    return 0;
 }
 
-static int action_ok_shader_apply_changes(const char *path,
+/*static int action_ok_shader_apply_changes(const char *path,
       const char *label, unsigned type, size_t idx)
 {
    rarch_main_command(RARCH_CMD_SHADERS_APPLY_CHANGES);
    return 0;
-}
+}*/
 
 // FIXME: Ugly hack, needs to be refactored badly
 size_t hack_shader_pass = 0;
@@ -152,7 +152,7 @@ static int action_ok_shader_preset_load(const char *path,
 #endif
 }
 
-static int action_ok_shader_preset_save_as(const char *path,
+/*static int action_ok_shader_preset_save_as(const char *path,
       const char *label, unsigned type, size_t idx)
 {
    if (!driver.menu)
@@ -161,7 +161,7 @@ static int action_ok_shader_preset_save_as(const char *path,
    menu_key_start_line(driver.menu, "Preset Filename",
          label, st_string_callback);
    return 0;
-}
+}*/
 
 static int action_ok_path_use_directory(const char *path,
       const char *label, unsigned type, size_t idx)
@@ -566,7 +566,7 @@ static int action_start_performance_counters_core(unsigned type, const char *lab
    return 0;
 }
 
-static int action_start_shader_action_parameter(unsigned type, const char *label,
+/*static int action_start_shader_action_parameter(unsigned type, const char *label,
       unsigned action)
 {
 #ifdef HAVE_SHADER_MANAGER
@@ -588,9 +588,9 @@ static int action_start_shader_action_parameter(unsigned type, const char *label
 #endif
 
    return 0;
-}
+}*/
 
-static int shader_action_parameter_toggle(unsigned type, const char *label,
+/*static int shader_action_parameter_toggle(unsigned type, const char *label,
       unsigned action)
 {
 #ifdef HAVE_SHADER_MANAGER
@@ -628,13 +628,13 @@ static int shader_action_parameter_toggle(unsigned type, const char *label,
 
 #endif
    return 0;
-}
+}*/
 
 #ifdef HAVE_SHADER_MANAGER
 extern size_t hack_shader_pass;
 #endif
 
-static int action_ok_shader_pass(const char *path,
+/*static int action_ok_shader_pass(const char *path,
       const char *label, unsigned type, size_t idx)
 {
    if (!driver.menu)
@@ -648,9 +648,9 @@ static int action_ok_shader_pass(const char *path,
          driver.menu->selection_ptr);
 
    return 0;
-}
+}*/
 
-static int action_start_shader_pass(unsigned type, const char *label,
+/*static int action_start_shader_pass(unsigned type, const char *label,
       unsigned action)
 {
 #ifdef HAVE_SHADER_MANAGER
@@ -666,9 +666,9 @@ static int action_start_shader_pass(unsigned type, const char *label,
 #endif
 
    return 0;
-}
+}*/
 
-static int action_ok_shader_preset(const char *path,
+/*static int action_ok_shader_preset(const char *path,
       const char *label, unsigned type, size_t idx)
 {
    if (!driver.menu)
@@ -682,9 +682,9 @@ static int action_ok_shader_preset(const char *path,
          driver.menu->selection_ptr);
 
    return 0;
-}
+}*/
 
-static int action_start_shader_scale_pass(unsigned type, const char *label,
+/*static int action_start_shader_scale_pass(unsigned type, const char *label,
       unsigned action)
 {
 #ifdef HAVE_SHADER_MANAGER
@@ -701,9 +701,9 @@ static int action_start_shader_scale_pass(unsigned type, const char *label,
 #endif
 
    return 0;
-}
+}*/
 
-static int action_toggle_shader_scale_pass(unsigned type, const char *label,
+/*static int action_toggle_shader_scale_pass(unsigned type, const char *label,
       unsigned action)
 {
 #ifdef HAVE_SHADER_MANAGER
@@ -847,7 +847,7 @@ static int action_ok_shader_parameters(const char *path,
 #endif
 
    return 0;
-}
+}*/
 
 static int action_ok_video_resolution(const char *path,
       const char *label, unsigned type, size_t idx)
@@ -883,8 +883,10 @@ static int action_toggle_video_resolution(unsigned type, const char *label,
    switch (action)
    {
       case MENU_ACTION_LEFT:
-         if (menu_current_gx_resolution > 0)
+         if (menu_current_gx_resolution > 0) {
             menu_current_gx_resolution--;
+			g_settings.video.vres--;
+		}
          break;
       case MENU_ACTION_RIGHT:
          if (menu_current_gx_resolution < GX_RESOLUTIONS_LAST - 1)
@@ -896,6 +898,7 @@ static int action_toggle_video_resolution(unsigned type, const char *label,
 #endif
 
             menu_current_gx_resolution++;
+			g_settings.video.vres++;
          }
          break;
    }
@@ -1163,7 +1166,7 @@ static int deferred_push_performance_counters(void *data, void *userdata,
 
    return 0;
 }
-
+/*
 static inline struct gfx_shader *shader_manager_get_current_shader(
       menu_handle_t *menu, const char *label, unsigned type)
 {
@@ -1232,7 +1235,7 @@ static int deferred_push_video_shader_parameters(void *data, void *userdata,
       driver.menu_ctx->populate_entries(driver.menu, path, label, type);
 
    return 0;
-}
+}*/
 
 static int deferred_push_settings(void *data, void *userdata,
       const char *path, const char *label, unsigned type)
@@ -1243,10 +1246,11 @@ static int deferred_push_settings(void *data, void *userdata,
    if (!list || !menu_list)
       return -1;
 
+   /* Driver Options now Menu */
    settings_list_free(driver.menu->list_settings);
    driver.menu->list_settings = (rarch_setting_t *)setting_data_new(SL_FLAG_ALL_SETTINGS);
    rarch_setting_t *setting = (rarch_setting_t*)setting_data_find_setting(driver.menu->list_settings,
-         "Driver Options");
+         "Menu");
 
    menu_list_clear(list);
 
@@ -1277,9 +1281,12 @@ static int deferred_push_category(void *data, void *userdata,
    rarch_setting_t *setting = (rarch_setting_t*)setting_data_find_setting(
          driver.menu->list_settings, label);
 
+   menu_current_gx_resolution = g_settings.video.vres;
+
    menu_list_clear(list);
 
-   if (!strcmp(label, "Video Options"))
+   // Video Options is now Video
+   if (!strcmp(label, "Video"))
    {
 #if defined(GEKKO) || defined(__CELLOS_LV2__)
       menu_list_push(list, "Screen Resolution", "",
@@ -1308,7 +1315,7 @@ static int deferred_push_category(void *data, void *userdata,
    return 0;
 }
 
-static int deferred_push_shader_options(void *data, void *userdata,
+/*static int deferred_push_shader_options(void *data, void *userdata,
       const char *path, const char *label, unsigned type)
 {
    unsigned i;
@@ -1316,7 +1323,7 @@ static int deferred_push_shader_options(void *data, void *userdata,
    file_list_t *list      = (file_list_t*)data;
    file_list_t *menu_list = (file_list_t*)userdata;
 
-   if (!list || !menu_list)
+   //if (!list || !menu_list)
       return -1;
 
    shader = (struct gfx_shader*)driver.menu->shader;
@@ -1361,7 +1368,7 @@ static int deferred_push_shader_options(void *data, void *userdata,
       driver.menu_ctx->populate_entries(driver.menu, path, label, type);
 
    return 0;
-}
+}*/
 
 static void push_perfcounter(menu_handle_t *menu,
       file_list_t *list,
@@ -1539,7 +1546,7 @@ static int deferred_push_configurations(void *data, void *userdata,
    return 0;
 }
 
-static int deferred_push_video_shader_preset(void *data, void *userdata,
+/*static int deferred_push_video_shader_preset(void *data, void *userdata,
       const char *path, const char *label, unsigned type)
 {
    file_list_t *list      = (file_list_t*)data;
@@ -1567,7 +1574,7 @@ static int deferred_push_video_shader_pass(void *data, void *userdata,
          type, MENU_FILE_SHADER, "cg|glsl");
 
    return 0;
-}
+}*/
 
 static int deferred_push_video_filter(void *data, void *userdata,
       const char *path, const char *label, unsigned type)
@@ -1614,7 +1621,7 @@ static int deferred_push_input_overlay(void *data, void *userdata,
    return 0;
 }
 
-static int deferred_push_video_font_path(void *data, void *userdata,
+/*static int deferred_push_video_font_path(void *data, void *userdata,
       const char *path, const char *label, unsigned type)
 {
    file_list_t *list      = (file_list_t*)data;
@@ -1627,7 +1634,7 @@ static int deferred_push_video_font_path(void *data, void *userdata,
          type, MENU_FILE_FONT, "ttf");
 
    return 0;
-}
+}*/
 
 static int deferred_push_content_history_path(void *data, void *userdata,
       const char *path, const char *label, unsigned type)
@@ -1782,7 +1789,7 @@ static void menu_entries_cbs_init_bind_start(menu_file_list_cbs_t *cbs,
 
    cbs->action_start = NULL;
 
-   if (!strcmp(label, "video_shader_pass"))
+  /* if (!strcmp(label, "video_shader_pass"))
       cbs->action_start = action_start_shader_pass;
    else if (!strcmp(label, "video_shader_scale_pass"))
       cbs->action_start = action_start_shader_scale_pass;
@@ -1792,8 +1799,8 @@ static void menu_entries_cbs_init_bind_start(menu_file_list_cbs_t *cbs,
       cbs->action_start = action_start_shader_num_passes;
    else if (type >= MENU_SETTINGS_SHADER_PARAMETER_0
          && type <= MENU_SETTINGS_SHADER_PARAMETER_LAST)
-      cbs->action_start = action_start_shader_action_parameter;
-   else if (type >= MENU_SETTINGS_LIBRETRO_PERF_COUNTERS_BEGIN &&
+      cbs->action_start = action_start_shader_action_parameter; */
+   if (type >= MENU_SETTINGS_LIBRETRO_PERF_COUNTERS_BEGIN &&
          type <= MENU_SETTINGS_LIBRETRO_PERF_COUNTERS_END)
       cbs->action_start = action_start_performance_counters_core;
    else if (type >= MENU_SETTINGS_PERF_COUNTERS_BEGIN &&
@@ -1815,20 +1822,21 @@ static void menu_entries_cbs_init_bind_ok(menu_file_list_cbs_t *cbs,
       return;
    else if (!strcmp(label, "help"))
       cbs->action_ok = action_ok_help;
-   else if (!strcmp(label, "video_shader_pass"))
-      cbs->action_ok = action_ok_shader_pass;
-   else if (!strcmp(label, "video_shader_preset"))
-      cbs->action_ok = action_ok_shader_preset;
-   else if ((!strcmp(label, "video_shader_parameters") ||
-            !strcmp(label, "video_shader_preset_parameters")))
-      cbs->action_ok = action_ok_shader_parameters;
+  // else if (!strcmp(label, "video_shader_pass"))
+    //  cbs->action_ok = action_ok_shader_pass;
+  // else if (!strcmp(label, "video_shader_preset"))
+    //  cbs->action_ok = action_ok_shader_preset;
+   //else if ((!strcmp(label, "video_shader_parameters") ||
+     //       !strcmp(label, "video_shader_preset_parameters")))
+      //cbs->action_ok = action_ok_shader_parameters;
    else if (
-         !strcmp(label, "Shader Options") ||
-         !strcmp(label, "Input Options") ||
+       //  !strcmp(label, "Shader Options") ||
+	   // Input Options is now Input
+         !strcmp(label, "Input") ||
          !strcmp(label, "core_options") ||
-         !strcmp(label, "core_information") ||
-         !strcmp(label, "video_shader_parameters") ||
-         !strcmp(label, "video_shader_preset_parameters") ||
+       //  !strcmp(label, "core_information") ||
+        // !strcmp(label, "video_shader_parameters") ||
+        // !strcmp(label, "video_shader_preset_parameters") ||
          !strcmp(label, "disk_options") ||
          !strcmp(label, "settings") ||
          !strcmp(label, "performance_counters") ||
@@ -1845,10 +1853,10 @@ static void menu_entries_cbs_init_bind_ok(menu_file_list_cbs_t *cbs,
       cbs->action_ok = action_ok_push_history_list;
    else if (menu_common_type_is(label, type) == MENU_FILE_DIRECTORY)
       cbs->action_ok = action_ok_push_path_list;
-   else if (!strcmp(label, "shader_apply_changes"))
-      cbs->action_ok = action_ok_shader_apply_changes;
-   else if (!strcmp(label, "video_shader_preset_save_as"))
-      cbs->action_ok = action_ok_shader_preset_save_as;
+  // else if (!strcmp(label, "shader_apply_changes"))
+    //  cbs->action_ok = action_ok_shader_apply_changes;
+   //else if (!strcmp(label, "video_shader_preset_save_as"))
+     // cbs->action_ok = action_ok_shader_preset_save_as;
    else if (!strcmp(label, "core_list"))
       cbs->action_ok = action_ok_core_list;
    else if (!strcmp(label, "disk_image_append"))
@@ -1865,20 +1873,20 @@ static void menu_entries_cbs_init_bind_toggle(menu_file_list_cbs_t *cbs,
 
    cbs->action_toggle = menu_action_setting_set;
 
-   if (type >= MENU_SETTINGS_SHADER_PARAMETER_0
+ /*  if (type >= MENU_SETTINGS_SHADER_PARAMETER_0
          && type <= MENU_SETTINGS_SHADER_PARAMETER_LAST)
       cbs->action_toggle = shader_action_parameter_toggle;
    else if (!strcmp(label, "video_shader_scale_pass"))
       cbs->action_toggle = action_toggle_shader_scale_pass;
    else if (!strcmp(label, "video_shader_filter_pass"))
       cbs->action_toggle = action_toggle_shader_filter_pass;
-   else if (!strcmp(label, "video_shader_default_filter"))
+  else if (!strcmp(label, "video_shader_default_filter"))
       cbs->action_toggle = action_toggle_shader_filter_default;
    else if (!strcmp(label, "video_shader_num_passes"))
       cbs->action_toggle = action_toggle_shader_num_passes;
    else if (!strcmp(label, "shader_apply_changes"))
-      cbs->action_toggle = menu_action_setting_set;
-   else if (type == MENU_SETTINGS_VIDEO_RESOLUTION)
+      cbs->action_toggle = menu_action_setting_set; */
+   if (type == MENU_SETTINGS_VIDEO_RESOLUTION)
       cbs->action_toggle = action_toggle_video_resolution;
    else if ((type >= MENU_SETTINGS_CORE_OPTION_START))
       cbs->action_toggle = core_setting_toggle;
@@ -1910,18 +1918,18 @@ static void menu_entries_cbs_init_bind_deferred_push(menu_file_list_cbs_t *cbs,
       cbs->action_deferred_push = deferred_push_category;
    else if (!strcmp(label, "deferred_core_list"))
       cbs->action_deferred_push = deferred_push_core_list_deferred;
-   else if (!strcmp(label, "Shader Options"))
-      cbs->action_deferred_push = deferred_push_shader_options;
+  // else if (!strcmp(label, "Shader Options"))
+    //  cbs->action_deferred_push = deferred_push_shader_options;
    else if (!strcmp(label, "core_information"))
       cbs->action_deferred_push = deferred_push_core_information;
    else if (!strcmp(label, "performance_counters"))
       cbs->action_deferred_push = deferred_push_performance_counters;
    else if (!strcmp(label, "core_counters"))
       cbs->action_deferred_push = deferred_push_core_counters;
-   else if (!strcmp(label, "video_shader_preset_parameters"))
-      cbs->action_deferred_push = deferred_push_video_shader_preset_parameters;
-   else if (!strcmp(label, "video_shader_parameters"))
-      cbs->action_deferred_push = deferred_push_video_shader_parameters;
+  // else if (!strcmp(label, "video_shader_preset_parameters"))
+    //  cbs->action_deferred_push = deferred_push_video_shader_preset_parameters;
+  // else if (!strcmp(label, "video_shader_parameters"))
+    //  cbs->action_deferred_push = deferred_push_video_shader_parameters;
    else if (!strcmp(label, "settings"))
       cbs->action_deferred_push = deferred_push_settings;
    else if (!strcmp(label, "frontend_counters"))
@@ -1934,18 +1942,18 @@ static void menu_entries_cbs_init_bind_deferred_push(menu_file_list_cbs_t *cbs,
       cbs->action_deferred_push = deferred_push_core_list;
    else if (!strcmp(label, "configurations"))
       cbs->action_deferred_push = deferred_push_configurations;
-   else if (!strcmp(label, "video_shader_preset"))
-      cbs->action_deferred_push = deferred_push_video_shader_preset;
-   else if (!strcmp(label, "video_shader_pass"))
-      cbs->action_deferred_push = deferred_push_video_shader_pass;
+  // else if (!strcmp(label, "video_shader_preset"))
+    //  cbs->action_deferred_push = deferred_push_video_shader_preset;
+  // else if (!strcmp(label, "video_shader_pass"))
+    //  cbs->action_deferred_push = deferred_push_video_shader_pass;
    else if (!strcmp(label, "video_filter"))
       cbs->action_deferred_push = deferred_push_video_filter;
    else if (!strcmp(label, "audio_dsp_plugin"))
       cbs->action_deferred_push = deferred_push_audio_dsp_plugin;
    else if (!strcmp(label, "input_overlay"))
       cbs->action_deferred_push = deferred_push_input_overlay;
-   else if (!strcmp(label, "video_font_path"))
-      cbs->action_deferred_push = deferred_push_video_font_path;
+  // else if (!strcmp(label, "video_font_path"))
+    //  cbs->action_deferred_push = deferred_push_video_font_path;
    else if (!strcmp(label, "game_history_path"))
       cbs->action_deferred_push = deferred_push_content_history_path;
    else if (!strcmp(label, "detect_core_list"))

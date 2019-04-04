@@ -758,11 +758,11 @@ static void thread_apply_state_changes(void *data)
 
 /* This is read-only state which should not 
  * have any kind of race condition. */
-static struct gfx_shader *thread_get_current_shader(void *data)
+/*static struct gfx_shader *thread_get_current_shader(void *data)
 {
    thread_video_t *thr = (thread_video_t*)data;
    return thr->poke ? thr->poke->get_current_shader(thr->driver_data) : NULL;
-}
+}*/
 
 static const video_poke_interface_t thread_poke = {
    thread_set_filtering,
@@ -781,7 +781,7 @@ static const video_poke_interface_t thread_poke = {
    NULL,
    NULL,
 
-   thread_get_current_shader,
+  // thread_get_current_shader,
 };
 
 static void thread_get_poke_interface(void *data,

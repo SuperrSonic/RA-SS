@@ -26,7 +26,7 @@
 #include "rewind.h"
 #include "movie.h"
 #include "autosave.h"
-#include "cheats.h"
+//#include "cheats.h"
 #include "audio/dsp_filter.h"
 #include <compat/strl.h>
 #include "core_options.h"
@@ -45,7 +45,8 @@
 /* FIXME - avoid too many decimal points in number error */
 #define PACKAGE_VERSION "1002"
 #else
-#define PACKAGE_VERSION "1.0.0.2"
+/* Clock gets covered in too many cores. */
+//#define PACKAGE_VERSION "RetroArch"
 #endif
 #endif
 
@@ -111,7 +112,7 @@ enum basic_event
    RARCH_CMD_OVERLAY_NEXT,
    RARCH_CMD_DSP_FILTER_INIT,
    RARCH_CMD_DSP_FILTER_DEINIT,
-   RARCH_CMD_GPU_RECORD_DEINIT,
+   RARCH_CMD_WII_MESSAGE_BOARD,
    RARCH_CMD_RECORD_INIT,
    RARCH_CMD_RECORD_DEINIT,
    RARCH_CMD_HISTORY_DEINIT,
@@ -126,7 +127,6 @@ enum basic_event
    RARCH_CMD_VIDEO_SET_BLOCKING_STATE,
    RARCH_CMD_VIDEO_SET_NONBLOCKING_STATE,
    RARCH_CMD_VIDEO_SET_ASPECT_RATIO,
-   RARCH_CMD_AUTO_LOAD_STATE,
    RARCH_CMD_VIDEO_SET_GX_RESOLUTION,
    RARCH_CMD_VIDEO_RESOLUTION,
    RARCH_CMD_RESET_CONTEXT,
@@ -147,11 +147,11 @@ enum basic_event
    RARCH_CMD_MSG_QUEUE_DEINIT,
    RARCH_CMD_CHEATS_INIT,
    RARCH_CMD_CHEATS_DEINIT,
-   RARCH_CMD_NETPLAY_INIT,
-   RARCH_CMD_NETPLAY_DEINIT,
-   RARCH_CMD_NETPLAY_FLIP_PLAYERS,
-   RARCH_CMD_BSV_MOVIE_INIT,
-   RARCH_CMD_BSV_MOVIE_DEINIT,
+   //RARCH_CMD_NETPLAY_INIT,
+   //RARCH_CMD_NETPLAY_DEINIT,
+   //RARCH_CMD_NETPLAY_FLIP_PLAYERS,
+   //RARCH_CMD_BSV_MOVIE_INIT,
+   //RARCH_CMD_BSV_MOVIE_DEINIT,
    RARCH_CMD_COMMAND_INIT,
    RARCH_CMD_COMMAND_DEINIT,
    RARCH_CMD_DRIVERS_DEINIT,
@@ -164,8 +164,8 @@ enum basic_event
    RARCH_CMD_DISK_NEXT,
    RARCH_CMD_DISK_PREV,
    RARCH_CMD_RUMBLE_STOP,
-   RARCH_CMD_GRAB_MOUSE_TOGGLE,
-   RARCH_CMD_FULLSCREEN_TOGGLE,
+  // RARCH_CMD_GRAB_MOUSE_TOGGLE,
+  // RARCH_CMD_FULLSCREEN_TOGGLE,
    RARCH_CMD_PERFCNT_REPORT_FRONTEND_LOG,
 };
 
@@ -210,6 +210,8 @@ struct defaults
    char screenshot_dir[PATH_MAX];
    char system_dir[PATH_MAX];
    char playlist_dir[PATH_MAX];
+   char video_filter_dir[PATH_MAX];
+   char extract_dir[PATH_MAX];
 
    struct
    {
@@ -242,14 +244,18 @@ struct settings
       unsigned hard_sync_frames;
       unsigned frame_delay;
 #ifdef GEKKO
+      bool drawdone;
       unsigned viwidth;
       bool vfilter;
-	  bool rgui_reset;
+	  bool dither;
+	  float vbright;
 	  unsigned vres;
+#ifdef HAVE_RENDERSCALE
+	  unsigned renderscale;
 #endif
-      unsigned hover_color;
-	  unsigned text_color;
+#endif
       bool smooth;
+	  bool menu_smooth;
       bool force_aspect;
       bool crop_overscan;
       float aspect_ratio;
@@ -281,7 +287,7 @@ struct settings
 
       bool post_filter_record;
       bool gpu_record;
-      bool gpu_screenshot;
+      //bool gpu_screenshot;
 
       bool allow_rotate;
       bool shared_context;
@@ -336,6 +342,7 @@ struct settings
       float rate_control_delta;
       float volume; /* dB scale. */
       char resampler[32];
+	  unsigned sinc_taps;
    } audio;
 
    struct
@@ -353,12 +360,19 @@ struct settings
       unsigned libretro_device[MAX_PLAYERS];
       unsigned analog_dpad_mode[MAX_PLAYERS];
 
+      unsigned trigger_threshold;
+	  unsigned key_profile;
+	  unsigned poll_rate;
       float axis_threshold;
       unsigned joypad_map[MAX_PLAYERS];
       unsigned device[MAX_PLAYERS];
       char device_names[MAX_PLAYERS][64];
       bool autodetect_enable;
-      bool netplay_client_swap_input;
+    //  bool netplay_client_swap_input;
+      bool home_should_exit;
+      bool rgui_reset;
+      //GameCube Controller switch
+      bool gc_once;
 
       unsigned turbo_period;
       unsigned turbo_duty_cycle;
@@ -370,7 +384,26 @@ struct settings
       char autoconfig_dir[PATH_MAX];
    } input;
 
-   int state_slot;
+   unsigned state_slot;
+   unsigned hover_color;
+   unsigned text_color;
+   unsigned theme_preset;
+   unsigned menu_bg_clr;
+   unsigned menu_msg_clr;
+   bool menu_solid;
+   bool menu_fullscreen;
+   bool hide_states;
+   bool hide_core;
+   bool hide_screenshot;
+   bool hide_settings;
+   bool hide_resume;
+   bool hide_reset;
+   bool hide_exit;
+   unsigned title_posx;
+   unsigned title_posy;
+   unsigned item_posx;
+   unsigned item_posy;
+   bool single_mode;
 
    char core_options_path[PATH_MAX];
    char content_history_path[PATH_MAX];
@@ -380,8 +413,8 @@ struct settings
    char libretro_directory[PATH_MAX];
    unsigned libretro_log_level;
    char libretro_info_path[PATH_MAX];
-   char cheat_database[PATH_MAX];
-   char cheat_settings_path[PATH_MAX];
+  // char cheat_database[PATH_MAX];
+  // char cheat_settings_path[PATH_MAX];
 
    char resampler_directory[PATH_MAX];
    char screenshot_directory[PATH_MAX];
@@ -406,6 +439,12 @@ struct settings
    bool savestate_auto_index;
    bool savestate_auto_save;
    bool savestate_auto_load;
+   bool savestate_auto_once;
+   bool regular_state_pause; // the actual setting for normal state loading
+   bool stateload_pause;     // the actual setting for auto-state loading
+   bool load_to_menu;        // if true the menu is called
+   bool autoload_safe;       // is the first frame shown?
+   bool regular_load_safe;   // could probably recycle previous bool
 
    bool network_cmd_enable;
    uint16_t network_cmd_port;
@@ -420,6 +459,10 @@ struct settings
 #endif
    bool fps_show;
    bool load_dummy_on_core_shutdown;
+   bool clock_show;
+   bool fadein;
+   unsigned reset_fade;
+   bool exit_fade;
 
    bool core_specific_config;
 
@@ -474,11 +517,11 @@ struct global
    bool has_set_libretro_directory;
    bool has_set_verbosity;
 
-   bool has_set_netplay_mode;
+   /*bool has_set_netplay_mode;
    bool has_set_username;
    bool has_set_netplay_ip_address;
    bool has_set_netplay_delay_frames;
-   bool has_set_netplay_ip_port;
+   bool has_set_netplay_ip_port;*/
 
    /* Config associated with global "default" config. */
    char config_path[PATH_MAX];
@@ -718,7 +761,7 @@ struct global
 
    char sha256[64 + 1];
 
-   cheat_manager_t *cheat;
+  // cheat_manager_t *cheat;
 
    bool block_config_read;
 
@@ -840,9 +883,6 @@ int rarch_defer_core(core_info_list_t *data,
 
 void rarch_update_system_info(struct retro_system_info *info,
       bool *load_no_content);
-
-void rarch_recording_dump_frame(const void *data, unsigned width,
-      unsigned height, size_t pitch);
 
 #ifdef __cplusplus
 }

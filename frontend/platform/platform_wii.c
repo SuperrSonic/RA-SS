@@ -152,10 +152,14 @@ void system_exec_wii(const char *_path, bool should_load_game)
    fread(dol, 1, size, fp);
    fclose(fp);
 
-   fatUnmount("carda:");
+  /* I've definitely gotten a crash on exit before
+   * though I believe it was because I ran the game via usb
+   * even so it would only happen rarely */
+
+  /* fatUnmount("carda:");
    fatUnmount("cardb:");
    fatUnmount("sd:");
-   fatUnmount("usb:");
+   fatUnmount("usb:"); */
    __io_wiisd.shutdown();
    __io_usbstorage.shutdown();
 

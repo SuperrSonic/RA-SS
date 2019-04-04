@@ -178,6 +178,7 @@ VIDEO DRIVER
 #ifdef HW_RVL
 #include "../wii/vi_encoder.c"
 #include "../wii/mem2_manager.c"
+#include "../wii/utils/playlog.c"
 #endif
 #endif
 
@@ -286,6 +287,19 @@ INPUT
 
 #ifdef HAVE_OVERLAY
 #include "../input/overlay.c"
+#endif
+
+#ifdef HAVE_WIIUSE
+#include "../wii/wiiuse/classic.c"
+#include "../wii/wiiuse/dynamics.c"
+#include "../wii/wiiuse/events.c"
+#include "../wii/wiiuse/io.c"
+#include "../wii/wiiuse/io_wii.c"
+#include "../wii/wiiuse/ir.c"
+#include "../wii/wiiuse/motion_plus.c"
+#include "../wii/wiiuse/nunchuk.c"
+#include "../wii/wiiuse/wiiuse.c"
+#include "../wii/wiiuse/wpad.c"
 #endif
 
 #if defined(__CELLOS_LV2__)

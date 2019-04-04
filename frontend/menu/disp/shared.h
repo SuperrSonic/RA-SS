@@ -12,27 +12,27 @@ static void get_title(const char *label, const char *dir,
       snprintf(title, sizeof_title, "CONFIG %s", dir);
    else if (!strcmp(label, "disk_image_append"))
       snprintf(title, sizeof_title, "DISK APPEND %s", dir);
-   else if (!strcmp(label, "Video Options"))
-      strlcpy(title, "VIDEO OPTIONS", sizeof_title);
-   else if (!strcmp(label, "Input Options") ||
+   else if (!strcmp(label, "Video"))
+      strlcpy(title, "VIDEO", sizeof_title);
+   else if (!strcmp(label, "Input") ||
          menu_type == MENU_SETTINGS_CUSTOM_BIND ||
          menu_type == MENU_SETTINGS_CUSTOM_BIND_KEYBOARD)
-      strlcpy(title, "INPUT OPTIONS", sizeof_title);
-   else if (!strcmp(label, "Overlay Options"))
-      strlcpy(title, "OVERLAY OPTIONS", sizeof_title);
-   else if (!strcmp(label, "Playlist Options"))
+      strlcpy(title, "INPUT", sizeof_title);
+   else if (!strcmp(label, "Overlays"))
+      strlcpy(title, "OVERLAYS", sizeof_title);
+  /* else if (!strcmp(label, "Playlist Options"))
       strlcpy(title, "PLAYLIST OPTIONS", sizeof_title);
    else if (!strcmp(label, "Netplay Options"))
       strlcpy(title, "NETPLAY OPTIONS", sizeof_title);
    else if (!strcmp(label, "User Options"))
-      strlcpy(title, "USER OPTIONS", sizeof_title);
-   else if (!strcmp(label, "Path Options"))
-      strlcpy(title, "PATH OPTIONS", sizeof_title);
+      strlcpy(title, "USER OPTIONS", sizeof_title); */
+   else if (!strcmp(label, "Paths"))
+      strlcpy(title, "PATHS", sizeof_title);
    else if (!strcmp(label, "settings"))
       strlcpy(title, "SETTINGS", sizeof_title);
-   else if (!strcmp(label, "Driver Options"))
-      strlcpy(title, "DRIVER OPTIONS", sizeof_title);
-   else if (!strcmp(label, "performance_counters"))
+   else if (!strcmp(label, "Menu"))
+      strlcpy(title, "MENU OPTIONS", sizeof_title);
+  /* else if (!strcmp(label, "performance_counters"))
       strlcpy(title, "PERFORMANCE COUNTERS", sizeof_title);
    else if (!strcmp(label, "frontend_counters"))
       strlcpy(title, "FRONTEND PERFORMANCE COUNTERS", sizeof_title);
@@ -45,23 +45,23 @@ static void get_title(const char *label, const char *dir,
    else if (!strcmp(label, "video_shader_preset_parameters"))
       strlcpy(title, "SHADER PARAMETERS (MENU PRESET)", sizeof_title);
    else if (!strcmp(label, "Font Options"))
-      strlcpy(title, "FONT OPTIONS", sizeof_title);
-   else if (!strcmp(label, "General Options"))
-      strlcpy(title, "GENERAL OPTIONS", sizeof_title);
-   else if (!strcmp(label, "Audio Options"))
-      strlcpy(title, "AUDIO OPTIONS", sizeof_title);
+      strlcpy(title, "FONT OPTIONS", sizeof_title);*/
+   else if (!strcmp(label, "General"))
+      strlcpy(title, "GENERAL", sizeof_title);
+   else if (!strcmp(label, "Audio"))
+      strlcpy(title, "AUDIO", sizeof_title);
    else if (!strcmp(label, "disk_options"))
       strlcpy(title, "DISK OPTIONS", sizeof_title);
    else if (!strcmp(label, "core_options"))
-      strlcpy(title, "SYSTEM OPTIONS", sizeof_title);
-   else if (!strcmp(label, "core_information"))
+      strlcpy(title, "OPTIONS", sizeof_title);
+  /* else if (!strcmp(label, "core_information"))
       strlcpy(title, "CORE INFO", sizeof_title);
    else if (!strcmp(label, "Privacy Options"))
       strlcpy(title, "PRIVACY OPTIONS", sizeof_title);
    else if (!strcmp(label, "video_shader_pass"))
       snprintf(title, sizeof_title, "SHADER %s", dir);
    else if (!strcmp(label, "video_shader_preset"))
-      snprintf(title, sizeof_title, "SHADER PRESET %s", dir);
+      snprintf(title, sizeof_title, "SHADER PRESET %s", dir); */
    else if (menu_type == MENU_SETTINGS_CUSTOM_VIEWPORT ||
          !strcmp(label, "custom_viewport_2") ||
          !strcmp(label, "help") ||
@@ -73,8 +73,8 @@ static void get_title(const char *label, const char *dir,
       strlcpy(title, "INFO", sizeof_title);
    else if (!strcmp(label, "input_overlay"))
       snprintf(title, sizeof_title, "OVERLAY %s", dir);
-   else if (!strcmp(label, "video_font_path"))
-      snprintf(title, sizeof_title, "FONT %s", dir);
+ //  else if (!strcmp(label, "video_font_path"))
+   //   snprintf(title, sizeof_title, "FONT %s", dir);
    else if (!strcmp(label, "video_filter"))
       snprintf(title, sizeof_title, "FILTER %s", dir);
    else if (!strcmp(label, "audio_dsp_plugin"))
@@ -87,18 +87,18 @@ static void get_title(const char *label, const char *dir,
       snprintf(title, sizeof_title, "CONTENT DIR %s", dir);
    else if (!strcmp(label, "screenshot_directory"))
       snprintf(title, sizeof_title, "SCREENSHOT DIR %s", dir);
-   else if (!strcmp(label, "video_shader_dir"))
-      snprintf(title, sizeof_title, "SHADER DIR %s", dir);
+  // else if (!strcmp(label, "video_shader_dir"))
+    //  snprintf(title, sizeof_title, "SHADER DIR %s", dir);
    else if (!strcmp(label, "video_filter_dir"))
       snprintf(title, sizeof_title, "FILTER DIR %s", dir);
    else if (!strcmp(label, "audio_filter_dir"))
       snprintf(title, sizeof_title, "DSP FILTER DIR %s", dir);
    else if (!strcmp(label, "savestate_directory"))
       snprintf(title, sizeof_title, "SAVESTATE DIR %s", dir);
-   else if (!strcmp(label, "libretro_dir_path"))
+  /* else if (!strcmp(label, "libretro_dir_path"))
       snprintf(title, sizeof_title, "LIBRETRO DIR %s", dir);
    else if (!strcmp(label, "libretro_info_path"))
-      snprintf(title, sizeof_title, "LIBRETRO INFO DIR %s", dir);
+      snprintf(title, sizeof_title, "LIBRETRO INFO DIR %s", dir); */
    else if (!strcmp(label, "rgui_config_directory"))
       snprintf(title, sizeof_title, "CONFIG DIR %s", dir);
    else if (!strcmp(label, "savefile_directory"))
@@ -176,21 +176,6 @@ static void disp_set_label(file_list_t* list,
    {
       strlcpy(type_str, "(CFILE)", type_str_size);
       *w = 7;
-   }
-   else if (type == MENU_FILE_FONT)
-   {
-      strlcpy(type_str, "(FONT)", type_str_size);
-      *w = 7;
-   }
-   else if (type == MENU_FILE_SHADER_PRESET)
-   {
-      strlcpy(type_str, "(PRESET)", type_str_size);
-      *w = 8;
-   }
-   else if (type == MENU_FILE_SHADER)
-   {
-      strlcpy(type_str, "(SHADER)", type_str_size);
-      *w = 8;
    }
    else if (
          type == MENU_FILE_VIDEOFILTER ||

@@ -500,15 +500,15 @@ static void menu_common_setting_set_label_st_uint(rarch_setting_t *setting,
    if (!setting)
       return;
 
-   if (!strcmp(setting->name, "video_monitor_index"))
+  /* if (!strcmp(setting->name, "video_monitor_index"))
    {
       if (*setting->value.unsigned_integer)
          snprintf(type_str, type_str_size, "%u",
                *setting->value.unsigned_integer);
       else
          strlcpy(type_str, "0 (Auto)", type_str_size);
-   }
-   else if (!strcmp(setting->name, "video_rotation"))
+   }*/
+   if (!strcmp(setting->name, "video_rotation"))
    {
       strlcpy(type_str, rotation_lut[*setting->value.unsigned_integer],
             type_str_size);
@@ -573,7 +573,7 @@ static void menu_common_setting_set_label_st_uint(rarch_setting_t *setting,
       else
          strlcpy(type_str, "OFF", type_str_size);
    }
-   else if (!strcmp(setting->name, "user_language"))
+  /* else if (!strcmp(setting->name, "user_language"))
    {
       static const char *modes[] = {
          "English",
@@ -603,7 +603,7 @@ static void menu_common_setting_set_label_st_uint(rarch_setting_t *setting,
 
       strlcpy(type_str, modes[*setting->value.unsigned_integer],
             type_str_size);
-   }
+   }*/
    else
    {
       snprintf(type_str, type_str_size, "%u",
@@ -687,10 +687,10 @@ void setting_data_get_string_representation(rarch_setting_t* setting,
       case ST_HEX:
          break;
       case ST_GROUP:
-         strlcpy(buf, " ", sizeof_buf);
+         strlcpy(buf, "...", sizeof_buf);
          break;
       case ST_SUB_GROUP:
-         strlcpy(buf, " ", sizeof_buf);
+         strlcpy(buf, "...", sizeof_buf);
          break;
       case ST_END_GROUP:
          break;
@@ -807,7 +807,7 @@ static int setting_data_uint_action_toggle_libretro_device_type(void *data, unsi
 
    return 0;
 }
-
+/*
 static int setting_data_bool_action_toggle_savestates(void *data, unsigned action)
 {
    rarch_setting_t *setting = (rarch_setting_t*)data;
@@ -828,7 +828,7 @@ static int setting_data_bool_action_toggle_savestates(void *data, unsigned actio
    }
 
    return 0;
-}
+} */
 
 static int setting_data_action_start_bind_device(void *data)
 {
@@ -1134,7 +1134,7 @@ static int setting_data_uint_action_ok_default(void *data, unsigned action)
    return 0;
 }
 
-static int setting_data_fraction_action_start_video_refresh_rate_auto(
+/*static int setting_data_fraction_action_start_video_refresh_rate_auto(
       void *data)
 {
    rarch_setting_t *setting = (rarch_setting_t*)data;
@@ -1161,7 +1161,7 @@ static int setting_data_fraction_action_ok_video_refresh_rate_auto(
             &deviation, &sample_points))
    {
       driver_set_monitor_refresh_rate(video_refresh_rate);
-      /* Incase refresh rate update forced non-block video. */
+      // In case refresh rate update forced non-block video.
       rarch_main_command(RARCH_CMD_VIDEO_SET_BLOCKING_STATE);
    }
 
@@ -1169,7 +1169,7 @@ static int setting_data_fraction_action_ok_video_refresh_rate_auto(
       setting->cmd_trigger.triggered = true;
 
    return 0;
-}
+}*/
 
 static int setting_data_fraction_action_toggle_default(
       void *data, unsigned action)
@@ -1522,45 +1522,13 @@ int setting_data_get_description(const char *label, char *msg,
 {
    if (!strcmp(label, "input_driver"))
    {
-      if (!strcmp(g_settings.input.driver, "udev"))
-         snprintf(msg, sizeof_msg,
-               " -- udev Input driver. \n"
-               " \n"
-               "This driver can run without X. \n"
-               " \n"
-               "It uses the recent evdev joypad API \n"
-               "for joystick support. It supports \n"
-               "hotplugging and force feedback (if \n"
-               "supported by device). \n"
-               " \n"
-               "The driver reads evdev events for keyboard \n"
-               "support. It also supports keyboard callback, \n"
-               "mice and touchpads. \n"
-               " \n"
-               "By default in most distros, /dev/input nodes \n"
-               "are root-only (mode 600). You can set up a udev \n"
-               "rule which makes these accessible to non-root."
-               );
-      else if (!strcmp(g_settings.input.driver, "linuxraw"))
-         snprintf(msg, sizeof_msg,
-               " -- linuxraw Input driver. \n"
-               " \n"
-               "This driver requires an active TTY. Keyboard \n"
-               "events are read directly from the TTY which \n"
-               "makes it simpler, but not as flexible as udev. \n"
-               "Mice, etc, are not supported at all. \n"
-               " \n"
-               "This driver uses the older joystick API \n"
-               "(/dev/input/js*).");
-      else
-         snprintf(msg, sizeof_msg,
+      snprintf(msg, sizeof_msg,
                " -- Input driver.\n"
                " \n"
                "Depending on video driver, it might \n"
                "force a different input driver.");
-
    }
-   else if (!strcmp(label, "load_content"))
+  /* else if (!strcmp(label, "load_content"))
    {
       snprintf(msg, sizeof_msg,
             " -- Load Content. \n"
@@ -1605,74 +1573,41 @@ int setting_data_get_description(const char *label, char *msg,
             "core combinations are saved to history. \n"
             " \n"
             "The history is saved to a file in the same \n"
-            "directory as the RetroArch config file. If \n"
-            "no config file was loaded in startup, history \n"
-            "will not be saved or loaded, and will not exist \n"
-            "in the main menu."
+            "directory as the config file. \n"
+            "If no config file was loaded in startup, \n"
+            "history will not be saved or loaded, \n"
+			"and will not exist in the main menu. \n"
             );
-   }
+   }*/
    else if (!strcmp(label, "audio_resampler_driver"))
    {
-      if (!strcmp(g_settings.audio.resampler, "sinc"))
+      if (!strcmp(g_settings.audio.resampler, "SINC"))
          snprintf(msg, sizeof_msg,
                " -- Windowed SINC implementation.");
       else if (!strcmp(g_settings.audio.resampler, "CC"))
          snprintf(msg, sizeof_msg,
                " -- Convoluted Cosine implementation.");
+	  else if (!strcmp(g_settings.audio.resampler, "Nearest"))
+         snprintf(msg, sizeof_msg,
+               " -- Nearest implementation.");
    }
    else if (!strcmp(label, "video_driver"))
    {
-      if (!strcmp(g_settings.video.driver, "gl"))
-         snprintf(msg, sizeof_msg,
-               " -- OpenGL Video driver. \n"
-               " \n"
-               "This driver allows libretro GL cores to  \n"
-               "be used in addition to software-rendered \n"
-               "core implementations.\n"
-               " \n"
-               "Performance for software-rendered and \n"
-               "libretro GL core implementations is \n"
-               "dependent on your graphics card's \n"
-               "underlying GL driver).");
-      else if (!strcmp(g_settings.video.driver, "sdl2"))
-         snprintf(msg, sizeof_msg,
-               " -- SDL 2 Video driver.\n"
-               " \n"
-               "This is an SDL 2 software-rendered video \n"
-               "driver.\n"
-               " \n"
-               "Performance for software-rendered libretro \n"
-               "core implementations is dependent \n"
-               "on your platform SDL implementation.");
-      else if (!strcmp(g_settings.video.driver, "sdl"))
-         snprintf(msg, sizeof_msg,
-               " -- SDL Video driver.\n"
-               " \n"
-               "This is an SDL 1.2 software-rendered video \n"
-               "driver.\n"
-               " \n"
-               "Performance is considered to be suboptimal. \n"
-               "Consider using it only as a last resort.");
-      else if (!strcmp(g_settings.video.driver, "d3d"))
-         snprintf(msg, sizeof_msg,
-               " -- Direct3D Video driver. \n"
-               " \n"
-               "Performance for software-rendered cores \n"
-               "is dependent on your graphic card's \n"
-               "underlying D3D driver).");
-      else if (!strcmp(g_settings.video.driver, "exynos"))
-         snprintf(msg, sizeof_msg,
-               " -- Exynos-G2D Video Driver. \n"
-               " \n"
-               "This is a low-level Exynos video driver. \n"
-               "Uses the G2D block in Samsung Exynos SoC \n"
-               "for blit operations. \n"
-               " \n"
-               "Performance for software rendered cores \n"
-               "should be optimal.");
-      else
-         snprintf(msg, sizeof_msg,
-               " -- Current Video driver.");
+      snprintf(msg, sizeof_msg,
+               " -- Current Video Driver.");
+   }
+   else if (!strcmp(label, "audio_driver"))
+   {
+      snprintf(msg, sizeof_msg,
+               " -- Current Audio Driver.");
+   }
+   else if (!strcmp(label, "audio_out_rate"))
+   {
+      snprintf(msg, sizeof_msg,
+            " -- Audio Sample Rate.\n"
+            "Change from 32 kHZ to 48 kHZ \n"
+			"sampling rate. Restart required."
+            );
    }
    else if (!strcmp(label, "audio_dsp_plugin"))
    {
@@ -1687,10 +1622,10 @@ int setting_data_get_description(const char *label, char *msg,
       snprintf(msg, sizeof_msg,
             " -- Core Directory. \n"
             " \n"
-            "A directory for where to search for \n"
-            "libretro core implementations.");
+            "Where to search for core \n"
+            "implementations.");
    }
-   else if (!strcmp(label, "video_disable_composition"))
+  /* else if (!strcmp(label, "video_disable_composition"))
    {
       snprintf(msg, sizeof_msg,
             "-- Forcibly disable composition.\n"
@@ -1726,7 +1661,7 @@ int setting_data_get_description(const char *label, char *msg,
       snprintf(msg, sizeof_msg,
             "-- Enable or disable frontend \n"
             "performance counters.");
-   }
+   }*/
    else if (!strcmp(label, "system_directory"))
    {
       snprintf(msg, sizeof_msg,
@@ -1734,10 +1669,10 @@ int setting_data_get_description(const char *label, char *msg,
             " \n"
             "Sets the 'system' directory.\n"
             "Implementations can query for this\n"
-            "directory to load BIOSes, \n"
+            "directory to load a BIOS, \n"
             "system-specific configs, etc.");
    }
-   else if (!strcmp(label, "rgui_show_start_screen"))
+  /* else if (!strcmp(label, "rgui_show_start_screen"))
    {
       snprintf(msg, sizeof_msg,
             " -- Show startup screen in menu.\n"
@@ -1746,29 +1681,12 @@ int setting_data_get_description(const char *label, char *msg,
             " \n"
             "This is only updated in config if\n"
             "'Config Save On Exit' is set to true.\n");
-   }
+   }*/
    else if (!strcmp(label, "config_save_on_exit"))
    {
       snprintf(msg, sizeof_msg,
             " -- Flushes config to disk on exit.\n"
-            "Useful for menu as settings can be\n"
-            "modified. Overwrites the config.\n"
-            " \n"
-            "#include's and comments are not \n"
-            "preserved. \n"
-            " \n"
-            "By design, the config file is \n"
-            "considered immutable as it is \n"
-            "likely maintained by the user, \n"
-            "and should not be overwritten \n"
-            "behind the user's back."
-#if defined(RARCH_CONSOLE) || defined(RARCH_MOBILE)
-            "\nThis is not not the case on \n"
-            "consoles however, where \n"
-            "looking at the config file \n"
-            "manually isn't really an option."
-#endif
-            );
+            "Overwrites the configurations file.\n");
    }
    else if (!strcmp(label, "core_specific_config"))
    {
@@ -1776,20 +1694,25 @@ int setting_data_get_description(const char *label, char *msg,
             " -- Load up a specific config file \n"
             "based on the core being used.\n");
    }
-   else if (!strcmp(label, "video_scale"))
+  /* else if (!strcmp(label, "video_scale"))
    {
       snprintf(msg, sizeof_msg,
             " -- Fullscreen resolution.\n"
             " \n"
             "Resolution of 0 uses the \n"
             "resolution of the environment.\n");
-   }
+   }*/
    else if (!strcmp(label, "video_vsync"))
    {
       snprintf(msg, sizeof_msg,
             " -- Video V-Sync.\n");
    }
-   else if (!strcmp(label, "video_hard_sync"))
+   else if (!strcmp(label, "audio_sync"))
+   {
+      snprintf(msg, sizeof_msg,
+            " -- Audio Sync.\n");
+   }
+  /* else if (!strcmp(label, "video_hard_sync"))
    {
       snprintf(msg, sizeof_msg,
             " -- Attempts to hard-synchronize \n"
@@ -1810,7 +1733,7 @@ int setting_data_get_description(const char *label, char *msg,
             " 0: Syncs to GPU immediately.\n"
             " 1: Syncs to previous frame.\n"
             " 2: Etc ...");
-   }
+   }*/
    else if (!strcmp(label, "video_frame_delay"))
    {
       snprintf(msg, sizeof_msg,
@@ -1828,8 +1751,6 @@ int setting_data_get_description(const char *label, char *msg,
             " -- Audio rate control.\n"
             " \n"
             "Setting this to 0 disables rate control.\n"
-            "Any other value controls audio rate control \n"
-            "delta.\n"
             " \n"
             "Defines how much input rate can be adjusted \n"
             "dynamically.\n"
@@ -1841,7 +1762,7 @@ int setting_data_get_description(const char *label, char *msg,
    {
 #ifdef HAVE_FILTERS_BUILTIN
       snprintf(msg, sizeof_msg,
-            " -- CPU-based video filter.");
+            " -- CPU-based video filter. Restart.");
 #else
       snprintf(msg, sizeof_msg,
             " -- CPU-based video filter.\n"
@@ -1849,7 +1770,7 @@ int setting_data_get_description(const char *label, char *msg,
             "Path to a dynamic library.");
 #endif
    }
-   else if (!strcmp(label, "video_fullscreen"))
+  /* else if (!strcmp(label, "video_fullscreen"))
    {
       snprintf(msg, sizeof_msg, " -- Toggles fullscreen.");
    }
@@ -1878,8 +1799,8 @@ int setting_data_get_description(const char *label, char *msg,
             "server."
 #endif
             );
-   }
-   else if (!strcmp(label, "video_black_frame_insertion"))
+   }*/
+  /* else if (!strcmp(label, "video_black_frame_insertion"))
    {
       snprintf(msg, sizeof_msg,
             " -- Inserts a black frame inbetween \n"
@@ -1892,8 +1813,8 @@ int setting_data_get_description(const char *label, char *msg,
             "Video refresh rate should still be \n"
             "configured as if it is a 60 Hz monitor \n"
             "(divide refresh rate by 2).");
-   }
-   else if (!strcmp(label, "video_threaded"))
+   }*/
+ /*  else if (!strcmp(label, "video_threaded"))
    {
       snprintf(msg, sizeof_msg,
             " -- Use threaded video driver.\n"
@@ -1901,20 +1822,21 @@ int setting_data_get_description(const char *label, char *msg,
             "Using this might improve performance at \n"
             "possible cost of latency and more video \n"
             "stuttering.");
-   }
+   }*/
    else if (!strcmp(label, "video_scale_integer"))
    {
       snprintf(msg, sizeof_msg,
-            " -- Only scales video in integer \n"
-            "steps.\n"
+            " -- Scale video in integer steps. \n"
             " \n"
             "The base size depends on system-reported \n"
             "geometry and aspect ratio.\n"
             " \n"
-            "If Force Aspect is not set, X/Y will be \n"
-            "integer scaled independently.");
+            "Select Custom Ratio to use this option. \n"
+			" \n"
+            "If the scale is higher than the screen, \n"
+			"the current res will be used instead.");
    }
-   else if (!strcmp(label, "video_crop_overscan"))
+ /*  else if (!strcmp(label, "video_crop_overscan"))
    {
       snprintf(msg, sizeof_msg,
             " -- Forces cropping of overscanned \n"
@@ -1932,7 +1854,7 @@ int setting_data_get_description(const char *label, char *msg,
             "is preferred, 1 and up (1 being first \n"
             "monitor), suggests RetroArch to use that \n"
             "particular monitor.");
-   }
+   }*/
    else if (!strcmp(label, "video_rotation"))
    {
       snprintf(msg, sizeof_msg,
@@ -1942,6 +1864,64 @@ int setting_data_get_description(const char *label, char *msg,
             "The rotation is added to rotations which\n"
             "the libretro core sets (see Video Allow\n"
             "Rotate).");
+   }
+   else if (!strcmp(label, "video_viwidth"))
+   {
+      snprintf(msg, sizeof_msg,
+            " -- Set VI scaling width. \n"
+            " \n"
+            "Scale width up to 720 pixels. \n"
+            "This allows setting the screen to \n"
+            "match your TV's overscan. \n"
+			"It can also be used to correct PAR \n"
+			"without any visible quality loss.");
+   }
+   else if (!strcmp(label, "video_vfilter"))
+   {
+      snprintf(msg, sizeof_msg,
+            " -- Control GX hardware filtering. \n"
+            " \n"
+            "Softens the image to prevent flicker in \n"
+            "interlaced mode. Default: ON \n"
+			" \n"
+            "This has no effect in 240p mode.");
+   }
+   else if (!strcmp(label, "video_vbright"))
+   {
+      snprintf(msg, sizeof_msg,
+            " -- Control GX hardware brightness. \n"
+            " \n"
+            "Positive values brighten the output, \n"
+            "negative values dim the output. \n"
+			" \n"
+            "No change: 0");
+   }
+   else if (!strcmp(label, "video_dither"))
+   {
+      snprintf(msg, sizeof_msg,
+            " -- Enable GX hardware dithering. \n"
+            " \n"
+            "Uses a simpler pixel format \n"
+            "and enables a bayer 4x4 dither. \n"
+			" \n"
+            " Default: OFF");
+   }
+   else if (!strcmp(label, "soft_filter"))
+   {
+      snprintf(msg, sizeof_msg,
+            " -- Hardware composite filtering \n"
+            " \n"
+            "Improve video quality if using composite out, \n"
+            "this has no effect otherwise. Default: OFF");
+   }
+   else if (!strcmp(label, "reset_fade"))
+   {
+      snprintf(msg, sizeof_msg,
+            " -- Fade effect while resetting.\n"
+            " \n"
+            " 0 = no fade\n"
+            " 1 = fade-out\n"
+            " 2 = fade-out and fade-in");
    }
    else if (!strcmp(label, "audio_volume"))
    {
@@ -1971,32 +1951,29 @@ int setting_data_get_description(const char *label, char *msg,
             " (E.g. 5.0 for 60 fps content => 300 fps \n"
             "cap).\n"
             " \n"
-            "RetroArch will go to sleep to ensure that \n"
-            "the maximum rate will not be exceeded.\n"
             "Do not rely on this cap to be perfectly \n"
             "accurate.");
    }
-   else if (!strcmp(label, "pause_nonactive"))
+  /* else if (!strcmp(label, "pause_nonactive"))
    {
       snprintf(msg, sizeof_msg,
             " -- Pause gameplay when window focus \n"
             "is lost.");
-   }
-   else if (!strcmp(label, "video_gpu_screenshot"))
+   }*/
+   /*else if (!strcmp(label, "video_gpu_screenshot")) // Won't be using
    {
       snprintf(msg, sizeof_msg,
             " -- Screenshots output of GPU shaded \n"
             "material if available.");
-   }
+   }*/
    else if (!strcmp(label, "autosave_interval"))
    {
       snprintf(msg, sizeof_msg,
             " -- Autosaves the non-volatile SRAM \n"
             "at a regular interval.\n"
             " \n"
-            "This is disabled by default unless set \n"
-            "otherwise. The interval is measured in \n"
-            "seconds. \n"
+            "Default is off unless set otherwise. \n"
+            "The interval is measured in seconds. \n"
             " \n"
             "A value of 0 disables autosave.");
    }
@@ -2005,10 +1982,10 @@ int setting_data_get_description(const char *label, char *msg,
       snprintf(msg, sizeof_msg,
             " -- Screenshot Directory. \n"
             " \n"
-            "Directory to dump screenshots to."
+            "Directory to save screenshots to."
             );
    }
-   else if (!strcmp(label, "video_swap_interval"))
+  /* else if (!strcmp(label, "video_swap_interval"))
    {
       snprintf(msg, sizeof_msg,
             " -- VSync Swap Interval.\n"
@@ -2019,24 +1996,15 @@ int setting_data_get_description(const char *label, char *msg,
    else if (!strcmp(label, "video_refresh_rate_auto"))
    {
       snprintf(msg, sizeof_msg,
-            " -- Refresh Rate Auto.\n"
+            " -- Current Refresh Rate.\n"
             " \n"
             "The accurate refresh rate of our monitor (Hz).\n"
             "This is used to calculate audio input rate with \n"
             "the formula: \n"
             " \n"
             "audio_input_rate = game input rate * display \n"
-            "refresh rate / game refresh rate\n"
-            " \n"
-            "If the implementation does not report any \n"
-            "values, NTSC defaults will be assumed for \n"
-            "compatibility.\n"
-            " \n"
-            "This value should stay close to 60Hz to avoid \n"
-            "large pitch changes. If your monitor does \n"
-            "not run at 60Hz, or something close to it, \n"
-            "disable VSync, and leave this at its default.");
-   }
+            "refresh rate / game refresh rate \n");
+   }*/
    else if (!strcmp(label, "savefile_directory"))
    {
       snprintf(msg, sizeof_msg,
@@ -2044,10 +2012,7 @@ int setting_data_get_description(const char *label, char *msg,
             " \n"
             "Save all save files (*.srm) to this \n"
             "directory. This includes related files like \n"
-            ".bsv, .rt, .psrm, etc...\n"
-            " \n"
-            "This will be overridden by explicit command line\n"
-            "options.");
+            ".bsv, .rt, .psrm, etc. \n");
    }
    else if (!strcmp(label, "savestate_directory"))
    {
@@ -2055,12 +2020,9 @@ int setting_data_get_description(const char *label, char *msg,
             " -- Savestate Directory. \n"
             " \n"
             "Save all save states (*.state) to this \n"
-            "directory.\n"
-            " \n"
-            "This will be overridden by explicit command line\n"
-            "options.");
+            "directory. \n");
    }
-   else if (!strcmp(label, "assets_directory"))
+  /* else if (!strcmp(label, "assets_directory"))
    {
       snprintf(msg, sizeof_msg,
             " -- Assets Directory. \n"
@@ -2068,7 +2030,7 @@ int setting_data_get_description(const char *label, char *msg,
             " This location is queried by default when \n"
             "menu interfaces try to look for loadable \n"
             "assets, etc.");
-   }
+   }*/
    else if (!strcmp(label, "slowmotion_ratio"))
    {
       snprintf(msg, sizeof_msg,
@@ -2077,13 +2039,63 @@ int setting_data_get_description(const char *label, char *msg,
             "When slowmotion, content will slow\n"
             "down by factor.");
    }
+#ifdef HAVE_5PLAY
+   else if (!strcmp(label, "input_key_profile"))
+   {
+      snprintf(msg, sizeof_msg,
+            " -- Change Key Layout.\n"
+            " \n"
+			"Change the profile for the following: \n"
+			" \n"
+            "Profile 0: No change. \n"
+            "Profile 1: Mirror to unused keys. \n"
+            "Profile 2: Alternate X/Y. \n"
+			"Profile 3: Separate GC from Wii keys. "
+			);
+   }
+#else
+   else if (!strcmp(label, "input_key_profile"))
+   {
+      snprintf(msg, sizeof_msg,
+            " -- Change Key Layout.\n"
+            " \n"
+			"Change the profile for the following: \n"
+			" \n"
+            "Profile 0: No change. \n"
+            "Profile 1: Mirror to unused keys. \n"
+            "Profile 2: Alternate X/Y. \n"
+			);
+   }
+#endif
+   else if (!strcmp(label, "input_poll_rate"))
+   {
+      snprintf(msg, sizeof_msg,
+            " -- Defines polling rate.\n"
+            " \n"
+			"Affects the GameCube Controller only. \n"
+			" \n"
+            "Default is 1, which is 1000 Hz, \n"
+            "normally a value of 0 (VSync) \n"
+            "would be default, but since there's \n"
+			"less compatibility it has been changed. \n"
+			" A restart is required.");
+   }
+   else if (!strcmp(label, "input_trigger_threshold"))
+   {
+      snprintf(msg, sizeof_msg,
+            " -- Defines trigger threshold.\n"
+            " \n"
+            "When using a GameCube Controller \n"
+            "the L and R triggers might appear \n"
+			"to be too sensitive to some players.");
+   }
    else if (!strcmp(label, "input_axis_threshold"))
    {
       snprintf(msg, sizeof_msg,
             " -- Defines axis threshold.\n"
             " \n"
-            "How far an axis must be tilted to result\n"
-            "in a button press.\n"
+            "How far an axis must be tilted \n"
+            "to result in a button press.\n"
             " Possible values are [0.0, 1.0].");
    }
    else if (!strcmp(label, "input_turbo_period"))
@@ -2091,11 +2103,10 @@ int setting_data_get_description(const char *label, char *msg,
       snprintf(msg, sizeof_msg, 
             " -- Turbo period.\n"
             " \n"
-            "Describes speed of which turbo-enabled\n"
-            "buttons toggle."
+            "How fast turbo buttons will toggle. \n"
             );
    }
-   else if (!strcmp(label, "rewind_granularity"))
+  /* else if (!strcmp(label, "rewind_granularity"))
    {
       snprintf(msg, sizeof_msg,
             " -- Rewind granularity.\n"
@@ -2112,16 +2123,16 @@ int setting_data_get_description(const char *label, char *msg,
             " \n"
             "This will take a performance hit, \n"
             "so it is disabled by default.");
-   }
+   }*/
    else if (!strcmp(label, "input_autodetect_enable"))
    {
       snprintf(msg, sizeof_msg,
             " -- Enable input auto-detection.\n"
             " \n"
             "Will attempt to auto-configure \n"
-            "joypads, Plug-and-Play style.");
+            "controllers with basic mappings.");
    }
-   else if (!strcmp(label, "camera_allow"))
+  /* else if (!strcmp(label, "camera_allow"))
    {
       snprintf(msg, sizeof_msg,
             " -- Allow or disallow camera access by \n"
@@ -2132,18 +2143,17 @@ int setting_data_get_description(const char *label, char *msg,
       snprintf(msg, sizeof_msg,
             " -- Allow or disallow location services \n"
             "access by cores.");
-   }
+   }*/
    else if (!strcmp(label, "savestate_auto_save"))
    {
       snprintf(msg, sizeof_msg,
-            " -- Automatically saves a savestate at the \n"
-            "end of RetroArch's lifetime.\n"
+            " -- Automatically writes a savestate on exit. \n"
             " \n"
-            "RetroArch will automatically load any savestate\n"
-            "with this path on startup if 'Savestate Auto\n"
-            "Load' is set.");
+            "This will automatically load a state \n"
+            "with the '.auto' extension on startup \n"
+            "if 'Auto Load State' is set.");
    }
-   else if (!strcmp(label, "shader_apply_changes"))
+  /* else if (!strcmp(label, "shader_apply_changes"))
    {
       snprintf(msg, sizeof_msg,
             " -- Apply Shader Changes. \n"
@@ -2266,7 +2276,7 @@ int setting_data_get_description(const char *label, char *msg,
             "be used depending if it's not the last \n"
             "pass or not."
             );
-   }
+   }*/
    else if (
          !strcmp(label, "l_x_plus")  ||
          !strcmp(label, "l_x_minus") ||
@@ -2274,7 +2284,7 @@ int setting_data_get_description(const char *label, char *msg,
          !strcmp(label, "l_y_minus")
          )
       snprintf(msg, sizeof_msg,
-            " -- Axis for analog stick (DualShock-esque).\n"
+            " -- Axis for analog stick.\n"
             " \n"
             "Bound as usual, however, if a real analog \n"
             "axis is bound, it can be read as a true analog.\n"
@@ -2285,16 +2295,16 @@ int setting_data_get_description(const char *label, char *msg,
       snprintf(msg, sizeof_msg,
             " -- Turbo enable.\n"
             " \n"
-            "Holding the turbo while pressing another \n"
-            "button will let the button enter a turbo \n"
-            "mode where the button state is modulated \n"
-            "with a periodic signal. \n"
+            "Holding turbo while pressing another \n"
+            "button will let the button enter \n"
+            "a turbo mode where the button state \n"
+            "is modulated with a periodic signal. \n"
             " \n"
             "The modulation stops when the button \n"
             "itself (not turbo button) is released.");
    else if (!strcmp(label, "exit_emulator"))
       snprintf(msg, sizeof_msg,
-            " -- Key to exit RetroArch cleanly."
+            " -- Key to exit cleanly."
 #if !defined(RARCH_MOBILE) && !defined(RARCH_CONSOLE)
             "\nKilling it in any hard way (SIGKILL, \n"
             "etc) will terminate without saving\n"
@@ -2303,11 +2313,11 @@ int setting_data_get_description(const char *label, char *msg,
             "a clean deinitialization."
 #endif
             );
-   else if (!strcmp(label, "rewind"))
+   /*else if (!strcmp(label, "rewind"))
       snprintf(msg, sizeof_msg,
             " -- Hold button down to rewind.\n"
             " \n"
-            "Rewind must be enabled.");
+            "Rewind must be enabled.");*/
    else if (!strcmp(label, "load_state"))
       snprintf(msg, sizeof_msg,
             " -- Loads state.");
@@ -2319,17 +2329,16 @@ int setting_data_get_description(const char *label, char *msg,
       snprintf(msg, sizeof_msg,
             " -- State slots.\n"
             " \n"
-            " With slot set to 0, save state name is *.state \n"
-            " (or whatever defined on commandline).\n"
-            "When slot is != 0, path will be (path)(d), \n"
-            "where (d) is slot number.");
-   else if (!strcmp(label, "netplay_flip_players"))
+            "With slot set to 0, save state name \n"
+            "is *.state. Otherwise the slot will \n"
+            "be appended to the end of the filename.");
+  /* else if (!strcmp(label, "netplay_flip_players"))
       snprintf(msg, sizeof_msg,
-            " -- Netplay flip players.");
+            " -- Netplay flip players.");*/
    else if (!strcmp(label, "frame_advance"))
       snprintf(msg, sizeof_msg,
             " -- Frame advance when content is paused.");
-   else if (!strcmp(label, "enable_hotkey"))
+  /* else if (!strcmp(label, "enable_hotkey"))
       snprintf(msg, sizeof_msg,
             " -- Enable other hotkeys.\n"
             " \n"
@@ -2341,13 +2350,10 @@ int setting_data_get_description(const char *label, char *msg,
             "This is useful for RETRO_KEYBOARD centric \n"
             "implementations which query a large area of \n"
             "the keyboard, where it is not desirable that \n"
-            "hotkeys get in the way.");
+            "hotkeys get in the way.");*/
    else if (!strcmp(label, "slowmotion"))
       snprintf(msg, sizeof_msg,
             " -- Hold for slowmotion.");
-   else if (!strcmp(label, "movie_record_toggle"))
-      snprintf(msg, sizeof_msg,
-            " -- Toggle between recording and not.");
    else if (!strcmp(label, "pause_toggle"))
       snprintf(msg, sizeof_msg,
             " -- Toggle between paused and non-paused state.");
@@ -2355,13 +2361,13 @@ int setting_data_get_description(const char *label, char *msg,
       snprintf(msg, sizeof_msg,
             " -- Hold for fast-forward. Releasing button \n"
             "disables fast-forward.");
-   else if (!strcmp(label, "shader_next"))
+  /* else if (!strcmp(label, "shader_next"))
       snprintf(msg, sizeof_msg,
-            " -- Applies next shader in directory.");
+            " -- Applies next shader in directory.");*/
    else if (!strcmp(label, "reset"))
       snprintf(msg, sizeof_msg,
             " -- Reset the content.\n");
-   else if (!strcmp(label, "cheat_index_plus"))
+  /* else if (!strcmp(label, "cheat_index_plus"))
       snprintf(msg, sizeof_msg,
             " -- Increment cheat index.\n");
    else if (!strcmp(label, "cheat_index_minus"))
@@ -2372,7 +2378,7 @@ int setting_data_get_description(const char *label, char *msg,
             " -- Toggle cheat index.\n");
    else if (!strcmp(label, "shader_prev"))
       snprintf(msg, sizeof_msg,
-            " -- Applies previous shader in directory.");
+            " -- Applies previous shader in directory."); */
    else if (!strcmp(label, "audio_mute"))
       snprintf(msg, sizeof_msg,
             " -- Mute/unmute audio.");
@@ -2401,14 +2407,14 @@ int setting_data_get_description(const char *label, char *msg,
             "ejecting. \n"
             " \n"
             " Complete by toggling eject again.");
-   else if (!strcmp(label, "grab_mouse_toggle"))
+  /* else if (!strcmp(label, "grab_mouse_toggle"))
       snprintf(msg, sizeof_msg,
             " -- Toggles mouse grab.\n"
             " \n"
-            "When mouse is grabbed, RetroArch hides the \n"
-            "mouse, and keeps the mouse pointer inside \n"
+            "When mouse is grabbed, mouse is \n"
+            "hidden, and keeps the mouse pointer inside \n"
             "the window to allow relative mouse input to \n"
-            "work better.");
+            "work better."); */
    else if (!strcmp(label, "menu_toggle"))
       snprintf(msg, sizeof_msg,
             " -- Toggles menu.");
@@ -2416,8 +2422,7 @@ int setting_data_get_description(const char *label, char *msg,
       snprintf(msg, sizeof_msg,
             " -- Input Device. \n"
             " \n"
-            "Picks which gamepad to use for player N. \n"
-            "The name of the pad is available."
+            "Which controller to use for each player. \n"
             );
    else if (!strcmp(label, "input_bind_device_type"))
       snprintf(msg, sizeof_msg,
@@ -2428,7 +2433,7 @@ int setting_data_get_description(const char *label, char *msg,
             );
    else
       snprintf(msg, sizeof_msg,
-            "-- No info on this item is available. --\n");
+            "-- No info available. --\n");
 
    return 0;
 }
@@ -2474,7 +2479,7 @@ static int get_fallback_label(char *type_str,
          snprintf(type_str, type_str_size, "%.3ux%.3u%c",
                menu_gx_resolutions[menu_current_gx_resolution][0],
                menu_gx_resolutions[menu_current_gx_resolution][1],
-               menu_gx_resolutions[menu_current_gx_resolution][1] > 300 ? 'i' : 'p');
+               menu_gx_resolutions[menu_current_gx_resolution][1] > 300 ? ' ' : 'p');
          break;
 #elif defined(__CELLOS_LV2__)
       case MENU_SETTINGS_VIDEO_RESOLUTION:
@@ -2492,7 +2497,7 @@ static int get_fallback_label(char *type_str,
       case MENU_SETTINGS_CUSTOM_VIEWPORT:
       case MENU_SETTINGS_CUSTOM_BIND_ALL:
       case MENU_SETTINGS_CUSTOM_BIND_DEFAULT_ALL:
-         strlcpy(type_str, " ", type_str_size);
+         strlcpy(type_str, "...", type_str_size);
          break;
       case MENU_SETTINGS_CORE_DISK_OPTIONS_DISK_INDEX:
          {
@@ -2538,9 +2543,9 @@ static void get_string_representation_bind_device(void * data, char *type_str,
                "N/A (port #%d)", map);
    }
    else
-      strlcpy(type_str, "Disabled", type_str_size);
+      strlcpy(type_str, "None", type_str_size);
 }
-
+/*
 static void get_string_representation_savestate(void * data, char *type_str,
       size_t type_str_size)
 {
@@ -2552,7 +2557,7 @@ static void get_string_representation_savestate(void * data, char *type_str,
    snprintf(type_str, type_str_size, "%d", g_settings.state_slot);
    if (g_settings.state_slot == -1)
       strlcat(type_str, " (Auto)", type_str_size);
-}
+} */
 
 void setting_data_get_label(char *type_str,
       size_t type_str_size, unsigned *w, unsigned type, 
@@ -2572,7 +2577,7 @@ void setting_data_get_label(char *type_str,
          label, idx)) == 0)
       return;
 
-   if ((!strcmp(menu_label, "Shader Options") ||
+ /*  if ((!strcmp(menu_label, "Shader Options") ||
             !strcmp(menu_label, "video_shader_parameters") ||
             !strcmp(menu_label, "video_shader_preset_parameters"))
       )
@@ -2580,7 +2585,7 @@ void setting_data_get_label(char *type_str,
       menu_shader_manager_get_str(driver.menu->shader, type_str, type_str_size,
             menu_label, label, type);
    }
-   else if (type >= MENU_SETTINGS_PERF_COUNTERS_BEGIN
+   else */if (type >= MENU_SETTINGS_PERF_COUNTERS_BEGIN
          && type <= MENU_SETTINGS_PERF_COUNTERS_END)
       menu_common_setting_set_label_perf(type_str, type_str_size, w, type,
             perf_counters_rarch,
@@ -2695,6 +2700,24 @@ static void general_write_handler(void *data)
          *setting->value.boolean = false;
       }
    }
+   else if (!strcmp(setting->name, "video_viwidth"))
+   {
+      if (driver.video_data)
+        update_screen_width();
+   }
+   else if (!strcmp(setting->name, "video_vfilter") || !strcmp(setting->name, "video_vbright"))
+   {
+      if (driver.video_data)
+        update_deflicker();
+   }
+     // Needs a better way of updating
+   else if (!strcmp(setting->name, "video_dither"))
+   {
+      if (driver.video_data)
+      gx_set_video_mode(driver.video_data, menu_gx_resolutions
+            [g_settings.video.vres][0],
+            menu_gx_resolutions[g_settings.video.vres][1]);
+   }
    else if (!strcmp(setting->name, "video_smooth"))
    {
       if (driver.video_data && driver.video_poke
@@ -2758,13 +2781,13 @@ static void general_write_handler(void *data)
          rarch_cmd = RARCH_CMD_VIDEO_SET_BLOCKING_STATE;
       }
    }
-   else if (!strcmp(setting->name, "video_scale"))
+  /* else if (!strcmp(setting->name, "video_scale"))
    {
       g_settings.video.scale = roundf(*setting->value.fraction);
 
       if (!g_settings.video.fullscreen)
          rarch_cmd = RARCH_CMD_REINIT;
-   }
+   } */
    else if (!strcmp(setting->name, "input_player1_joypad_index"))
       g_settings.input.joypad_map[0] = *setting->value.integer;
    else if (!strcmp(setting->name, "input_player2_joypad_index"))
@@ -2992,61 +3015,80 @@ static bool setting_data_append_list_main_menu_options(
 {
    rarch_setting_group_info_t group_info;
    rarch_setting_group_info_t subgroup_info;
+   
+   /* Something around here is causing an annoying bug,
+    * sometimes it hides the number for Load State,
+    * toggling through device index causes the gui to exit to game.
+	* No idea. Move slot number to its own setting in General. */
 
    START_GROUP(group_info, "Main Menu");
    START_SUB_GROUP(list, list_info, "State", group_info.name, subgroup_info);
+   
+   if (!g_settings.single_mode) {
 #if defined(HAVE_DYNAMIC) || defined(HAVE_LIBRETRO_MANAGEMENT)
-  // CONFIG_ACTION(
-   //      "core_list",
-  //       "Core",
-  //       group_info.name,
- //        subgroup_info.name);
- //  settings_data_list_current_add_flags(
-  //       list,
-  //       list_info,
- //        SD_FLAG_PUSH_ACTION);
-#endif
-   //if (g_defaults.history)
-   {
-    //  CONFIG_ACTION(
-    //        "history_list",
-    //        "Load Content (History)",
-   //         group_info.name,
-    //        subgroup_info.name);
-    //  settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
-   }
-  // if (
-  //       driver.menu 
-   //      && g_extern.core_info 
-    //     && core_info_list_num_info_files(g_extern.core_info))
-   {
-  //    CONFIG_ACTION(
-   //         "detect_core_list",
-  //          "Load Content (Detect Core)",
-  //          group_info.name,
-  //          subgroup_info.name);
-  //    settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
-   }
-  // CONFIG_ACTION(
-    //     "load_content",
-    //     "Load Content",
-    //     group_info.name,
-   //      subgroup_info.name);
-  // settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
-
    CONFIG_ACTION(
-         "core_options",
-         "System Options",
+         "core_list",
+         "Core",
+         group_info.name,
+         subgroup_info.name);
+   settings_data_list_current_add_flags(
+         list,
+         list_info,
+         SD_FLAG_PUSH_ACTION);
+#endif
+  /* if (g_defaults.history)
+   {
+      CONFIG_ACTION(
+            "history_list",
+            "Load Content (History)",
+            group_info.name,
+            subgroup_info.name);
+      settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
+   } */
+  /* if (
+         driver.menu 
+         && g_extern.core_info 
+         && core_info_list_num_info_files(g_extern.core_info))
+   {
+      CONFIG_ACTION(
+            "detect_core_list",
+            "Load Content (Detect Core)",
+            group_info.name,
+            subgroup_info.name);
+      settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
+   } */
+   CONFIG_ACTION(
+         "load_content",
+         "Load Content",
          group_info.name,
          subgroup_info.name);
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
 
-  // CONFIG_ACTION(
-  //       "core_information",
-  //       "Core Information",
-   //      group_info.name,
-   //      subgroup_info.name);
- //  settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
+   if (!g_settings.hide_core) {
+      CONFIG_ACTION(
+            "core_options",
+            "Core Options",
+            group_info.name,
+            subgroup_info.name);
+      settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
+	 }
+   } else {
+   if (!g_settings.hide_core) {
+      CONFIG_ACTION(
+            "core_options",
+            "System Options",
+            group_info.name,
+            subgroup_info.name);
+      settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
+     }
+   }
+
+  /* CONFIG_ACTION(
+         "core_information",
+         "Core Information",
+         group_info.name,
+         subgroup_info.name);
+   settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);*/
 
    if (g_extern.main_is_init
          && !g_extern.libretro_dummy
@@ -3054,27 +3096,13 @@ static bool setting_data_append_list_main_menu_options(
    {
       CONFIG_ACTION(
             "disk_options",
-            "System Disk Options",
+            "Disk Options",
             group_info.name,
             subgroup_info.name);
       settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
    }
-   CONFIG_ACTION(
-         "settings",
-         "Settings",
-         group_info.name,
-         subgroup_info.name);
-   settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
 
-      CONFIG_ACTION(
-            "take_screenshot",
-            "Take Screenshot",
-            group_info.name,
-            subgroup_info.name);
-      settings_list_current_add_cmd  (list, list_info, RARCH_CMD_TAKE_SCREENSHOT);
-      settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
-
-   if (g_extern.perfcnt_enable)
+   /*if (g_extern.perfcnt_enable)
    {
       CONFIG_ACTION(
             "performance_counters",
@@ -3082,40 +3110,70 @@ static bool setting_data_append_list_main_menu_options(
             group_info.name,
             subgroup_info.name);
       settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
-   }
+   }*/
+   
+
+   
    if (g_extern.main_is_init && !g_extern.libretro_dummy)
    {
+     if (!g_settings.hide_states) {
       CONFIG_ACTION(
             "savestate",
-            "Create Restore Point",
+            "Save State",
             group_info.name,
             subgroup_info.name);
-      (*list)[list_info->index - 1].action_toggle = &setting_data_bool_action_toggle_savestates;
+     // (*list)[list_info->index - 1].action_toggle = &setting_data_bool_action_toggle_savestates;
       (*list)[list_info->index - 1].action_start = &setting_data_bool_action_start_savestates;
       (*list)[list_info->index - 1].action_ok = &setting_data_bool_action_ok_exit;
-      (*list)[list_info->index - 1].get_string_representation = &get_string_representation_savestate;
+     // (*list)[list_info->index - 1].get_string_representation = &get_string_representation_savestate;
       settings_list_current_add_cmd  (list, list_info, RARCH_CMD_SAVE_STATE);
 
       CONFIG_ACTION(
             "loadstate",
-            "Load Restore Point",
+            "Load State",
             group_info.name,
             subgroup_info.name);
-      (*list)[list_info->index - 1].action_toggle = &setting_data_bool_action_toggle_savestates;
+     // (*list)[list_info->index - 1].action_toggle = &setting_data_bool_action_toggle_savestates;
       (*list)[list_info->index - 1].action_start = &setting_data_bool_action_start_savestates;
       (*list)[list_info->index - 1].action_ok = &setting_data_bool_action_ok_exit;
-      (*list)[list_info->index - 1].get_string_representation = &get_string_representation_savestate;
+     // (*list)[list_info->index - 1].get_string_representation = &get_string_representation_loadstate;
       settings_list_current_add_cmd  (list, list_info, RARCH_CMD_LOAD_STATE);
+	 }
+	}
 
+   if (!g_settings.hide_settings) {
+         CONFIG_ACTION(
+               "settings",
+               "Settings",
+               group_info.name,
+               subgroup_info.name);
+         settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
+   }
+
+   if (g_extern.main_is_init && !g_extern.libretro_dummy)
+   {
+     if (!g_settings.hide_screenshot) {
+      CONFIG_ACTION(
+            "take_screenshot",
+            "Take Screenshot",
+            group_info.name,
+            subgroup_info.name);
+      settings_list_current_add_cmd  (list, list_info, RARCH_CMD_TAKE_SCREENSHOT);
+      settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
+     }
+
+     if (!g_settings.hide_resume) {
       CONFIG_ACTION(
             "resume_content",
-            "Resume",
+            "Resume Game",
             group_info.name,
             subgroup_info.name);
       settings_list_current_add_cmd  (list, list_info, RARCH_CMD_RESUME);
       (*list)[list_info->index - 1].action_ok = &setting_data_bool_action_ok_exit;
       settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
+     }
 
+     if (!g_settings.hide_reset) {
       CONFIG_ACTION(
             "restart_content",
             "Reset",
@@ -3124,48 +3182,49 @@ static bool setting_data_append_list_main_menu_options(
       settings_list_current_add_cmd(list, list_info, RARCH_CMD_RESET);
       (*list)[list_info->index - 1].action_ok = &setting_data_bool_action_ok_exit;
       settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
+     }
    }
+/*
 #ifndef HAVE_DYNAMIC
-   //CONFIG_ACTION(
-     //    "restart_retroarch",
-       //  "Restart RetroArch",
-        // group_info.name,
-        // subgroup_info.name);
-   //settings_list_current_add_cmd(list, list_info, RARCH_CMD_RESTART_RETROARCH);
-   //settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
-#endif
-
-  // CONFIG_ACTION(
-     //    "configurations",
-       //  "Configurations",
-        // group_info.name,
-        // subgroup_info.name);
-
-   //CONFIG_ACTION(
-        // "save_new_config",
-       //  "Save New Config",
-     //    group_info.name,
-       //  subgroup_info.name);
-  // settings_list_current_add_cmd(list, list_info, RARCH_CMD_MENU_SAVE_CONFIG);
-  // settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
-
-   //CONFIG_ACTION(
-   //      "help",
-     //    "Help",
-      //   group_info.name,
-       //  subgroup_info.name);
- //  settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
-
-   /* Apple rejects iOS apps that lets you forcibly quit an application. */
-#if !defined(IOS)
    CONFIG_ACTION(
-         "quit_retroarch",
-         "Exit",
+         "restart_retroarch",
+         "Restart RetroArch",
          group_info.name,
          subgroup_info.name);
-   settings_list_current_add_cmd(list, list_info, RARCH_CMD_QUIT_RETROARCH);
+   settings_list_current_add_cmd(list, list_info, RARCH_CMD_RESTART_RETROARCH);
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
 #endif
+
+   CONFIG_ACTION(
+         "configurations",
+         "Configurations",
+         group_info.name,
+         subgroup_info.name);
+
+   CONFIG_ACTION(
+         "save_new_config",
+         "Save New Config",
+         group_info.name,
+         subgroup_info.name);
+   settings_list_current_add_cmd(list, list_info, RARCH_CMD_MENU_SAVE_CONFIG);
+   settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
+
+   CONFIG_ACTION(
+         "help",
+         "Help",
+         group_info.name,
+         subgroup_info.name);
+   settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
+*/
+   if (!g_settings.hide_exit) {
+     CONFIG_ACTION(
+           "quit_retroarch",
+           "Exit",
+           group_info.name,
+           subgroup_info.name);
+     settings_list_current_add_cmd(list, list_info, RARCH_CMD_QUIT_RETROARCH);
+     settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
+   }
 
    END_SUB_GROUP(list, list_info);
    END_GROUP(list, list_info);
@@ -3180,12 +3239,13 @@ static bool setting_data_append_list_driver_options(
    rarch_setting_group_info_t group_info;
    rarch_setting_group_info_t subgroup_info;
 
-   START_GROUP(group_info, "Driver Options");
+   /* Driver Options is now Menu */
+   START_GROUP(group_info, "Menu");
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_IS_CATEGORY);
 
    START_SUB_GROUP(list, list_info, "State", group_info.name, subgroup_info);
 
-   CONFIG_STRING(
+/* CONFIG_STRING(
          g_settings.input.driver,
          "input_driver",
          "Input Driver",
@@ -3226,20 +3286,114 @@ static bool setting_data_append_list_driver_options(
          subgroup_info.name,
          NULL,
          NULL);
-   settings_data_list_current_add_flags(list, list_info, SD_FLAG_IS_DRIVER);
+   settings_data_list_current_add_flags(list, list_info, SD_FLAG_IS_DRIVER);*/
 
-   CONFIG_STRING(
-         g_settings.audio.resampler,
-         "audio_resampler_driver",
-         "Audio Resampler Driver",
-         config_get_default_audio_resampler(),
+   CONFIG_BOOL(
+         g_settings.input.rgui_reset,
+         "rgui_reset",
+         "Open Menu with Reset",
+         rgui_reset,
+         "OFF",
+         "ON",
          group_info.name,
          subgroup_info.name,
-         NULL,
-         NULL);
-   (*list)[list_info->index - 1].action_toggle = &setting_data_string_action_toggle_audio_resampler;
+         general_write_handler,
+         general_read_handler);
 
-   CONFIG_STRING(
+   CONFIG_UINT(
+         g_settings.title_posx,
+         "title_posx",
+         "Title Position",
+         title_posx,
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+   settings_list_current_add_range(list, list_info, 0, 250, 1, true, true);
+
+   CONFIG_UINT(
+         g_settings.item_posx,
+         "item_posx",
+         "Items Position X",
+         item_posx,
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+   settings_list_current_add_range(list, list_info, 0, 90, 1, true, true);
+
+   CONFIG_UINT(
+         g_settings.item_posy,
+         "item_posy",
+         "Items Position Y",
+         item_posy,
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+   settings_list_current_add_range(list, list_info, 0, 90, 1, true, true);
+
+   CONFIG_BOOL(
+         g_settings.hide_core,
+         "hide_core",
+         "Hide Options",
+         hide_core,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
+   CONFIG_BOOL(
+         g_settings.hide_states,
+         "hide_states",
+         "Hide Save/Load States",
+         hide_states,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
+   CONFIG_BOOL(
+         g_settings.hide_screenshot,
+         "hide_screenshot",
+         "Hide Take Screenshot",
+         hide_screenshot,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
+   CONFIG_BOOL(
+         g_settings.hide_resume,
+         "hide_resume",
+         "Hide Resume",
+         hide_resume,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
+   CONFIG_BOOL(
+         g_settings.hide_reset,
+         "hide_reset",
+         "Hide Reset",
+         hide_reset,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
+  /* CONFIG_STRING(
          g_settings.camera.driver,
          "camera_driver",
          "Camera Driver",
@@ -3259,10 +3413,10 @@ static bool setting_data_append_list_driver_options(
          subgroup_info.name,
          NULL,
          NULL);
-   settings_data_list_current_add_flags(list, list_info, SD_FLAG_IS_DRIVER);
+   settings_data_list_current_add_flags(list, list_info, SD_FLAG_IS_DRIVER);*/
 
 #ifdef HAVE_MENU
-   CONFIG_STRING(
+/*   CONFIG_STRING(
          g_settings.menu.driver,
          "menu_driver",
          "Menu Driver",
@@ -3272,9 +3426,91 @@ static bool setting_data_append_list_driver_options(
          NULL,
          NULL);
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_IS_DRIVER);
+*/
+   CONFIG_UINT(
+         g_settings.theme_preset,
+         "theme_preset",
+         "Menu Color Type",
+         theme_preset,
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+   settings_list_current_add_range(list, list_info, 0, 8, 1, true, true);
+
+   CONFIG_BOOL(
+         g_settings.menu_fullscreen,
+         "menu_fullscreen",
+         "Menu Fullscreen",
+         menu_fullscreen,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
+   CONFIG_BOOL(
+         g_settings.menu_solid,
+         "menu_solid",
+         "Solid Color BG",
+         menu_solid,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
+   CONFIG_BOOL(
+         g_settings.clock_show,
+         "clock_show",
+         "Display Time",
+         clock_show,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
+   CONFIG_BOOL(
+         g_settings.fadein,
+         "fadein",
+         "Fade-in",
+         fadein,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
+   CONFIG_UINT(
+         g_settings.reset_fade,
+         "reset_fade",
+         "Fade Method for Reset",
+         reset_fade,
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+   settings_list_current_add_range(list, list_info, 0, 2, 1, true, true);
+
+   CONFIG_BOOL(
+         g_settings.exit_fade,
+         "exit_fade",
+         "Fade-out",
+         exit_fade,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
 #endif
 
-   CONFIG_STRING(
+   /*CONFIG_STRING(
          g_settings.input.joypad_driver,
          "input_joypad_driver",
          "Joypad Driver",
@@ -3294,7 +3530,7 @@ static bool setting_data_append_list_driver_options(
          subgroup_info.name,
          NULL,
          NULL);
-   settings_data_list_current_add_flags(list, list_info, SD_FLAG_IS_DRIVER);
+   settings_data_list_current_add_flags(list, list_info, SD_FLAG_IS_DRIVER);*/
 
    END_SUB_GROUP(list, list_info);
    END_GROUP(list, list_info);
@@ -3308,12 +3544,12 @@ static bool setting_data_append_list_general_options(
 {
    rarch_setting_group_info_t group_info;
    rarch_setting_group_info_t subgroup_info;
-
-   START_GROUP(group_info, "General Options");
+//General Options is now just General
+   START_GROUP(group_info, "General");
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_IS_CATEGORY);
    START_SUB_GROUP(list, list_info, "State", group_info.name, subgroup_info);
 
-   CONFIG_BOOL(
+  /* CONFIG_BOOL(
          g_extern.verbosity,
          "log_verbosity",
          "Logging Verbosity",
@@ -3324,7 +3560,6 @@ static bool setting_data_append_list_general_options(
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
-
 
    CONFIG_UINT(g_settings.libretro_log_level,
          "libretro_log_level",
@@ -3345,11 +3580,11 @@ static bool setting_data_append_list_general_options(
          group_info.name,
          subgroup_info.name,
          general_write_handler,
-         general_read_handler);
+         general_read_handler);*/
 
    CONFIG_BOOL(g_settings.config_save_on_exit,
          "config_save_on_exit",
-         "Configuration Save On Exit",
+         "Config Save On Exit",
          config_save_on_exit,
          "OFF",
          "ON",
@@ -3361,7 +3596,7 @@ static bool setting_data_append_list_general_options(
    CONFIG_BOOL(
          g_settings.core_specific_config,
          "core_specific_config",
-         "Configuration Per-Core",
+         "Per-Core Config",
          default_core_specific_config,
          "OFF",
          "ON",
@@ -3370,7 +3605,7 @@ static bool setting_data_append_list_general_options(
          general_write_handler,
          general_read_handler);
 
-   CONFIG_BOOL(
+  /* CONFIG_BOOL(
          g_settings.load_dummy_on_core_shutdown,
          "dummy_on_core_shutdown",
          "Dummy On Core Shutdown",
@@ -3380,20 +3615,22 @@ static bool setting_data_append_list_general_options(
          group_info.name,
          subgroup_info.name,
          general_write_handler,
-         general_read_handler);
+         general_read_handler);*/
 
-   CONFIG_BOOL(g_settings.fps_show,
-         "fps_show",
-         "Show Framerate",
-         fps_show,
-         "OFF",
-         "ON",
-         group_info.name,
-         subgroup_info.name,
-         general_write_handler,
-         general_read_handler);
+   if (!g_settings.video.drawdone) {
+      CONFIG_BOOL(g_settings.fps_show,
+            "fps_show",
+            "Show Framerate",
+            fps_show,
+            "OFF",
+            "ON",
+            group_info.name,
+            subgroup_info.name,
+            general_write_handler,
+            general_read_handler);
+   }
 
-   CONFIG_BOOL(
+  /* CONFIG_BOOL(
          g_settings.rewind_enable,
          "rewind_enable",
          "Rewind",
@@ -3426,7 +3663,7 @@ static bool setting_data_append_list_general_options(
             subgroup_info.name,
             general_write_handler,
             general_read_handler);
-   settings_list_current_add_range(list, list_info, 1, 32768, 1, true, false);
+   settings_list_current_add_range(list, list_info, 1, 32768, 1, true, false);*/
 
    CONFIG_BOOL(
          g_settings.block_sram_overwrite,
@@ -3455,7 +3692,7 @@ static bool setting_data_append_list_general_options(
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_CMD_APPLY_AUTO);
 #endif
 
-   CONFIG_BOOL(
+  /* CONFIG_BOOL(
          g_settings.video.disable_composition,
          "video_disable_composition",
          "Window Compositing Disable",
@@ -3492,7 +3729,7 @@ static bool setting_data_append_list_general_options(
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
-
+*/
    CONFIG_FLOAT(
          g_settings.fastforward_ratio,
          "fastforward_ratio",
@@ -3530,6 +3767,42 @@ static bool setting_data_append_list_general_options(
          general_read_handler);
 
    CONFIG_BOOL(
+         g_settings.regular_state_pause,
+         "regular_state_pause",
+         "Pause On Load State",
+         regular_state_pause,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
+   CONFIG_BOOL(
+         g_settings.stateload_pause,
+         "stateload_pause",
+         "Pause On Auto Load",
+         stateload_pause,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
+   CONFIG_BOOL(
+         g_settings.savestate_auto_once,
+         "savestate_auto_once",
+         "Auto Load Once",
+         savestate_auto_once,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
+   CONFIG_BOOL(
          g_settings.savestate_auto_save,
          "savestate_auto_save",
          "Auto Save State",
@@ -3553,15 +3826,16 @@ static bool setting_data_append_list_general_options(
          general_write_handler,
          general_read_handler);
 
-   CONFIG_INT(
+   CONFIG_UINT(
          g_settings.state_slot,
          "state_slot",
-         "State Slot",
-         0,
+         "Current State Slot",
+         state_slot,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
+   settings_list_current_add_range(list, list_info, 0, 10, 1, true, true);
 
    END_SUB_GROUP(list, list_info);
    START_SUB_GROUP(
@@ -3617,11 +3891,12 @@ static bool setting_data_append_list_video_options(
    rarch_setting_group_info_t group_info;
    rarch_setting_group_info_t subgroup_info;
 
-   START_GROUP(group_info, "Video Options");
+   /* Video Options is now Video */
+   START_GROUP(group_info, "Video");
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_IS_CATEGORY);
    START_SUB_GROUP(list, list_info, "State", group_info.name, subgroup_info);
 
-   CONFIG_BOOL(
+   /*CONFIG_BOOL(
          g_settings.video.shared_context,
          "video_shared_context",
          "HW Shared Context Enable",
@@ -3646,7 +3921,7 @@ static bool setting_data_append_list_video_options(
          general_write_handler,
          general_read_handler);
    settings_list_current_add_cmd(list, list_info, RARCH_CMD_REINIT);
-   settings_list_current_add_range(list, list_info, 0, 1, 1, true, false);
+   settings_list_current_add_range(list, list_info, 0, 1, 1, true, false);*/
 
 #if !defined(RARCH_CONSOLE) && !defined(RARCH_MOBILE)
    CONFIG_BOOL(
@@ -3663,7 +3938,7 @@ static bool setting_data_append_list_video_options(
    settings_list_current_add_cmd(list, list_info, RARCH_CMD_REINIT);
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_CMD_APPLY_AUTO);
 #endif
-   CONFIG_BOOL(
+  /* CONFIG_BOOL(
          g_settings.video.windowed_fullscreen,
          "video_windowed_fullscreen",
          "Windowed Fullscreen Mode",
@@ -3693,9 +3968,9 @@ static bool setting_data_append_list_video_options(
          group_info.name,
          subgroup_info.name,
          general_write_handler,
-         general_read_handler);
+         general_read_handler);*/
 
-   CONFIG_FLOAT(
+  /* CONFIG_FLOAT(
          g_settings.video.refresh_rate,
          "video_refresh_rate",
          "Refresh Rate",
@@ -3705,24 +3980,9 @@ static bool setting_data_append_list_video_options(
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
-   settings_list_current_add_range(list, list_info, 0, 0, 0.001, true, false);
+   settings_list_current_add_range(list, list_info, 0, 0, 0.001, true, false);*/
 
-   CONFIG_FLOAT(
-         g_settings.video.refresh_rate,
-         "video_refresh_rate_auto",
-         "Estimated Monitor FPS",
-         refresh_rate,
-         "%.3f Hz",
-         group_info.name,
-         subgroup_info.name,
-         general_write_handler,
-         general_read_handler);
-   (*list)[list_info->index - 1].action_start = 
-      &setting_data_fraction_action_start_video_refresh_rate_auto;
-   (*list)[list_info->index - 1].action_ok = 
-      &setting_data_fraction_action_ok_video_refresh_rate_auto;
-
-   CONFIG_BOOL(
+ /*  CONFIG_BOOL(
          g_settings.video.force_srgb_disable,
          "video_force_srgb_disable",
          "Force-disable sRGB FBO",
@@ -3772,7 +4032,7 @@ static bool setting_data_append_list_video_options(
          group_info.name,
          subgroup_info.name,
          general_write_handler,
-         general_read_handler);
+         general_read_handler);*/
 
    CONFIG_UINT(
          g_settings.video.aspect_ratio_idx,
@@ -3868,6 +4128,21 @@ static bool setting_data_append_list_video_options(
          NULL);
 
 #ifdef GEKKO
+/* Added for testing */
+  /* CONFIG_UINT(
+         g_settings.video.vres,
+         "video_vres",
+         "Current Resolution Index",
+         video_vres,
+         group_info.name,
+         subgroup_info.name,
+		 NULL,
+		 NULL);
+         //general_write_handler,
+         //general_read_handler);
+  // settings_list_current_add_range(list, list_info, 0, 38, 1, true, true);
+  */
+
    CONFIG_UINT(
          g_settings.video.viwidth,
          "video_viwidth",
@@ -3890,19 +4165,74 @@ static bool setting_data_append_list_video_options(
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
+
+   CONFIG_BOOL(
+         g_settings.video.dither,
+         "video_dither",
+         "Dither",
+         video_dither,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+#endif
+
+#if defined(_XBOX1) || defined(HW_RVL)
+   CONFIG_BOOL(
+         g_extern.console.softfilter_enable,
+         "soft_filter",
+         "Trap Filter",
+         false,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+   settings_list_current_add_cmd(
+         list,
+         list_info,
+         RARCH_CMD_VIDEO_APPLY_STATE_CHANGES);
 #endif
 
    CONFIG_BOOL(
          g_settings.video.smooth,
          "video_smooth",
-         "Use Bilinear Filtering",
+         "Texture Scaling",
          video_smooth,
-         "Point filtering",
-         "Bilinear filtering",
+         "Point",
+         "Bilinear",
          group_info.name,
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
+
+   CONFIG_BOOL(
+         g_settings.video.menu_smooth,
+         "video_menu_smooth",
+         "Menu Scaling",
+         video_menu_smooth,
+         "Point",
+         "Bilinear",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
+#ifdef HAVE_RENDERSCALE
+   CONFIG_UINT(
+         g_settings.video.renderscale,
+         "video_renderscale",
+         "Render Scale",
+         video_renderscale,
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+   settings_list_current_add_range(list, list_info, 1, 2, 1, true, true);
+#endif
 
 #if defined(__CELLOS_LV2__)
    CONFIG_BOOL(
@@ -3918,16 +4248,17 @@ static bool setting_data_append_list_video_options(
          general_read_handler);
 #endif
 
-   CONFIG_UINT(
-         g_settings.video.rotation,
-         "video_rotation",
-         "Rotation",
-         0,
+   CONFIG_FLOAT(
+         g_settings.video.vbright,
+         "video_vbright",
+         "Brightness",
+         video_vbright,
+		 "%.0f",
          group_info.name,
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
-   settings_list_current_add_range(list, list_info, 0, 3, 1, true, true);
+   settings_list_current_add_range(list, list_info, -12, 30, 1, true, true);
 
 #if defined(HW_RVL) || defined(_XBOX360)
    CONFIG_UINT(
@@ -3962,18 +4293,6 @@ static bool setting_data_append_list_video_options(
          group_info.name,
          subgroup_info);
 
-   CONFIG_BOOL(
-         g_settings.video.rgui_reset,
-         "rgui_reset",
-         "Open Menu with Reset",
-         rgui_reset,
-         "OFF",
-         "ON",
-         group_info.name,
-         subgroup_info.name,
-         general_write_handler,
-         general_read_handler);
-
 #if defined(HAVE_THREADS) && !defined(RARCH_CONSOLE)
    CONFIG_BOOL(
          g_settings.video.threaded,
@@ -3990,6 +4309,17 @@ static bool setting_data_append_list_video_options(
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_CMD_APPLY_AUTO);
 #endif
 
+   CONFIG_UINT(
+         g_settings.video.rotation,
+         "video_rotation",
+         "Rotation",
+         0,
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+   settings_list_current_add_range(list, list_info, 0, 3, 1, true, true);
+
    CONFIG_BOOL(
          g_settings.video.vsync,
          "video_vsync",
@@ -4002,7 +4332,7 @@ static bool setting_data_append_list_video_options(
          general_write_handler,
          general_read_handler);
 
-   CONFIG_UINT(
+  /* CONFIG_UINT(
          g_settings.video.swap_interval,
          "video_swap_interval",
          "VSync Swap Interval",
@@ -4036,7 +4366,7 @@ static bool setting_data_append_list_video_options(
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
-   settings_list_current_add_range(list, list_info, 0, 3, 1, true, true);
+   settings_list_current_add_range(list, list_info, 0, 3, 1, true, true);*/
 
    CONFIG_UINT(
          g_settings.video.frame_delay,
@@ -4048,6 +4378,7 @@ static bool setting_data_append_list_video_options(
          general_write_handler,
          general_read_handler);
    settings_list_current_add_range(list, list_info, 0, 15, 1, true, true);
+/*
 #if !defined(RARCH_MOBILE)
    CONFIG_BOOL(
          g_settings.video.black_frame_insertion,
@@ -4061,6 +4392,7 @@ static bool setting_data_append_list_video_options(
          general_write_handler,
          general_read_handler);
 #endif
+*/
    END_SUB_GROUP(list, list_info);
 
    START_SUB_GROUP(
@@ -4070,7 +4402,7 @@ static bool setting_data_append_list_video_options(
          group_info.name,
          subgroup_info);
 
-   CONFIG_BOOL(
+  /* CONFIG_BOOL(
          g_settings.video.post_filter_record,
          "video_post_filter_record",
          "Post filter record Enable",
@@ -4097,28 +4429,28 @@ static bool setting_data_append_list_video_options(
    CONFIG_BOOL(
          g_settings.video.gpu_screenshot,
          "video_gpu_screenshot",
-         "GPU Screenshot Enable",
+         "GPU Screenshots",
          gpu_screenshot,
          "OFF",
          "ON",
          group_info.name,
          subgroup_info.name,
          general_write_handler,
-         general_read_handler);
+         general_read_handler);*/
 
-   CONFIG_BOOL(
+  /* CONFIG_BOOL(
          g_settings.video.allow_rotate,
          "video_allow_rotate",
-         "Allow rotation",
+         "Allow Rotation",
          allow_rotate,
          "OFF",
          "ON",
          group_info.name,
          subgroup_info.name,
          general_write_handler,
-         general_read_handler);
+         general_read_handler);*/
 
-   CONFIG_BOOL(
+  /* CONFIG_BOOL(
          g_settings.video.crop_overscan,
          "video_crop_overscan",
          "Crop Overscan (reload)",
@@ -4128,41 +4460,39 @@ static bool setting_data_append_list_video_options(
          group_info.name,
          subgroup_info.name,
          general_write_handler,
-         general_read_handler);
+         general_read_handler);*/
 
 #ifdef HAVE_FILTERS_BUILTIN
    CONFIG_PATH(
          g_settings.video.softfilter_plugin,
          "video_filter",
-         "Software filter",
+         "Software Texture Filter",
          g_settings.video.filter_dir,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
    settings_list_current_add_values(list, list_info, "filt");
-   settings_list_current_add_cmd(list, list_info, RARCH_CMD_REINIT);
+  // settings_list_current_add_cmd(list, list_info, RARCH_CMD_REINIT);
+  // CPU filters always crash on the 16th switch.
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_ALLOW_EMPTY);
 #endif
 
-#if defined(_XBOX1) || defined(HW_RVL)
-   CONFIG_BOOL(
-         g_extern.console.softfilter_enable,
-         "soft_filter",
-         "Trap Filter",
-         false,
-         "OFF",
-         "ON",
+/*   CONFIG_FLOAT(
+         g_settings.video.refresh_rate,
+         "video_refresh_rate_auto",
+         "Estimated Refresh Rate",
+         refresh_rate,
+         "%.3f Hz",
          group_info.name,
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
-   settings_list_current_add_cmd(
-         list,
-         list_info,
-         RARCH_CMD_VIDEO_APPLY_STATE_CHANGES);
-#endif
-
+   (*list)[list_info->index - 1].action_start = 
+      &setting_data_fraction_action_start_video_refresh_rate_auto;
+   (*list)[list_info->index - 1].action_ok = 
+      &setting_data_fraction_action_ok_video_refresh_rate_auto;
+*/
 #ifdef _XBOX1
    CONFIG_UINT(
          g_settings.video.swap_interval,
@@ -4303,21 +4633,46 @@ static bool setting_data_append_list_audio_options(
    rarch_setting_group_info_t group_info;
    rarch_setting_group_info_t subgroup_info;
 
-   START_GROUP(group_info, "Audio Options");
+   /* Audio Options is now Audio */
+   START_GROUP(group_info, "Audio");
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_IS_CATEGORY);
    START_SUB_GROUP(list, list_info, "State", group_info.name, subgroup_info);
 
-   CONFIG_BOOL(
+   /* Why would a user EVER need to disable audio?? */
+
+  /* CONFIG_BOOL(
          g_settings.audio.enable,
          "audio_enable",
-         "Audio Enable",
+         "Audio Enable (Restart)",
          audio_enable,
          "OFF",
          "ON",
          group_info.name,
          subgroup_info.name,
          general_write_handler,
+         general_read_handler);*/
+
+   CONFIG_STRING(
+         g_settings.audio.resampler,
+         "audio_resampler_driver",
+         "Resampler",
+         config_get_default_audio_resampler(),
+         group_info.name,
+         subgroup_info.name,
+         NULL,
+         NULL);
+   (*list)[list_info->index - 1].action_toggle = &setting_data_string_action_toggle_audio_resampler;
+
+   CONFIG_UINT(
+         g_settings.audio.sinc_taps,
+         "audio_sinc_taps",
+         "SINC Taps",
+         sinc_taps,
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
          general_read_handler);
+	settings_list_current_add_range(list, list_info, 2, 256, 2, true, true);
 
    CONFIG_BOOL(
          g_extern.audio_data.mute,
@@ -4369,7 +4724,7 @@ static bool setting_data_append_list_audio_options(
    CONFIG_BOOL(
          g_settings.audio.sync,
          "audio_sync",
-         "Audio Sync Enable",
+         "Audio Sync",
          audio_sync,
          "OFF",
          "ON",
@@ -4378,7 +4733,7 @@ static bool setting_data_append_list_audio_options(
          general_write_handler,
          general_read_handler);
 
-   CONFIG_UINT(
+  /* CONFIG_UINT(
          g_settings.audio.latency,
          "audio_latency",
          "Audio Latency",
@@ -4389,12 +4744,12 @@ static bool setting_data_append_list_audio_options(
          general_write_handler,
          general_read_handler);
    settings_list_current_add_range(list, list_info, 1, 256, 1.0, true, true);
-   settings_data_list_current_add_flags(list, list_info, SD_FLAG_IS_DEFERRED);
+   settings_data_list_current_add_flags(list, list_info, SD_FLAG_IS_DEFERRED);*/
 
    CONFIG_FLOAT(
          g_settings.audio.rate_control_delta,
          "audio_rate_control_delta",
-         "Audio Rate Control Delta",
+         "Rate Control Delta",
          rate_control_delta,
          "%.3f",
          group_info.name,
@@ -4410,7 +4765,7 @@ static bool setting_data_append_list_audio_options(
          true,
          false);
 
-   CONFIG_UINT(
+  /* CONFIG_UINT(
          g_settings.audio.block_frames,
          "audio_block_frames",
          "Block Frames",
@@ -4418,7 +4773,7 @@ static bool setting_data_append_list_audio_options(
          group_info.name,
          subgroup_info.name,
          general_write_handler,
-         general_read_handler);
+         general_read_handler);*/
 
    END_SUB_GROUP(list, list_info);
 
@@ -4429,7 +4784,7 @@ static bool setting_data_append_list_audio_options(
          group_info.name,
          subgroup_info);
 
-   CONFIG_STRING(
+  /* CONFIG_STRING(
          g_settings.audio.device,
          "audio_device",
          "Device",
@@ -4438,17 +4793,18 @@ static bool setting_data_append_list_audio_options(
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
-   settings_data_list_current_add_flags(list, list_info, SD_FLAG_ALLOW_INPUT);
+   settings_data_list_current_add_flags(list, list_info, SD_FLAG_ALLOW_INPUT);*/
 
    CONFIG_UINT(
          g_settings.audio.out_rate,
          "audio_out_rate",
-         "Audio Output Rate",
+         "Output Rate",
          out_rate,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
+	settings_list_current_add_range(list, list_info, 32000, 48000, 16000, true, true);
 
    CONFIG_PATH(
          g_settings.audio.dsp_plugin,
@@ -4477,14 +4833,15 @@ static bool setting_data_append_list_input_options(
    rarch_setting_group_info_t subgroup_info;
    unsigned i, player;
 
-   START_GROUP(group_info, "Input Options");
+   /* Input Options is now Input */
+   START_GROUP(group_info, "Input");
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_IS_CATEGORY);
    START_SUB_GROUP(list, list_info, "State", group_info.name, subgroup_info);
 
    CONFIG_BOOL(
          g_settings.input.autodetect_enable,
          "input_autodetect_enable",
-         "Autodetect Enable",
+         "Autodetect",
          input_autodetect_enable,
          "OFF",
          "ON",
@@ -4501,7 +4858,7 @@ static bool setting_data_append_list_input_options(
          group_info.name,
          subgroup_info);
 
-   CONFIG_BOOL(
+  /* CONFIG_BOOL(
          g_extern.menu.bind_mode_keyboard,
          "input_bind_mode",
          "Bind Mode",
@@ -4511,9 +4868,12 @@ static bool setting_data_append_list_input_options(
          group_info.name,
          subgroup_info.name,
          general_write_handler,
-         general_read_handler);
-
-   for (player = 0; player < MAX_PLAYERS; player ++)
+         general_read_handler);*/
+#ifdef HAVE_5PLAY
+   for (player = 0; player < (MAX_PLAYERS - 11); player ++)
+#else
+   for (player = 0; player < (MAX_PLAYERS - 12); player ++)
+#endif
    {
       /* These constants match the string lengths.
        * Keep them up to date or you'll get some really obvious bugs.
@@ -4582,6 +4942,7 @@ static bool setting_data_append_list_input_options(
       (*list)[list_info->index - 1].action_toggle = &setting_data_uint_action_toggle_analog_dpad_mode;
       (*list)[list_info->index - 1].action_start = &setting_data_uint_action_start_analog_dpad_mode;
 
+    if (player != 0) { // Let's exclude player 1 because it only locks us out
       CONFIG_ACTION(
             key[player],
             label[player],
@@ -4592,6 +4953,7 @@ static bool setting_data_append_list_input_options(
       (*list)[list_info->index - 1].action_start  = &setting_data_action_start_bind_device;
       (*list)[list_info->index - 1].action_toggle = &setting_data_action_toggle_bind_device;
       (*list)[list_info->index - 1].get_string_representation = &get_string_representation_bind_device;
+	}
 
       CONFIG_ACTION(
             key_bind_all[player],
@@ -4627,10 +4989,47 @@ static bool setting_data_append_list_input_options(
          group_info.name,
          subgroup_info);
 
+   CONFIG_UINT(
+         g_settings.input.key_profile,
+         "input_key_profile",
+         "Key Layout Profile",
+         key_profile,
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+#ifdef HAVE_5PLAY
+   settings_list_current_add_range(list, list_info, 0, 3, 1, true, true);
+#else
+   settings_list_current_add_range(list, list_info, 0, 2, 1, true, true);
+#endif
+
+   CONFIG_UINT(
+         g_settings.input.poll_rate,
+         "input_poll_rate",
+         "Polling Rate",
+         poll_rate,
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+   settings_list_current_add_range(list, list_info, 0, 11, 1, true, true);
+
+   CONFIG_UINT(
+         g_settings.input.trigger_threshold,
+         "input_trigger_threshold",
+         "Trigger Threshold",
+         trigger_threshold,
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+   settings_list_current_add_range(list, list_info, 0, 200, 1, true, true);
+
    CONFIG_FLOAT(
          g_settings.input.axis_threshold,
          "input_axis_threshold",
-         "Input Axis Threshold",
+         "Axis Threshold",
          axis_threshold,
          "%.3f",
          group_info.name,
@@ -4687,9 +5086,13 @@ static bool setting_data_append_list_input_options(
    }
    END_SUB_GROUP(list, list_info);
 
-   for (player = 0; player < MAX_PLAYERS; player ++)
+#ifdef HAVE_5PLAY
+   for (player = 0; player < (MAX_PLAYERS - 11); player ++)
+#else
+   for (player = 0; player < (MAX_PLAYERS - 12); player ++)
+#endif
    {
-      /* This constants matches the string length.
+      /* This const matches the string length.
        * Keep it up to date or you'll get some really obvious bugs.
        * 2 is the length of '99'; we don't need more players than that.
        */
@@ -4732,7 +5135,7 @@ static bool setting_data_append_list_input_options(
       }
       END_SUB_GROUP(list, list_info);
    }
-   START_SUB_GROUP(
+  /* START_SUB_GROUP(
          list,
          list_info,
          "Onscreen Keyboard",
@@ -4771,7 +5174,7 @@ static bool setting_data_append_list_input_options(
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
-   END_SUB_GROUP(list, list_info);
+   END_SUB_GROUP(list, list_info);*/
    END_GROUP(list, list_info);
 
    return true;
@@ -4785,7 +5188,8 @@ static bool setting_data_append_list_overlay_options(
    rarch_setting_group_info_t group_info;
    rarch_setting_group_info_t subgroup_info;
 
-   START_GROUP(group_info, "Overlay Options");
+   /* Overlay Options is now Overlays */
+   START_GROUP(group_info, "Overlays");
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_IS_CATEGORY);
    START_SUB_GROUP(list, list_info, "State", group_info.name, subgroup_info);
 
@@ -4884,7 +5288,7 @@ static bool setting_data_append_list_menu_options(
 static bool setting_data_append_list_netplay_options(
       rarch_setting_t **list,
       rarch_setting_info_t *list_info)
-{
+{/*
 #ifdef HAVE_NETPLAY
    rarch_setting_group_info_t group_info;
    rarch_setting_group_info_t subgroup_info;
@@ -4966,7 +5370,7 @@ static bool setting_data_append_list_netplay_options(
    END_SUB_GROUP(list, list_info);
    END_GROUP(list, list_info);
 #endif
-
+*/
    return true;
 }
 
@@ -5064,7 +5468,8 @@ static bool setting_data_append_list_path_options(
    rarch_setting_group_info_t group_info;
    rarch_setting_group_info_t subgroup_info;
 
-   START_GROUP(group_info, "Path Options");
+   /* Path Options is now Paths */
+   START_GROUP(group_info, "Paths");
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_IS_CATEGORY);
    START_SUB_GROUP(list, list_info, "State", group_info.name, subgroup_info);
 
@@ -5075,7 +5480,7 @@ static bool setting_data_append_list_path_options(
    CONFIG_DIR(
          g_settings.menu_content_directory,
          "rgui_browser_directory",
-         "Browser Directory",
+         "Browser",
          "",
          "<default>",
          group_info.name,
@@ -5087,7 +5492,7 @@ static bool setting_data_append_list_path_options(
          list_info,
          SD_FLAG_ALLOW_EMPTY | SD_FLAG_PATH_DIR);
 
-   CONFIG_DIR(
+/*   CONFIG_DIR(
          g_settings.content_directory,
          "content_directory",
          "Content Directory",
@@ -5101,8 +5506,8 @@ static bool setting_data_append_list_path_options(
          list,
          list_info,
          SD_FLAG_ALLOW_EMPTY | SD_FLAG_PATH_DIR);
-
-   CONFIG_DIR(
+*/
+  /* CONFIG_DIR(
          g_settings.assets_directory,
          "assets_directory",
          "Assets Directory",
@@ -5116,28 +5521,12 @@ static bool setting_data_append_list_path_options(
          list,
          list_info,
          SD_FLAG_ALLOW_EMPTY | SD_FLAG_PATH_DIR);
-
-   CONFIG_DIR(
-         g_settings.menu_config_directory,
-         "rgui_config_directory",
-         "Config Directory",
-         "",
-         "<default>",
-         group_info.name,
-         subgroup_info.name,
-         general_write_handler,
-         general_read_handler);
-   settings_data_list_current_add_flags(
-         list,
-         list_info,
-         SD_FLAG_ALLOW_EMPTY | SD_FLAG_PATH_DIR);
-
-#endif
+*/
 
    CONFIG_DIR(
          g_settings.libretro_directory,
          "libretro_dir_path",
-         "Core Directory",
+         "Core Select",
          g_defaults.core_dir,
          "<None>",
          group_info.name,
@@ -5151,6 +5540,23 @@ static bool setting_data_append_list_path_options(
          SD_FLAG_ALLOW_EMPTY | SD_FLAG_PATH_DIR);
 
    CONFIG_DIR(
+         g_settings.menu_config_directory,
+         "rgui_config_directory",
+         "Configurations",
+         "",
+         "<default>",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+   settings_data_list_current_add_flags(
+         list,
+         list_info,
+         SD_FLAG_ALLOW_EMPTY | SD_FLAG_PATH_DIR);
+
+#endif
+
+  /* CONFIG_DIR(
          g_settings.libretro_info_path,
          "libretro_info_path",
          "Core Info Directory",
@@ -5164,12 +5570,12 @@ static bool setting_data_append_list_path_options(
    settings_data_list_current_add_flags(
          list,
          list_info,
-         SD_FLAG_ALLOW_EMPTY | SD_FLAG_PATH_DIR);
+         SD_FLAG_ALLOW_EMPTY | SD_FLAG_PATH_DIR);*/
 
    CONFIG_PATH(
          g_settings.core_options_path,
          "core_options_path",
-         "Core Options Path",
+         "Core Options",
          "",
          "Paths",
          subgroup_info.name,
@@ -5177,7 +5583,7 @@ static bool setting_data_append_list_path_options(
          general_read_handler);
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_ALLOW_EMPTY);
 
-   CONFIG_PATH(
+  /* CONFIG_PATH(
          g_settings.cheat_database,
          "cheat_database_path",
          "Cheat Database",
@@ -5196,8 +5602,8 @@ static bool setting_data_append_list_path_options(
          group_info.name,
          subgroup_info.name,
          general_write_handler, general_read_handler);
-   settings_data_list_current_add_flags(list, list_info, SD_FLAG_ALLOW_EMPTY);
-
+   settings_data_list_current_add_flags(list, list_info, SD_FLAG_ALLOW_EMPTY);*/
+/*
    CONFIG_PATH(
          g_settings.content_history_path,
          "game_history_path",
@@ -5208,11 +5614,11 @@ static bool setting_data_append_list_path_options(
          general_write_handler,
          general_read_handler);
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_ALLOW_EMPTY);
-
+*/
    CONFIG_DIR(
          g_settings.video.filter_dir,
          "video_filter_dir",
-         "VideoFilter Directory",
+         "Video Filters",
          "",
          "<default>",
          group_info.name,
@@ -5227,7 +5633,7 @@ static bool setting_data_append_list_path_options(
    CONFIG_DIR(
          g_settings.audio.filter_dir,
          "audio_filter_dir",
-         "AudioFilter Directory",
+         "Audio Filters",
          "",
          "<default>",
          group_info.name,
@@ -5260,7 +5666,7 @@ static bool setting_data_append_list_path_options(
    CONFIG_DIR(
          g_extern.overlay_dir,
          "overlay_directory",
-         "Overlay Directory",
+         "Overlay Data",
          g_defaults.overlay_dir,
          "<default>",
          group_info.name,
@@ -5273,7 +5679,7 @@ static bool setting_data_append_list_path_options(
          SD_FLAG_ALLOW_EMPTY | SD_FLAG_PATH_DIR);
 #endif
 
-   CONFIG_DIR(
+  /* CONFIG_DIR(
          g_settings.resampler_directory,
          "resampler_directory",
          "Resampler Directory",
@@ -5286,12 +5692,12 @@ static bool setting_data_append_list_path_options(
    settings_data_list_current_add_flags(
          list,
          list_info,
-         SD_FLAG_ALLOW_EMPTY | SD_FLAG_PATH_DIR);
+         SD_FLAG_ALLOW_EMPTY | SD_FLAG_PATH_DIR);*/
 
    CONFIG_DIR(
          g_settings.screenshot_directory,
          "screenshot_directory",
-         "Screenshot Directory",
+         "Screenshots",
          "",
          "<Content dir>",
          group_info.name,
@@ -5303,7 +5709,7 @@ static bool setting_data_append_list_path_options(
          list_info,
          SD_FLAG_ALLOW_EMPTY | SD_FLAG_PATH_DIR);
 
-   CONFIG_DIR(
+ /*  CONFIG_DIR(
          g_settings.input.autoconfig_dir,
          "joypad_autoconfig_dir",
          "Joypad Autoconfig Directory",
@@ -5316,9 +5722,9 @@ static bool setting_data_append_list_path_options(
    settings_data_list_current_add_flags(
          list,
          list_info,
-         SD_FLAG_ALLOW_EMPTY | SD_FLAG_PATH_DIR);
+         SD_FLAG_ALLOW_EMPTY | SD_FLAG_PATH_DIR);*/
 
-   CONFIG_DIR(
+  /* CONFIG_DIR(
          g_settings.playlist_directory,
          "playlist_directory",
          "Playlist Directory",
@@ -5331,12 +5737,12 @@ static bool setting_data_append_list_path_options(
    settings_data_list_current_add_flags(
          list,
          list_info,
-         SD_FLAG_ALLOW_EMPTY | SD_FLAG_PATH_DIR);
+         SD_FLAG_ALLOW_EMPTY | SD_FLAG_PATH_DIR);*/
 
    CONFIG_DIR(
          g_extern.savefile_dir,
          "savefile_directory",
-         "Savefile Directory",
+         "Save Data",
          "",
          "<Content dir>",
          group_info.name,
@@ -5347,7 +5753,7 @@ static bool setting_data_append_list_path_options(
    CONFIG_DIR(
          g_extern.savestate_dir,
          "savestate_directory",
-         "Savestate Directory",
+         "Save State Data",
          "",
          "<Content dir>",
          group_info.name,
@@ -5358,7 +5764,7 @@ static bool setting_data_append_list_path_options(
    CONFIG_DIR(
          g_settings.system_directory,
          "system_directory",
-         "System Directory",
+         "System Data",
          "",
          "<Content dir>",
          group_info.name,
@@ -5369,7 +5775,7 @@ static bool setting_data_append_list_path_options(
    CONFIG_DIR(
          g_settings.extraction_directory,
          "extraction_directory",
-         "Extraction Directory",
+         "Extracted Data",
          "",
          "<None>",
          group_info.name,

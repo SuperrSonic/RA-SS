@@ -61,14 +61,21 @@ static void menu_key_end_line(void *data)
 }
 
 static void menu_search_callback(void *userdata, const char *str)
-{
+{  
+   //warn caused here, useless on wii anyway
+   //but helps identify if the compiler is the right version apparently
+#ifdef NO_WARN
+   return;
+#else
    menu_handle_t *menu = (menu_handle_t*)userdata;
+
    size_t idx;
 
    if (str && *str && file_list_search(menu->menu_list->selection_buf, str, &idx))
          menu_navigation_set(menu, idx);
 
    menu_key_end_line(menu);
+#endif
 }
 
 void st_uint_callback(void *userdata, const char *str)
@@ -302,18 +309,25 @@ int menu_input_bind_iterate(void *data)
    char msg[PATH_MAX];
    menu_handle_t *menu = (menu_handle_t*)data;
    struct menu_bind_state binds = menu->binds;
-    
+
+   /* GameCube Controller mode change: Down */
+   g_settings.input.gc_once = true;
+
    if (driver.video_data && driver.menu_ctx &&
          driver.menu_ctx->render)
       driver.menu_ctx->render();
 
-   snprintf(msg, sizeof(msg), "[%s]\npress joypad\n(RETURN to skip)",
+   snprintf(msg, sizeof(msg), "[%s]\nPress key...",
          input_config_bind_map[
          driver.menu->binds.begin - MENU_SETTINGS_BIND_BEGIN].desc);
 
    if (driver.video_data && driver.menu_ctx 
          && driver.menu_ctx->render_messagebox)
       driver.menu_ctx->render_messagebox(msg);
+
+   /* Fixes mapping GC controllers using 0 poll */
+   /* Also avoids new binds triggering */
+   VIDEO_WaitVSync();
 
    driver.block_input = true;
    menu_poll_bind_state(&binds);
@@ -327,10 +341,17 @@ int menu_input_bind_iterate(void *data)
       driver.flushing_input = true;
 
       binds.begin++;
-      if (binds.begin <= binds.last)
+      if (binds.begin <= binds.last) {
+         /* GameCube Controller mode change: Held */
+         VIDEO_WaitVSync();
+		 g_settings.input.gc_once = false;
          binds.target++;
-      else
+    } else {
+         /* GameCube Controller mode change: Held */
+         VIDEO_WaitVSync();
+		 g_settings.input.gc_once = false;
          return 1;
+	}
    }
    menu->binds = binds;
 

@@ -172,12 +172,30 @@ static void frontend_gx_get_environment_settings(int *argc, char *argv[],
 #if defined(HAVE_LOGGER)
    logger_init();
 #elif defined(HAVE_FILE_LOGGER)
-   g_extern.log_file = fopen("/retroarch-log.txt", "w");
+   g_extern.log_file = fopen("/log.txt", "w");
 #endif
 #endif
 
+   /* This situation can happen on some loaders so we really need some
+      fake args or else retroarch will just crash on parsing NULL pointers */
+  /* if(*argc == 0 || argv == NULL)
+   {
+      struct rarch_main_wrap *args = (struct rarch_main_wrap*)params_data;
+      if (args)
+      {
+         args->touched        = true;
+         args->no_content     = false;
+         args->verbose        = false;
+         args->config_path    = NULL;
+         args->sram_path      = NULL;
+         args->state_path     = NULL;
+         args->content_path   = NULL;
+         args->libretro_path  = NULL;
+      }
+   }*/
+
 #ifdef HW_DOL
-   chdir("carda:/retroarch");
+   chdir("carda:/private/other");
 #endif
    getcwd(g_defaults.core_dir, MAXPATHLEN);
    char *last_slash = strrchr(g_defaults.core_dir, '/');
@@ -186,23 +204,36 @@ static void frontend_gx_get_environment_settings(int *argc, char *argv[],
    char *device_end = strchr(g_defaults.core_dir, '/');
    if (device_end)
       snprintf(g_defaults.port_dir, sizeof(g_defaults.port_dir),
-            "%.*s/retroarch", device_end - g_defaults.core_dir,
+            "%.*s/private/other", device_end - g_defaults.core_dir,
             g_defaults.core_dir);
    else
       fill_pathname_join(g_defaults.port_dir, g_defaults.port_dir,
-            "retroarch", sizeof(g_defaults.port_dir));
-   fill_pathname_join(g_defaults.overlay_dir, g_defaults.core_dir,
+            "private/other", sizeof(g_defaults.port_dir));
+   fill_pathname_join(g_defaults.overlay_dir, g_defaults.port_dir,
          "overlays", sizeof(g_defaults.overlay_dir));
    fill_pathname_join(g_defaults.config_path, g_defaults.port_dir,
-         "retroarch.cfg", sizeof(g_defaults.config_path));
+         "main.cfg", sizeof(g_defaults.config_path));
    fill_pathname_join(g_defaults.system_dir, g_defaults.port_dir,
          "system", sizeof(g_defaults.system_dir));
    fill_pathname_join(g_defaults.sram_dir, g_defaults.port_dir,
          "savefiles", sizeof(g_defaults.sram_dir));
    fill_pathname_join(g_defaults.savestate_dir, g_defaults.port_dir,
          "savestates", sizeof(g_defaults.savestate_dir));
-   fill_pathname_join(g_defaults.playlist_dir, g_defaults.port_dir,
-         "playlists", sizeof(g_defaults.playlist_dir));
+   //fill_pathname_join(g_defaults.playlist_dir, g_defaults.port_dir,
+       //  "playlists", sizeof(g_defaults.playlist_dir));
+   fill_pathname_join(g_defaults.audio_filter_dir, g_defaults.port_dir,
+         "audiofilters", sizeof(g_defaults.audio_filter_dir));
+   fill_pathname_join(g_defaults.video_filter_dir, g_defaults.port_dir,
+         "videofilters", sizeof(g_defaults.video_filter_dir));
+   fill_pathname_join(g_defaults.screenshot_dir, g_defaults.port_dir,
+         "screenshots", sizeof(g_defaults.screenshot_dir));
+   fill_pathname_join(g_defaults.extract_dir, g_defaults.port_dir,
+         "system/temp", sizeof(g_defaults.extract_dir));
+
+#ifndef IS_SALAMANDER
+   /* Determine if we start in single game mode */
+   g_settings.single_mode = false;
+#endif
 
 #ifdef IS_SALAMANDER
    if (*argc > 2 && argv[1] != NULL && argv[2] != NULL)
@@ -211,26 +242,56 @@ static void frontend_gx_get_environment_settings(int *argc, char *argv[],
       gx_rom_path[0] = '\0';
 #else
 #ifdef HW_RVL
-   /* needed on Wii; loaders follow a dumb standard where the path and 
-    * filename are separate in the argument list */
-   if (*argc > 2 && argv[1] != NULL && argv[2] != NULL)
+   /* One argument = cfg path */
+   if(*argc > 1 && argv[1] != NULL && argv[2] == NULL)
    {
-      static char path[PATH_MAX];
-      *path = '\0';
       struct rarch_main_wrap *args = (struct rarch_main_wrap*)params_data;
-
       if (args)
       {
-         fill_pathname_join(path, argv[1], argv[2], sizeof(path));
-
-         args->content_path   = path;
-         args->libretro_path  = NULL;
          args->touched        = true;
          args->no_content     = false;
          args->verbose        = false;
          args->config_path    = NULL;
          args->sram_path      = NULL;
          args->state_path     = NULL;
+         args->content_path   = NULL;
+         args->libretro_path  = NULL;
+      }
+
+      if (argv[1] != NULL) {
+         /* Name of .cfg when loading via args */
+         fill_pathname_config(g_defaults.config_path, argv[1],
+           sizeof(g_defaults.config_path));
+      }
+   }
+
+   /* Needed on Wii; some loaders require two args,
+    * filename and path are separate in the argument list */
+   if (*argc > 2 && argv[1] != NULL && argv[2] != NULL)
+   {
+      static char path[PATH_MAX];
+      *path = '\0';
+      struct rarch_main_wrap *args = (struct rarch_main_wrap*)params_data;
+	  g_settings.single_mode = true;
+
+      if (args)
+      {
+         fill_pathname_join(path, argv[1], argv[2], sizeof(path));
+
+         args->touched        = true;
+         args->no_content     = false;
+         args->verbose        = false;
+         args->config_path    = NULL;
+         args->sram_path      = NULL;
+         args->state_path     = NULL;
+         args->content_path   = path;
+         args->libretro_path  = NULL;
+      }
+
+	  if (argv[3] != NULL) {
+         /* Name of .cfg when loading via args */
+         fill_pathname_config(g_defaults.config_path, argv[3],
+           sizeof(g_defaults.config_path));
       }
    }
 #endif

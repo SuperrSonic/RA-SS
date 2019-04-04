@@ -252,7 +252,7 @@ void menu_ticker_line(char *buf, size_t len, unsigned idx,
    if (!selected)
    {
       strlcpy(buf, str, len + 1 - 3);
-      strlcat(buf, " ", len + 1);
+      strlcat(buf, "...", len + 1);
       return;
    }
 
@@ -285,31 +285,31 @@ void menu_ticker_line(char *buf, size_t len, unsigned idx,
    }
 }
 
-static unsigned input_frame(uint64_t trigger_state) // SNES alt is YBA, standard is BAY, MJ is YAB
+static unsigned input_frame(uint64_t trigger_state) // Sailor Moon is YBA, SNES is YBA, standard is BAY
 {
-   if (trigger_state & (1ULL << RETRO_DEVICE_ID_JOYPAD_UP))
+   if (trigger_state & (1ULL << RARCH_MENU_UP))
       return MENU_ACTION_UP;
-   if (trigger_state & (1ULL << RETRO_DEVICE_ID_JOYPAD_DOWN))
+   else if (trigger_state & (1ULL << RARCH_MENU_DOWN))
       return MENU_ACTION_DOWN;
-   if (trigger_state & (1ULL << RETRO_DEVICE_ID_JOYPAD_LEFT))
+   else if (trigger_state & (1ULL << RARCH_MENU_LEFT))
       return MENU_ACTION_LEFT;
-   if (trigger_state & (1ULL << RETRO_DEVICE_ID_JOYPAD_RIGHT))
+   else if (trigger_state & (1ULL << RARCH_MENU_RIGHT))
       return MENU_ACTION_RIGHT;
-   if (trigger_state & (1ULL << RETRO_DEVICE_ID_JOYPAD_L))
+  /* if (trigger_state & (1ULL << RETRO_DEVICE_ID_JOYPAD_L))
       return MENU_ACTION_SCROLL_UP;
    if (trigger_state & (1ULL << RETRO_DEVICE_ID_JOYPAD_R))
-      return MENU_ACTION_SCROLL_DOWN;
-   if (trigger_state & (1ULL << RETRO_DEVICE_ID_JOYPAD_B))
+      return MENU_ACTION_SCROLL_DOWN;*/
+   else if (trigger_state & (1ULL << RARCH_MENU_CANCEL))
       return MENU_ACTION_CANCEL;
-   if (trigger_state & (1ULL << RETRO_DEVICE_ID_JOYPAD_A))
+   else if (trigger_state & (1ULL << RARCH_MENU_OK))
       return MENU_ACTION_OK;
-   if (trigger_state & (1ULL << RETRO_DEVICE_ID_JOYPAD_Y))
-      return MENU_ACTION_Y;
-   if (trigger_state & (1ULL << RETRO_DEVICE_ID_JOYPAD_START))
+   //if (trigger_state & (1ULL << RETRO_DEVICE_ID_JOYPAD_Y))
+     // return MENU_ACTION_Y;
+   else if (trigger_state & (1ULL << RARCH_MENU_START))
       return MENU_ACTION_START;
-   if (trigger_state & (1ULL << RETRO_DEVICE_ID_JOYPAD_SELECT))
+   else if (trigger_state & (1ULL << RARCH_MENU_INFO))
       return MENU_ACTION_SELECT;
-   if (trigger_state & (1ULL << RARCH_MENU_TOGGLE))
+   else if (trigger_state & (1ULL << RARCH_MENU_TOGGLE))
       return MENU_ACTION_TOGGLE;
    return MENU_ACTION_NOOP;
 }
@@ -387,20 +387,20 @@ int menu_iterate(retro_input_t input,
    static bool first_held = false;
    int32_t ret = 0;
    static const retro_input_t input_repeat =
-      (1ULL << RETRO_DEVICE_ID_JOYPAD_UP)
-      | (1ULL << RETRO_DEVICE_ID_JOYPAD_DOWN)
-      | (1ULL << RETRO_DEVICE_ID_JOYPAD_LEFT)
-      | (1ULL << RETRO_DEVICE_ID_JOYPAD_RIGHT)
-      | (1ULL << RETRO_DEVICE_ID_JOYPAD_L)
-      | (1ULL << RETRO_DEVICE_ID_JOYPAD_R);
+      (1ULL << RARCH_MENU_UP)
+      | (1ULL << RARCH_MENU_DOWN)
+      | (1ULL << RARCH_MENU_LEFT)
+      | (1ULL << RARCH_MENU_RIGHT);
+     // | (1ULL << RETRO_DEVICE_ID_JOYPAD_L)
+     // | (1ULL << RETRO_DEVICE_ID_JOYPAD_R);
 
    if (!driver.menu)
       return -1;
 
-   if (BIT64_GET(trigger_input, RARCH_OVERLAY_NEXT))
-      rarch_main_command(RARCH_CMD_OVERLAY_NEXT);
-   if (BIT64_GET(trigger_input, RARCH_FULLSCREEN_TOGGLE_KEY))
-      rarch_main_command(RARCH_CMD_FULLSCREEN_TOGGLE);
+  // if (BIT64_GET(trigger_input, RARCH_OVERLAY_NEXT))
+    //  rarch_main_command(RARCH_CMD_OVERLAY_NEXT);
+  // if (BIT64_GET(trigger_input, RARCH_FULLSCREEN_TOGGLE_KEY))
+    //  rarch_main_command(RARCH_CMD_FULLSCREEN_TOGGLE);
 
    driver.retro_ctx.poll_cb();
 
@@ -460,12 +460,12 @@ unsigned menu_common_type_is(const char *label, unsigned type)
    if (
          type == MENU_SETTINGS ||
          type == MENU_FILE_CATEGORY ||
-         !strcmp(label, "Shader Options") ||
+       //  !strcmp(label, "Shader Options") ||
          !strcmp(label, "Input Options") ||
          !strcmp(label, "core_options") ||
          !strcmp(label, "core_information") ||
-         !strcmp(label, "video_shader_parameters") ||
-         !strcmp(label, "video_shader_preset_parameters") ||
+         //!strcmp(label, "video_shader_parameters") ||
+         //!strcmp(label, "video_shader_preset_parameters") ||
          !strcmp(label, "disk_options") ||
          !strcmp(label, "settings") ||
          !strcmp(label, "performance_counters") ||
@@ -479,7 +479,7 @@ unsigned menu_common_type_is(const char *label, unsigned type)
          !strcmp(label, "rgui_browser_directory") ||
          !strcmp(label, "content_directory") ||
          !strcmp(label, "assets_directory") ||
-         !strcmp(label, "video_shader_dir") ||
+       //  !strcmp(label, "video_shader_dir") ||
          !strcmp(label, "video_filter_dir") ||
          !strcmp(label, "audio_filter_dir") ||
          !strcmp(label, "savestate_directory") ||

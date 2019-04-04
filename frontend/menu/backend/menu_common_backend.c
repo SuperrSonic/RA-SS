@@ -124,6 +124,8 @@ static int menu_start_screen_iterate(unsigned action)
 {
    unsigned i;
    char msg[PATH_MAX];
+   char msg_secret[PATH_MAX];
+   //char full_secret[PATH_MAX];
 
    if (!driver.menu)
       return 0;
@@ -153,10 +155,10 @@ static int menu_start_screen_iterate(unsigned action)
    }
 
    snprintf(msg, sizeof(msg),
-         "-- Welcome to RetroArch --\n"
+         "-- Welcome --\n"
          " \n" // strtok_r doesn't split empty strings.
 
-         "Basic Menu controls:\n"
+        /* "Basic Menu controls:\n"
          "    Scroll (Up): %-20s\n"
          "  Scroll (Down): %-20s\n"
          "      Accept/OK: %-20s\n"
@@ -164,22 +166,38 @@ static int menu_start_screen_iterate(unsigned action)
          "           Info: %-20s\n"
          "Enter/Exit Menu: %-20s\n"
          " Exit RetroArch: %-20s\n"
-         " \n"
+         " \n"*/
 
-         "To run content:\n"
+		 "This version aims to improve the \n"
+		 "user experience on Nintendo Wii \n"
+		 "and adds many new features! \n"
+		 " \n"
+
+        /* "To run content:\n"
          "Load a libretro core (Core).\n"
          "Load a content file (Load Content).     \n"
          " \n"
 
          "See Path Options to set directories\n"
          "for faster access to files.\n"
-         " \n"
+         " \n"*/
 
-         "Press Accept/OK to continue.",
-      desc[0], desc[1], desc[2], desc[3], desc[4], desc[5], desc[6]);
+         "Press 2 or the A button to continue.");
 
-   if (driver.video_data && driver.menu_ctx && driver.menu_ctx->render_messagebox)
-      driver.menu_ctx->render_messagebox(msg);
+   snprintf(msg_secret, sizeof(msg_secret),
+         "-- Weeeepaaaa --\n"
+		 );
+   //snprintf(full_secret, sizeof(full_secret),
+	//	 "Hmm, secrets!"
+		// );
+
+   if (CONF_GetLanguage() == 4) {
+      if (driver.video_data && driver.menu_ctx && driver.menu_ctx->render_messagebox)
+         driver.menu_ctx->render_messagebox(msg_secret);
+   } else {
+      if (driver.video_data && driver.menu_ctx && driver.menu_ctx->render_messagebox)
+         driver.menu_ctx->render_messagebox(msg);
+   }
 
    if (action == MENU_ACTION_OK)
       menu_list_pop_stack(driver.menu->menu_list);
@@ -416,12 +434,19 @@ static int menu_viewport_iterate(unsigned action)
 
    if (g_settings.video.scale_integer)
    {
-      custom->x = 0;
-      custom->y = 0;
       custom->width = ((custom->width + geom->base_width - 1) /
             geom->base_width) * geom->base_width;
       custom->height = ((custom->height + geom->base_height - 1) /
             geom->base_height) * geom->base_height;
+
+    /* Prevent going higher than we can */
+	  if (custom->width > gx_mode.fbWidth)
+	     custom->width = gx_mode.fbWidth;
+	  if (custom->height > gx_mode.xfbHeight)
+	     custom->height = gx_mode.xfbHeight;
+
+      custom->x = (gx_mode.fbWidth - custom->width) / 2;
+      custom->y = (gx_mode.xfbHeight - custom->height) / 2;
 
       base_msg = "Set scale";
       snprintf(msg, sizeof(msg), "%s (%4ux%4u, %u x %u scale)",
@@ -559,9 +584,13 @@ static int menu_common_iterate(unsigned action)
    if (driver.video_data && driver.menu_ctx && driver.menu_ctx->set_texture)
       driver.menu_ctx->set_texture(driver.menu);
 
-   if (!strcmp(label, "help"))
-      return menu_start_screen_iterate(action);
-   else if (!strcmp(label, "message"))
+  // if (!g_settings.single_mode) {
+         if (!strcmp(label, "help"))
+            return menu_start_screen_iterate(action);
+   //}
+   //This creates a bug
+
+   if (!strcmp(label, "message"))
       return menu_message_toggle(action);
    else if (!strcmp(label, "load_open_zip"))
       return menu_load_or_open_zip_iterate(action);

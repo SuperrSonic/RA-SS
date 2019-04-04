@@ -53,8 +53,8 @@
 #define SINC_WINDOW_LANCZOS
 #define CUTOFF 0.98
 #define PHASE_BITS 12
-#define SUBPHASE_BITS 10
 #define SINC_COEFF_LERP 0
+#define SUBPHASE_BITS 10
 #define SIDELOBES 4
 #define ENABLE_AVX 0
 #elif defined(SINC_HIGHER_QUALITY)
@@ -492,7 +492,7 @@ static void *resampler_sinc_new(const struct resampler_config *config,
 
    memset(re, 0, sizeof(*re));
 
-   re->taps = TAPS;
+   re->taps = g_settings.audio.sinc_taps;
    cutoff = CUTOFF;
 
    /* Downsampling, must lower cutoff, and extend number of 
@@ -555,7 +555,7 @@ rarch_resampler_t sinc_resampler = {
    resampler_sinc_process,
    resampler_sinc_free,
    RESAMPLER_API_VERSION,
-   "sinc",
+   "SINC",
    "sinc"
 };
 

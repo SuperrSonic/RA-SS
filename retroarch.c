@@ -31,12 +31,14 @@
 #include <compat/strl.h>
 #include "screenshot.h"
 #include "performance.h"
-#include "cheats.h"
+//#include "cheats.h"
 #include <compat/getopt.h>
 #include <compat/posix_string.h>
 #include "input/keyboard_line.h"
 #include "git_version.h"
 #include "intl/intl.h"
+
+#include "wii/utils/playlog.h"
 
 #ifdef HAVE_MENU
 #include "frontend/menu/menu_common.h"
@@ -58,7 +60,7 @@
 #endif
 
 bool first_run_state = true;
-
+/*
 static bool take_screenshot_viewport(void)
 {
    char screenshot_path[PATH_MAX];
@@ -89,7 +91,7 @@ static bool take_screenshot_viewport(void)
       screenshot_dir = screenshot_path;
    }
 
-   /* Data read from viewport is in bottom-up order, suitable for BMP. */
+   // Data read from viewport is in bottom-up order, suitable for BMP.
    if (!screenshot_dump(screenshot_dir, buffer, vp.width, vp.height,
             vp.width * 3, true))
       goto done;
@@ -101,7 +103,7 @@ done:
       free(buffer);
    return retval;
 }
-
+*/
 static bool take_screenshot_raw(void)
 {
    char screenshot_path[PATH_MAX];
@@ -128,7 +130,7 @@ static bool take_screenshot_raw(void)
 
 static void take_screenshot(void)
 {
-   bool viewport_read = false;
+   //bool viewport_read = false;
    bool ret = false;
    const char *msg = NULL;
 
@@ -136,30 +138,30 @@ static void take_screenshot(void)
    if ((!*g_settings.screenshot_directory) && (!*g_extern.basename))
       return;
 
-   viewport_read = (g_settings.video.gpu_screenshot ||
+   /*viewport_read = (g_settings.video.gpu_screenshot ||
          g_extern.system.hw_render_callback.context_type
          != RETRO_HW_CONTEXT_NONE) && driver.video->read_viewport &&
-      driver.video->viewport_info;
+      driver.video->viewport_info; */
 
    /* Clear out message queue to avoid OSD fonts to appear on screenshot. */
-   msg_queue_clear(g_extern.msg_queue);
+   //msg_queue_clear(g_extern.msg_queue);
 
-   if (viewport_read)
-   {
+  // if (viewport_read)
+   //{
 #ifdef HAVE_MENU
       /* Avoid taking screenshot of GUI overlays. */
-      if (driver.video_poke && driver.video_poke->set_texture_enable)
-         driver.video_poke->set_texture_enable(driver.video_data,
-               false, false);
+    //  if (driver.video_poke && driver.video_poke->set_texture_enable)
+      //   driver.video_poke->set_texture_enable(driver.video_data,
+        //       false, false);
 #endif
 
-      if (driver.video)
-         rarch_render_cached_frame();
-   }
+//      if (driver.video)
+  //       rarch_render_cached_frame();
+   //}
 
-   if (viewport_read)
-      ret = take_screenshot_viewport();
-   else if (g_extern.frame_cache.data &&
+  // if (viewport_read)
+    //  ret = take_screenshot_viewport();
+   if (g_extern.frame_cache.data &&
          (g_extern.frame_cache.data != RETRO_HW_FRAME_BUFFER_VALID))
       ret = take_screenshot_raw();
    else
@@ -176,12 +178,13 @@ static void take_screenshot(void)
       msg = RETRO_MSG_TAKE_SCREENSHOT_FAILED;
    }
 
-   msg_queue_push(g_extern.msg_queue, msg, 1, g_extern.is_paused ? 1 : 180);
+   //msg_queue_push(g_extern.msg_queue, msg, 1, g_extern.is_paused ? 1 : 180);
+   msg_queue_push(g_extern.msg_queue, msg, 1, 180);
 
    if (g_extern.is_paused)
       rarch_render_cached_frame();
 }
-
+/*
 void rarch_recording_dump_frame(const void *data, unsigned width,
       unsigned height, size_t pitch)
 {
@@ -208,7 +211,7 @@ void rarch_recording_dump_frame(const void *data, unsigned width,
          return;
       }
 
-      /* User has resized. We kinda have a problem now. */
+      // User has resized. We kinda have a problem now. 
       if (vp.width != g_extern.record_gpu_width ||
             vp.height != g_extern.record_gpu_height)
       {
@@ -221,9 +224,9 @@ void rarch_recording_dump_frame(const void *data, unsigned width,
          return;
       }
 
-      /* Big bottleneck.
-       * Since we might need to do read-backs asynchronously,
-       * it might take 3-4 times before this returns true. */
+      // Big bottleneck.
+       // Since we might need to do read-backs asynchronously,
+       // it might take 3-4 times before this returns true.
       if (driver.video && driver.video->read_viewport)
          if (!driver.video->read_viewport(driver.video_data,
                   g_extern.record_gpu_buffer))
@@ -243,8 +246,8 @@ void rarch_recording_dump_frame(const void *data, unsigned width,
 
    if (driver.recording && driver.recording->push_video)
       driver.recording->push_video(driver.recording_data, &ffemu_data);
-}
-
+} */
+/*
 static void init_recording(void)
 {
    struct ffemu_params params = {0};
@@ -366,8 +369,7 @@ static void init_recording(void)
       RARCH_ERR(RETRO_LOG_INIT_RECORDING_FAILED);
       rarch_main_command(RARCH_CMD_GPU_RECORD_DEINIT);
    }
-}
-
+} */
 
 void rarch_render_cached_frame(void)
 {
@@ -458,14 +460,14 @@ static void print_compiler(FILE *file)
 #endif
    fprintf(file, "Built: %s\n", __DATE__);
 }
-
+#ifndef HW_RVL
 static void print_help(void)
 {
    puts("===================================================================");
 #ifdef HAVE_GIT_VERSION
    printf(RETRO_FRONTEND ": Frontend for libretro -- v" PACKAGE_VERSION " -- %s --\n", rarch_git_version);
 #else
-   puts(RETRO_FRONTEND ": Frontend for libretro -- v" PACKAGE_VERSION " --");
+  // puts(RETRO_FRONTEND ": Frontend for libretro -- v" PACKAGE_VERSION " --");
 #endif
    print_compiler(stdout);
    puts("===================================================================");
@@ -526,6 +528,7 @@ static void print_help(void)
    puts("\t-D/--detach: Detach " RETRO_FRONTEND " from the running console. Not relevant for all platforms.");
    puts("\t--max-frames: Runs for the specified number of frames, then exits.\n");
 }
+#endif
 
 static void set_basename(const char *path)
 {
@@ -641,11 +644,11 @@ static void parse_input(int argc, char *argv[])
    g_extern.has_set_libretro_directory = false;
    g_extern.has_set_verbosity = false;
 
-   g_extern.has_set_netplay_mode = false;
-   g_extern.has_set_username = false;
-   g_extern.has_set_netplay_ip_address = false;
-   g_extern.has_set_netplay_delay_frames = false;
-   g_extern.has_set_netplay_ip_port = false;
+   //g_extern.has_set_netplay_mode = false;
+   //g_extern.has_set_username = false;
+   //g_extern.has_set_netplay_ip_address = false;
+   //g_extern.has_set_netplay_delay_frames = false;
+   //g_extern.has_set_netplay_ip_port = false;
 
    g_extern.ups_pref = false;
    g_extern.bps_pref = false;
@@ -741,9 +744,9 @@ static void parse_input(int argc, char *argv[])
 
       switch (c)
       {
-         case 'h':
-            print_help();
-            exit(0);
+        // case 'h':
+          //  print_help();
+           // exit(0);
 
          case 'Z':
             strlcpy(g_extern.subsystem, optarg, sizeof(g_extern.subsystem));
@@ -764,7 +767,7 @@ static void parse_input(int argc, char *argv[])
             if (port < 1 || port > MAX_PLAYERS)
             {
                RARCH_ERR("Connect device to a valid port.\n");
-               print_help();
+             //  print_help();
                rarch_fail(1, "parse_input()");
             }
             g_settings.input.libretro_device[port - 1] = id;
@@ -777,7 +780,7 @@ static void parse_input(int argc, char *argv[])
             if (port < 1 || port > MAX_PLAYERS)
             {
                RARCH_ERR("Connect dualanalog to a valid port.\n");
-               print_help();
+            //   print_help();
                rarch_fail(1, "parse_input()");
             }
             g_settings.input.libretro_device[port - 1] = RETRO_DEVICE_ANALOG;
@@ -810,7 +813,7 @@ static void parse_input(int argc, char *argv[])
             if (port < 1 || port > MAX_PLAYERS)
             {
                RARCH_ERR("Disconnect device from a valid port.\n");
-               print_help();
+            //   print_help();
                rarch_fail(1, "parse_input()");
             }
             g_settings.input.libretro_device[port - 1] = RETRO_DEVICE_NONE;
@@ -868,7 +871,7 @@ static void parse_input(int argc, char *argv[])
             else if (strcmp(optarg, "load-save") != 0)
             {
                RARCH_ERR("Invalid argument in --sram-mode.\n");
-               print_help();
+              // print_help();
                rarch_fail(1, "parse_input()");
             }
             break;
@@ -928,11 +931,11 @@ static void parse_input(int argc, char *argv[])
                   break;
 
 #endif
-               case 'N':
-                  g_extern.has_set_username = true;
-                  strlcpy(g_settings.username, optarg,
-                        sizeof(g_settings.username));
-                  break;
+             //  case 'N':
+                 // g_extern.has_set_username = true;
+                 // strlcpy(g_settings.username, optarg,
+                   //     sizeof(g_settings.username));
+               //   break;
 
 #if defined(HAVE_NETWORK_CMD) && defined(HAVE_NETPLAY)
                case 'c':
@@ -970,7 +973,7 @@ static void parse_input(int argc, char *argv[])
                            &g_extern.record_height) != 2)
                   {
                      RARCH_ERR("Wrong format for --size.\n");
-                     print_help();
+                   //  print_help();
                      rarch_fail(1, "parse_input()");
                   }
                   break;
@@ -994,7 +997,7 @@ static void parse_input(int argc, char *argv[])
             break;
 
          case '?':
-            print_help();
+          //  print_help();
             rarch_fail(1, "parse_input()");
 
          default:
@@ -1107,7 +1110,7 @@ static void save_files(void)
       save_ram_file(path, type);
    }
 }
-
+/*
 static void init_cheats(void)
 {
    bool allow_cheats = true;
@@ -1119,17 +1122,13 @@ static void init_cheats(void)
    if (!allow_cheats)
       return;
 
-   if (*g_settings.cheat_database)
-      g_extern.cheat = cheat_manager_new(g_settings.cheat_database);
+   //if (*g_settings.cheat_database)
+    //  g_extern.cheat = cheat_manager_new(g_settings.cheat_database);
 }
-
+*/
 static void init_rewind(void)
 {
    void *state = NULL;
-#ifdef HAVE_NETPLAY
-   if (driver.netplay_data)
-      return;
-#endif
 
    if (!g_settings.rewind_enable || g_extern.state_manager)
       return;
@@ -1160,7 +1159,7 @@ static void init_rewind(void)
    pretro_serialize(state, g_extern.state_size);
    state_manager_push_do(g_extern.state_manager);
 }
-
+/*
 static void init_movie(void)
 {
    if (g_extern.bsv.movie_start_playback)
@@ -1199,10 +1198,10 @@ static void init_movie(void)
          RARCH_ERR("Failed to start movie record.\n");
       }
    }
-}
+}*/
 
 #define RARCH_DEFAULT_PORT 55435
-
+/*
 #ifdef HAVE_NETPLAY
 static void init_netplay(void)
 {
@@ -1244,7 +1243,7 @@ static void init_netplay(void)
                0, 180);
    }
 }
-#endif
+#endif*/
 
 #ifdef HAVE_COMMAND
 static void init_command(void)
@@ -1479,13 +1478,13 @@ static void load_auto_state(void)
 
    if (path_file_exists(savestate_name_auto))
    {
-     // char msg[PATH_MAX];
+      char msg[PATH_MAX];
       bool ret = load_state(savestate_name_auto);
 
       RARCH_LOG("Found auto savestate in: %s\n", savestate_name_auto);
 
-      RARCH_LOG("Loaded auto save",
-            savestate_name_auto, ret ? "success" : "failed");
+      snprintf(msg, sizeof(msg), "Auto-loading savestate from \"%s\" %s.",
+            savestate_name_auto, ret ? "succeeded" : "failed");
       //msg_queue_push(g_extern.msg_queue, msg, 1, 180);
       //RARCH_LOG("%s\n", msg);
    }
@@ -1517,11 +1516,11 @@ static void rarch_load_state(const char *path,
    if (load_state(path))
    {
       if (g_settings.state_slot < 0)
-         RARCH_LOG(
-               "Success");
+         snprintf(msg, sizeof_msg,
+               "Loaded state from slot #-1 (auto).");
       else
-         RARCH_LOG(
-               "Failed", g_settings.state_slot);
+         snprintf(msg, sizeof_msg,
+               "Loaded state from slot #%d.", g_settings.state_slot);
    }
    else
       snprintf(msg, sizeof_msg,
@@ -1534,11 +1533,11 @@ static void rarch_save_state(const char *path,
    if (save_state(path))
    {
       if (g_settings.state_slot < 0)
-         RARCH_LOG(
-               "Success");
+         snprintf(msg, sizeof_msg,
+               "Saved state to slot #-1 (auto).");
       else
-         RARCH_LOG(
-               "Failed", g_settings.state_slot);
+         snprintf(msg, sizeof_msg,
+               "Saved state to slot #%d.", g_settings.state_slot);
    }
    else
       snprintf(msg, sizeof_msg,
@@ -1562,14 +1561,19 @@ static void main_state(unsigned cmd)
    {
       if (cmd == RARCH_CMD_SAVE_STATE)
          rarch_save_state(path, msg, sizeof(msg));
-      else if (cmd == RARCH_CMD_LOAD_STATE) {      // Solution for auto .state loading failing with FBAlpha
-		if (!g_settings.savestate_auto_load) {
+      else if (cmd == RARCH_CMD_LOAD_STATE) { // Solution for auto state loading failing with FBAlpha
+		if (!first_run_state) {
     		rarch_load_state(path, msg, sizeof(msg));
-	   } else {
-		snprintf(path, sizeof(path), "%s.auto",
+            if (g_settings.regular_state_pause) {
+                g_settings.regular_load_safe = true;
+                VIDEO_SetBlack(true);
+            }
+       } else {
+        snprintf(path, sizeof(path), "%s.auto",
             g_extern.savestate_name);
-		rarch_load_state(path, msg, sizeof(msg));
-		}
+        rarch_load_state(path, msg, sizeof(msg));
+        first_run_state = false;
+       }
 	}
    }
    else
@@ -1904,6 +1908,10 @@ static bool init_core(void)
    verify_api_version();
    pretro_init();
 
+   /* Allows state loading to optionally pause after the first frame. */
+   if (g_settings.stateload_pause && g_settings.savestate_auto_load)
+        g_settings.autoload_safe = true;
+
    g_extern.use_sram = !g_extern.libretro_dummy &&
       !g_extern.libretro_no_content;
 
@@ -1922,10 +1930,11 @@ static bool init_core(void)
          if (load_save_files())
             RARCH_LOG("Skipping SRAM load.\n");
 
-         //load_auto_state();
+         if(!g_settings.savestate_auto_once)
+            load_auto_state();
 
-         rarch_main_command(RARCH_CMD_BSV_MOVIE_INIT);
-         rarch_main_command(RARCH_CMD_NETPLAY_INIT);
+        // rarch_main_command(RARCH_CMD_BSV_MOVIE_INIT);
+        // rarch_main_command(RARCH_CMD_NETPLAY_INIT);
       }
    }
 
@@ -1953,7 +1962,7 @@ int rarch_main_init(int argc, char *argv[])
    {
       RARCH_LOG_OUTPUT("=== Build =======================================");
       print_compiler(stderr);
-      RARCH_LOG_OUTPUT("Version: %s\n", PACKAGE_VERSION);
+     // RARCH_LOG_OUTPUT("Version: %s\n", PACKAGE_VERSION);
 #ifdef HAVE_GIT_VERSION
       RARCH_LOG_OUTPUT("Git: %s\n", rarch_git_version);
 #endif
@@ -1975,21 +1984,29 @@ int rarch_main_init(int argc, char *argv[])
    rarch_main_command(RARCH_CMD_COMMAND_INIT);
    rarch_main_command(RARCH_CMD_REWIND_INIT);
    rarch_main_command(RARCH_CMD_CONTROLLERS_INIT);
-   rarch_main_command(RARCH_CMD_RECORD_INIT);
-   rarch_main_command(RARCH_CMD_CHEATS_INIT);
+  // rarch_main_command(RARCH_CMD_RECORD_INIT);
+  // rarch_main_command(RARCH_CMD_CHEATS_INIT);
 
    rarch_main_command(RARCH_CMD_SAVEFILES_INIT);
 #if defined(GEKKO) && defined(HW_RVL)
    rarch_main_command(RARCH_CMD_VIDEO_SET_ASPECT_RATIO);
-     if (driver.video_data && driver.video_poke
-             && driver.video_poke->set_aspect_ratio)
-         driver.video_poke->set_aspect_ratio(driver.video_data,
-             g_settings.video.aspect_ratio_idx);
+
+	/* Use set resolution at start */
+
+   if (driver.video_data)
+       gx_set_video_mode(driver.video_data, menu_gx_resolutions
+           [g_settings.video.vres][0], menu_gx_resolutions[g_settings.video.vres][1]);
+
+   /* Black video to avoid garbage */
+   /*if (g_settings.single_mode)
+        VIDEO_SetBlack(true); */
 
    rarch_main_command(RARCH_CMD_DSP_FILTER_INIT);
 
-   if (first_run_state && g_settings.savestate_auto_load) { //&& (g_extern.frame_count > 140)) {
+   /* Workaround for auto-state loading not working in certain cores(FB Alpha) */
+   if (first_run_state && g_settings.savestate_auto_load && g_settings.savestate_auto_once) { //&& (g_extern.frame_count > 140)) {
      rarch_main_command(RARCH_CMD_LOAD_STATE);
+   } else if (!g_settings.savestate_auto_once) {
      first_run_state = false;
    }
    msg_queue_clear(g_extern.msg_queue);
@@ -2040,8 +2057,9 @@ void rarch_main_set_state(unsigned cmd)
          if (!load_menu_content())
             rarch_main_set_state(RARCH_ACTION_STATE_MENU_RUNNING);
 #endif
-         if (driver.frontend_ctx && driver.frontend_ctx->content_loaded)
+         if (driver.frontend_ctx && driver.frontend_ctx->content_loaded) {
             driver.frontend_ctx->content_loaded();
+		 }
          break;
       case RARCH_ACTION_STATE_MENU_RUNNING_FINISHED:
 #ifdef HAVE_MENU
@@ -2184,7 +2202,7 @@ static void history_playlist_new(void)
 
 bool rarch_main_command(unsigned cmd)
 {
-   //bool boolean = false;
+   bool boolean = false;
 
    switch (cmd)
    {
@@ -2233,12 +2251,16 @@ bool rarch_main_command(unsigned cmd)
       case RARCH_CMD_RESET:
          //RARCH_LOG(RETRO_LOG_RESETTING_CONTENT);
          //msg_queue_clear(g_extern.msg_queue);
-         //msg_queue_push(g_extern.msg_queue, "Reset.", 1, 120);
-         pretro_reset();
+        // msg_queue_push(g_extern.msg_queue, "Reset.", 1, 120);
+         if (g_settings.reset_fade && !reset_safe) {
+             start_resetfade = true;
+		 } else {
+             pretro_reset();
 
          /* bSNES since v073r01 resets controllers to JOYPAD
           * after a reset, so just enforce it here. */
          rarch_main_command(RARCH_CMD_CONTROLLERS_INIT);
+		 }
          break;
       case RARCH_CMD_SAVE_STATE:
          if (g_settings.savestate_auto_index)
@@ -2267,13 +2289,30 @@ bool rarch_main_command(unsigned cmd)
          driver.video_cache_context = 
             g_extern.system.hw_render_callback.cache_context;
          driver.video_cache_context_ack = false;
+
+// Actually bad idea, don't reinit drivers because it's unstable
+// and can force you to hard power down, otherwise this would be a nice thing
+
+		/* Revert to 640x480, avoids corrupted text */
+		/* gx_set_video_mode(driver.video_data, menu_gx_resolutions
+            [40][0],
+            menu_gx_resolutions[40][1]);
+		 VIDEO_SetBlack(true);*/
+
          rarch_main_command(RARCH_CMD_RESET_CONTEXT);
          driver.video_cache_context = false;
 
          /* Poll input to avoid possibly stale data to corrupt things. */
          driver.input->poll(driver.input_data);
+
+		 /* ugh, whatever */
+		/* rarch_main_command(RARCH_CMD_VIDEO_SET_ASPECT_RATIO);
+		 gx_set_video_mode(driver.video_data, menu_gx_resolutions
+            [g_settings.video.vres][0],
+            menu_gx_resolutions[g_settings.video.vres][1]);
+		 rarch_main_command(RARCH_CMD_DSP_FILTER_INIT);*/
          break;
-      case RARCH_CMD_CHEATS_DEINIT:
+    /*  case RARCH_CMD_CHEATS_DEINIT:
          if (g_extern.cheat)
             cheat_manager_free(g_extern.cheat);
          g_extern.cheat = NULL;
@@ -2281,7 +2320,7 @@ bool rarch_main_command(unsigned cmd)
       case RARCH_CMD_CHEATS_INIT:
          rarch_main_command(RARCH_CMD_CHEATS_DEINIT);
          init_cheats();
-         break;
+         break;*/
       case RARCH_CMD_REWIND_DEINIT:
 #ifdef HAVE_NETPLAY
          if (driver.netplay_data)
@@ -2397,10 +2436,9 @@ bool rarch_main_command(unsigned cmd)
             RARCH_ERR("[DSP]: Failed to initialize DSP filter \"%s\".\n",
                   g_settings.audio.dsp_plugin);
          break;
-      case RARCH_CMD_GPU_RECORD_DEINIT:
-         if (g_extern.record_gpu_buffer)
-            free(g_extern.record_gpu_buffer);
-         g_extern.record_gpu_buffer = NULL;
+      case RARCH_CMD_WII_MESSAGE_BOARD:
+        /* Update message board time */
+         Playlog_Exit();
          break;
       case RARCH_CMD_RECORD_DEINIT:
          if (!driver.recording_data || !driver.recording)
@@ -2415,12 +2453,12 @@ bool rarch_main_command(unsigned cmd)
          driver.recording_data = NULL;
          driver.recording = NULL;
 
-         rarch_main_command(RARCH_CMD_GPU_RECORD_DEINIT);
+         //rarch_main_command(RARCH_CMD_GPU_RECORD_DEINIT);
          break;
-      case RARCH_CMD_RECORD_INIT:
+    /*  case RARCH_CMD_RECORD_INIT:
          rarch_main_command(RARCH_CMD_HISTORY_DEINIT);
          init_recording();
-         break;
+         break;*/
       case RARCH_CMD_HISTORY_DEINIT:
          if (g_defaults.history)
             content_playlist_free(g_defaults.history);
@@ -2460,26 +2498,24 @@ bool rarch_main_command(unsigned cmd)
                && driver.video_poke->apply_state_changes)
             driver.video_poke->apply_state_changes(driver.video_data);
          break;
-      //case RARCH_CMD_VIDEO_SET_NONBLOCKING_STATE:
-         //boolean = true; /* fall-through */
-      /*case RARCH_CMD_VIDEO_SET_BLOCKING_STATE:
+      case RARCH_CMD_VIDEO_SET_NONBLOCKING_STATE:
+         boolean = true; /* fall-through */
+      case RARCH_CMD_VIDEO_SET_BLOCKING_STATE:
          if (driver.video && driver.video->set_nonblock_state)
             driver.video->set_nonblock_state(driver.video_data, boolean);
-         break;*/
+         break;
 	  case RARCH_CMD_VIDEO_SET_ASPECT_RATIO:
          if (driver.video_data && driver.video_poke
                && driver.video_poke->set_aspect_ratio)
             driver.video_poke->set_aspect_ratio(driver.video_data,
                   g_settings.video.aspect_ratio_idx);
-	   case RARCH_CMD_AUTO_LOAD_STATE:
-			 load_auto_state();
 		 break;
-      //case RARCH_CMD_AUDIO_SET_NONBLOCKING_STATE:
-         //boolean = true; /* fall-through */
-      /*case RARCH_CMD_AUDIO_SET_BLOCKING_STATE:
+      case RARCH_CMD_AUDIO_SET_NONBLOCKING_STATE:
+         boolean = true; /* fall-through */
+      case RARCH_CMD_AUDIO_SET_BLOCKING_STATE:
          if (driver.audio && driver.audio->set_nonblock_state)
             driver.audio->set_nonblock_state(driver.audio_data, boolean);
-         break;*/
+         break;
       case RARCH_CMD_OVERLAY_SET_SCALE_FACTOR:
 #ifdef HAVE_OVERLAY
          input_overlay_set_scale_factor(driver.overlay,
@@ -2507,6 +2543,9 @@ bool rarch_main_command(unsigned cmd)
          rarch_main_command(RARCH_CMD_DRIVERS_INIT);
          break;
       case RARCH_CMD_QUIT_RETROARCH:
+         if (g_settings.exit_fade && !exit_safe) { /* Menu Exit, runloop.c has key version. */
+            start_exitfade = true;
+         } else
          rarch_main_set_state(RARCH_ACTION_STATE_FORCE_QUIT);
          break;
       case RARCH_CMD_RESUME:
@@ -2559,7 +2598,7 @@ bool rarch_main_command(unsigned cmd)
                rarch_main_command(RARCH_CMD_AUDIO_START);
          }
          break;
-      case RARCH_CMD_SHADER_DIR_DEINIT:
+     /* case RARCH_CMD_SHADER_DIR_DEINIT:
          dir_list_free(g_extern.shader_dir.list);
          g_extern.shader_dir.list = NULL;
          g_extern.shader_dir.ptr  = 0;
@@ -2587,7 +2626,7 @@ bool rarch_main_command(unsigned cmd)
                RARCH_LOG("Found shader \"%s\"\n",
                      g_extern.shader_dir.list->elems[i].data);
          }
-         break;
+         break;*/
       case RARCH_CMD_SAVEFILES:
          save_files();
          break;
@@ -2619,7 +2658,7 @@ bool rarch_main_command(unsigned cmd)
          if (!g_extern.msg_queue)
             rarch_assert(g_extern.msg_queue = msg_queue_new(8));
          break;
-      case RARCH_CMD_BSV_MOVIE_DEINIT:
+     /* case RARCH_CMD_BSV_MOVIE_DEINIT:
          if (g_extern.bsv.movie)
             bsv_movie_free(g_extern.bsv.movie);
          g_extern.bsv.movie = NULL;
@@ -2652,20 +2691,20 @@ bool rarch_main_command(unsigned cmd)
                netplay_flip_players(netplay);
          }
 #endif
-         break;
-      case RARCH_CMD_FULLSCREEN_TOGGLE:
-         if (!driver.video)
-            return false;
+         break;*/
+     // case RARCH_CMD_FULLSCREEN_TOGGLE:
+       //  if (!driver.video)
+         //   return false;
          /* If video driver/context does not support windowed
           * mode, don't perform command. */
-         if (!driver.video->has_windowed(driver.video_data))
-            return false;
+        // if (!driver.video->has_windowed(driver.video_data))
+          //  return false;
 
          /* If we go fullscreen we drop all drivers and 
           * reinitialize to be safe. */
-         g_settings.video.fullscreen = !g_settings.video.fullscreen;
-         rarch_main_command(RARCH_CMD_REINIT);
-         break;
+        // g_settings.video.fullscreen = !g_settings.video.fullscreen;
+       //  rarch_main_command(RARCH_CMD_REINIT);
+        // break;
       case RARCH_CMD_COMMAND_DEINIT:
 #ifdef HAVE_COMMAND
          if (driver.command)
@@ -2748,7 +2787,7 @@ bool rarch_main_command(unsigned cmd)
             }
          }
          break;
-      case RARCH_CMD_GRAB_MOUSE_TOGGLE:
+     /* case RARCH_CMD_GRAB_MOUSE_TOGGLE:
          {
             static bool grab_mouse_state  = false;
 
@@ -2764,7 +2803,7 @@ bool rarch_main_command(unsigned cmd)
                driver.video_poke->show_mouse(
                      driver.video_data, !grab_mouse_state);
          }
-         break;
+         break;*/
       case RARCH_CMD_PERFCNT_REPORT_FRONTEND_LOG:
          rarch_perf_log();
          break;
@@ -2775,7 +2814,7 @@ bool rarch_main_command(unsigned cmd)
 
 void rarch_main_deinit(void)
 {
-   rarch_main_command(RARCH_CMD_NETPLAY_DEINIT);
+  // rarch_main_command(RARCH_CMD_NETPLAY_DEINIT);
    rarch_main_command(RARCH_CMD_COMMAND_DEINIT);
 
    if (g_extern.use_sram)
@@ -2785,8 +2824,8 @@ void rarch_main_deinit(void)
    rarch_main_command(RARCH_CMD_SAVEFILES);
 
    rarch_main_command(RARCH_CMD_REWIND_DEINIT);
-   rarch_main_command(RARCH_CMD_CHEATS_DEINIT);
-   rarch_main_command(RARCH_CMD_BSV_MOVIE_DEINIT);
+  // rarch_main_command(RARCH_CMD_CHEATS_DEINIT);
+  // rarch_main_command(RARCH_CMD_BSV_MOVIE_DEINIT);
 
    rarch_main_command(RARCH_CMD_AUTOSAVE_STATE);
 

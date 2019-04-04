@@ -69,6 +69,8 @@ enum
    GX_RESOLUTIONS_576_448,
    GX_RESOLUTIONS_608_448,
    GX_RESOLUTIONS_640_448,
+   GX_RESOLUTIONS_608_456,
+   GX_RESOLUTIONS_640_456,
    GX_RESOLUTIONS_340_464,
    GX_RESOLUTIONS_512_464,
    GX_RESOLUTIONS_512_472,
@@ -112,6 +114,8 @@ unsigned menu_gx_resolutions[GX_RESOLUTIONS_LAST][2] = {
    { 576, 448 },
    { 608, 448 },
    { 640, 448 },
+   { 608, 456 },
+   { 640, 456 },
    { 340, 464 },
    { 512, 464 },
    { 512, 472 },
@@ -135,6 +139,16 @@ uint32_t g_orientation;
 
 static uint32_t retraceCount;
 static uint32_t referenceRetraceCount;
+static bool need_wait;
+
+bool fade_boot = true;
+
+bool start_resetfade = false;
+bool end_resetfade = false;
+bool start_exitfade = false;
+bool reset_safe = false;
+bool exit_safe = false;
+int fade = 0;
 
 static struct
 {
@@ -143,6 +157,11 @@ static struct
    unsigned height;
    GXTexObj obj;
 } g_tex;
+
+#ifdef HAVE_RENDERSCALE
+static uint16_t* rescaleTexmem;
+static GXTexObj rescaleTex;
+#endif
 
 static struct
 {
@@ -156,6 +175,7 @@ uint16_t gx_width, gx_height;
 size_t display_list_size;
 GXRModeObj gx_mode;
 unsigned gx_old_width, gx_old_height;
+unsigned modetype;
 
 float verts[16] ATTRIBUTE_ALIGN(32) = {
    -1,  1, -0.5,
@@ -177,6 +197,12 @@ u8 color_ptr[16] ATTRIBUTE_ALIGN(32)  = {
    0xFF, 0xFF, 0xFF, 0xFF,
    0xFF, 0xFF, 0xFF, 0xFF,
 };
+
+void Draw_VIDEO()
+{
+	need_wait=false;
+	//VIDEO_Flush();
+}
 
 static void retrace_callback(u32 retrace_count)
 {
@@ -205,7 +231,7 @@ void gx_set_video_mode(void *data, unsigned fbWidth, unsigned lines)
    f32 y_scale;
    u16 xfbWidth, xfbHeight;
    bool progressive;
-   unsigned modetype, viHeightMultiplier, viWidth, tvmode,
+   unsigned viHeightMultiplier, viWidth, tvmode,
             max_width, max_height, i;
    gx_video_t *gx = (gx_video_t*)data;
 
@@ -313,12 +339,12 @@ void gx_set_video_mode(void *data, unsigned fbWidth, unsigned lines)
    for (i = 0; i < 12; i++)
       gx_mode.sample_pattern[i][0] = gx_mode.sample_pattern[i][1] = 6;
 
-   if (modetype == VI_INTERLACE)
+   if (modetype != VI_NON_INTERLACE && g_settings.video.vfilter)
    {
       gx_mode.vfilter[0] = 8;
       gx_mode.vfilter[1] = 8;
       gx_mode.vfilter[2] = 10;
-      gx_mode.vfilter[3] = 12;
+      gx_mode.vfilter[3] = 12 + g_settings.video.vbright;
       gx_mode.vfilter[4] = 10;
       gx_mode.vfilter[5] = 8;
       gx_mode.vfilter[6] = 8;
@@ -328,7 +354,7 @@ void gx_set_video_mode(void *data, unsigned fbWidth, unsigned lines)
       gx_mode.vfilter[0] = 0;
       gx_mode.vfilter[1] = 0;
       gx_mode.vfilter[2] = 21;
-      gx_mode.vfilter[3] = 22;
+      gx_mode.vfilter[3] = 22 + g_settings.video.vbright;
       gx_mode.vfilter[4] = 21;
       gx_mode.vfilter[5] = 0;
       gx_mode.vfilter[6] = 0;
@@ -361,13 +387,18 @@ void gx_set_video_mode(void *data, unsigned fbWidth, unsigned lines)
    GX_SetDispCopyDst(xfbWidth, xfbHeight);
 
    GX_SetCopyFilter(gx_mode.aa, gx_mode.sample_pattern,
-         (gx_mode.xfbMode == VI_XFBMODE_SF) ? GX_FALSE : g_settings.video.vfilter,
-         gx_mode.vfilter);
+         GX_TRUE, gx_mode.vfilter);
    GXColor color = { 0, 0, 0, 0xff };
    GX_SetCopyClear(color, GX_MAX_Z24);
    GX_SetFieldMode(gx_mode.field_rendering,
          (gx_mode.viHeight == 2 * gx_mode.xfbHeight) ? GX_ENABLE : GX_DISABLE);
-   GX_SetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
+
+   if (g_settings.video.dither) {
+      GX_SetPixelFmt(GX_PF_RGBA6_Z24, GX_ZC_LINEAR);
+      GX_SetDither(GX_TRUE);
+   } else {
+      GX_SetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
+   }
    GX_InvalidateTexAll();
    GX_Flush();
    
@@ -377,10 +408,12 @@ void gx_set_video_mode(void *data, unsigned fbWidth, unsigned lines)
    VIDEO_ClearFrameBuffer(&gx_mode, g_framebuf[1], COLOR_BLACK);
    VIDEO_SetNextFramebuffer(g_framebuf[0]);
    g_current_framebuf = 0;
+   GX_SetDrawDoneCallback(Draw_VIDEO);
    /* re-activate the Vsync callback */
    VIDEO_SetPostRetraceCallback(retrace_callback);
    VIDEO_SetBlack(false);
    VIDEO_Flush();
+   VIDEO_WaitVSync();
    VIDEO_WaitVSync();
    
    RARCH_LOG("GX Resolution: %dx%d (%s)\n", gx_mode.fbWidth,
@@ -396,11 +429,108 @@ void gx_set_video_mode(void *data, unsigned fbWidth, unsigned lines)
    }
    else
    {
-      if (modetype == VI_NON_INTERLACE)
-         driver_set_monitor_refresh_rate(59.8261f);
+      if (modetype == VI_NON_INTERLACE) // they get rounded either way?
+	     driver_set_monitor_refresh_rate(90.0 / 1.50436);
       else
-         driver_set_monitor_refresh_rate(59.94f);
+	     driver_set_monitor_refresh_rate(60.0 / 1.001);
    }
+}
+
+static void update_screen_width(void)
+{
+  gx_mode.viWidth = g_settings.video.viwidth;
+  gx_mode.viXOrigin = (VI_MAX_WIDTH_NTSC - gx_mode.viWidth) / 2;
+  VIDEO_Configure(&gx_mode);
+  VIDEO_Flush();
+}
+
+static void update_deflicker(void)
+{
+  if (modetype != VI_NON_INTERLACE && g_settings.video.vfilter)
+  {
+    gx_mode.vfilter[0] = 8;
+    gx_mode.vfilter[1] = 8;
+    gx_mode.vfilter[2] = 10;
+    gx_mode.vfilter[3] = 12 + g_settings.video.vbright;
+    gx_mode.vfilter[4] = 10;
+    gx_mode.vfilter[5] = 8;
+    gx_mode.vfilter[6] = 8;
+  }
+  else
+  {
+    gx_mode.vfilter[0] = 0;
+    gx_mode.vfilter[1] = 0;
+    gx_mode.vfilter[2] = 21;
+    gx_mode.vfilter[3] = 22 + g_settings.video.vbright;
+    gx_mode.vfilter[4] = 21;
+    gx_mode.vfilter[5] = 0;
+    gx_mode.vfilter[6] = 0;
+  }
+  GX_SetCopyFilter(gx_mode.aa, gx_mode.sample_pattern, GX_TRUE, gx_mode.vfilter);
+  GX_Flush();
+
+  VIDEO_Configure(&gx_mode);
+  VIDEO_Flush();
+}
+
+static void fadein_copyfilter(void)
+{
+  gx_mode.vfilter[0] = 0;
+  gx_mode.vfilter[1] = 0;
+  gx_mode.vfilter[2] = fade > 21 ? 21 : fade;
+  gx_mode.vfilter[3] = fade > 22 ? 22 : fade;
+  gx_mode.vfilter[4] = fade > 21 ? 21 : fade;
+  gx_mode.vfilter[5] = 0;
+  gx_mode.vfilter[6] = 0;
+
+  GX_SetCopyFilter(gx_mode.aa, gx_mode.sample_pattern, GX_TRUE, gx_mode.vfilter);
+  GX_Flush();
+
+  VIDEO_Configure(&gx_mode);
+  VIDEO_Flush();
+  if (!g_settings.fadein && fade_boot)
+      fade = 22;
+  else
+      fade++;
+  if (fade > 21) {
+    update_deflicker();
+    fade_boot = false;
+    fade = 22;
+    end_resetfade = false;
+  } else if (end_resetfade && g_settings.reset_fade == 1) {
+      fade = 22;
+      end_resetfade = false;
+	  update_deflicker();
+  }
+}
+
+static void fadeout_copyfilter(void)
+{
+  gx_mode.vfilter[0] = 0;
+  gx_mode.vfilter[1] = 0;
+  gx_mode.vfilter[2] = fade - 1;
+  gx_mode.vfilter[3] = fade;
+  gx_mode.vfilter[4] = fade - 1;
+  gx_mode.vfilter[5] = 0;
+  gx_mode.vfilter[6] = 0;
+
+  GX_SetCopyFilter(gx_mode.aa, gx_mode.sample_pattern, GX_TRUE, gx_mode.vfilter);
+  GX_Flush();
+
+  VIDEO_Configure(&gx_mode);
+  VIDEO_Flush();
+  fade--;
+  if (fade == 0 && start_exitfade) {
+       // start_exitfade = false; // pointless, we outta here
+        exit_safe = true;
+        rarch_main_command(RARCH_CMD_QUIT);
+  } else if (fade == 0) {
+    start_resetfade = false;
+    reset_safe = true;
+    rarch_main_command(RARCH_CMD_RESET);
+    reset_safe = false;
+    end_resetfade = true;
+  }
 }
 
 static void gx_set_aspect_ratio(void *data, unsigned aspect_ratio_idx)
@@ -444,7 +574,7 @@ static void setup_video_mode(void *data)
 
 static void init_texture(void *data, unsigned width, unsigned height)
 {
-   unsigned g_filter, menu_w, menu_h;
+   unsigned g_filter, menu_filter, menu_w, menu_h;
    gx_video_t *gx = (gx_video_t*)data;
    GXTexObj *fb_ptr   	= (GXTexObj*)&g_tex.obj;
    GXTexObj *menu_ptr 	= (GXTexObj*)&menu_tex.obj;
@@ -452,6 +582,7 @@ static void init_texture(void *data, unsigned width, unsigned height)
    width &= ~3;
    height &= ~3;
    g_filter = g_settings.video.smooth ? GX_LINEAR : GX_NEAR;
+   menu_filter = g_settings.video.menu_smooth ? GX_LINEAR : GX_NEAR;
    menu_w = 320;
    menu_h = 240;
 
@@ -468,7 +599,13 @@ static void init_texture(void *data, unsigned width, unsigned height)
    GX_InitTexObjFilterMode(fb_ptr, g_filter, g_filter);
    GX_InitTexObj(menu_ptr, menu_tex.data, menu_w, menu_h,
          GX_TF_RGB5A3, GX_CLAMP, GX_CLAMP, GX_FALSE);
-   GX_InitTexObjFilterMode(menu_ptr, g_filter, g_filter);
+   GX_InitTexObjFilterMode(menu_ptr, menu_filter, menu_filter);
+
+#ifdef HAVE_RENDERSCALE
+   GX_InitTexObj(&rescaleTex, rescaleTexmem, width * 2, height * 2, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
+   GX_InitTexObjFilterMode(&rescaleTex, GX_LINEAR, GX_LINEAR);
+#endif
+
    GX_InvalidateTexAll();
 }
 
@@ -482,7 +619,7 @@ static void init_vtx(void *data, const video_info_t *video)
 
    GX_SetCullMode(GX_CULL_NONE);
    GX_SetClipMode(GX_CLIP_DISABLE);
-   GX_SetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
+   //GX_SetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
    GX_SetZMode(GX_ENABLE, GX_ALWAYS, GX_ENABLE);
    GX_SetColorUpdate(GX_TRUE);
    GX_SetAlphaUpdate(GX_FALSE);
@@ -519,6 +656,11 @@ static void init_vtx(void *data, const video_info_t *video)
    {
       RARCH_LOG("[GX] reallocate texture\n");
       free(g_tex.data);
+#ifdef HAVE_RENDERSCALE
+	  free(rescaleTexmem);
+	  rescaleTexmem = memalign(32, 4 * RARCH_SCALE_BASE * RARCH_SCALE_BASE * video->input_scale *
+            video->input_scale * (video->rgb32 ? 4 : 2));
+#endif
       g_tex.data = memalign(32,
             RARCH_SCALE_BASE * RARCH_SCALE_BASE * video->input_scale *
             video->input_scale * (video->rgb32 ? 4 : 2));
@@ -812,7 +954,7 @@ static void gx_resize(void *data)
 #endif
    GX_SetDispCopyGamma(g_extern.console.screen.gamma_correction);
 
-   if (gx->keep_aspect && gx_mode.efbHeight >= 240) /* ignore this for custom resolutions */
+   if (gx->keep_aspect && gx_mode.efbHeight >= 192) /* ignore this for custom resolutions */
    {
       float desired_aspect = g_extern.system.aspect_ratio;
       if (desired_aspect == 0.0)
@@ -874,7 +1016,14 @@ static void gx_resize(void *data)
    gx->vp.width  = width;
    gx->vp.height = height;
 
-   GX_SetViewportJitter(x, y, width, height, 0, 1, 1);
+#ifdef HAVE_RENDERSCALE
+   if ((gx->menu_texture_enable && g_settings.menu_fullscreen) || g_settings.video.renderscale >= 2)
+#else
+   if (gx->menu_texture_enable && g_settings.menu_fullscreen)
+#endif
+       GX_SetViewportJitter(0, 0, gx_mode.fbWidth, gx_mode.xfbHeight, 0, 1, 1);
+   else
+       GX_SetViewportJitter(x, y, width, height, 0, 1, 1);
 
    Mtx44 m1, m2;
    float top = 1, bottom = -1, left = -1, right = 1;
@@ -1004,8 +1153,8 @@ static bool gx_frame(void *data, const void *frame,
    u8 clear_efb = GX_FALSE;
    u32 level = 0;
 
-   RARCH_PERFORMANCE_INIT(gx_frame);
-   RARCH_PERFORMANCE_START(gx_frame);
+   //RARCH_PERFORMANCE_INIT(gx_frame);
+   //RARCH_PERFORMANCE_START(gx_frame);
 
    if(!gx || (!frame && !gx->menu_texture_enable))
       return true;
@@ -1038,8 +1187,8 @@ static bool gx_frame(void *data, const void *frame,
 
    if (frame)
    {
-      RARCH_PERFORMANCE_INIT(gx_frame_convert);
-      RARCH_PERFORMANCE_START(gx_frame_convert);
+      //RARCH_PERFORMANCE_INIT(gx_frame_convert);
+      //RARCH_PERFORMANCE_START(gx_frame_convert);
 
       if (gx->rgb32)
          convert_texture32(frame, g_tex.data, width, height, pitch);
@@ -1049,7 +1198,7 @@ static bool gx_frame(void *data, const void *frame,
          convert_texture16(frame, g_tex.data, width, height, pitch);
       DCFlushRange(g_tex.data, height * (width << (gx->rgb32 ? 2 : 1)));
 
-      RARCH_PERFORMANCE_STOP(gx_frame_convert);
+      //RARCH_PERFORMANCE_STOP(gx_frame_convert);
    }
 
    if (gx->menu_texture_enable && gx->menu_data)
@@ -1065,38 +1214,126 @@ static bool gx_frame(void *data, const void *frame,
    GX_SetCurrentMtx(GX_PNMTX0);
    GX_LoadTexObj(&g_tex.obj, GX_TEXMAP0);
    GX_CallDispList(display_list, display_list_size);
+  // GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+#ifdef HAVE_RENDERSCALE
+   if (g_settings.video.renderscale >= 2) {
+        // Works but makes scaling different:
+        /* We use default values first */
+        Mtx44 m;
+        guOrtho(m, 1 , -1, -1, 1, 0.4, 0.6);
+        GX_LoadProjectionMtx(m, GX_ORTHOGRAPHIC);
+
+        /* We need to clear the efb */
+		clear_efb = GX_TRUE;
+
+		/*GX_Begin(GX_QUADS, GX_VTXFMT0, 4); // this does nothing on dolphin
+		GX_Position2f32(0, height * 2);      // it also crashes on real hardware
+		GX_Color1u32(0xFFFFFFFF);
+		GX_TexCoord2f32(0, 1);
+
+		GX_Position2f32(width * 2, height * 2);
+		GX_Color1u32(0xFFFFFFFF);
+		GX_TexCoord2f32(1, 1);
+
+		GX_Position2f32(width * 2, 0);
+		GX_Color1u32(0xFFFFFFFF);
+		GX_TexCoord2f32(1, 0);
+
+		GX_Position2f32(0, 0);
+		GX_Color1u32(0xFFFFFFFF);
+		GX_TexCoord2f32(0, 0);
+		GX_End();*/
+
+		GX_SetTexCopySrc(0, 0, width * 2, height * 2);
+		GX_SetTexCopyDst(width * 2, height * 2, GX_TF_RGB565, GX_FALSE);
+		GX_CopyTex(rescaleTexmem, GX_TRUE);
+		GX_LoadTexObj(&rescaleTex, GX_TEXMAP0);
+        GX_CallDispList(display_list, display_list_size);
+   }
+#endif
 
    if (gx->menu_texture_enable)
    {
       GX_SetCurrentMtx(GX_PNMTX1);
       GX_LoadTexObj(&menu_tex.obj, GX_TEXMAP0);
       GX_CallDispList(display_list, display_list_size);
+
+#ifdef HAVE_RENDERSCALE
+      if (g_settings.video.renderscale <= 1) {
+        Mtx44 m;
+        guOrtho(m, 1 , -1, -1, 1, 0.4, 0.6);
+        GX_LoadProjectionMtx(m, GX_ORTHOGRAPHIC);
+      }
+#endif
    }
+#ifdef HAVE_RENDERSCALE
+   if (g_settings.video.renderscale >= 2) {
+   // (increase positives) (decrease negatives) to reduce size, top 1, bottom 2, left 3, right 4
+      Mtx44 m;
+     // guOrtho(m, 1 + 0.2, -1 - 1.4, -1 - 0.1, 1 + 0.850, 0.4, 0.6);
+      guOrtho(m, 1 , -1 - 1, -1, 1 + 0.665, 0.4, 0.6); // this equals 640x480 for GBA
+      GX_LoadProjectionMtx(m, GX_ORTHOGRAPHIC);
+   }
+#endif
+
+/*	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+	GX_Position2f32(0, height);
+	GX_Color1u32(0xFFFFFFFF);
+	GX_TexCoord2f32(0, 1);
+
+	GX_Position2f32(width, height);
+	GX_Color1u32(0xFFFFFFFF);
+	GX_TexCoord2f32(1, 1);
+
+	GX_Position2f32(width, 0);
+	GX_Color1u32(0xFFFFFFFF);
+	GX_TexCoord2f32(1, 0);
+
+	GX_Position2f32(0, 0);
+	GX_Color1u32(0xFFFFFFFF);
+	GX_TexCoord2f32(0, 0);
+	GX_End();*/
 
 #ifdef HAVE_OVERLAY
-   if (gx->overlay_enable)
+   if (gx->overlay_enable && !gx->menu_texture_enable)
       gx_render_overlay(gx);
 #endif
+   if (fade_boot || (g_settings.reset_fade && end_resetfade))
+      fadein_copyfilter();
+   else if ((g_settings.exit_fade && start_exitfade) || start_resetfade)
+	  fadeout_copyfilter();
+
+   if (need_wait && g_settings.video.drawdone)
+      GX_WaitDrawDone();
 
    _CPU_ISR_Disable(level);
    if (referenceRetraceCount > retraceCount) {
-		VIDEO_WaitVSync();
-    }
-	referenceRetraceCount = retraceCount;
+        if (g_vsync) {
+             VIDEO_WaitVSync();
+        }
+        referenceRetraceCount = retraceCount;
+   }
    _CPU_ISR_Restore(level);
 
-   GX_DrawDone();
+   if (g_settings.video.drawdone)
+      GX_SetDrawDone();
+   else
+      GX_DrawDone();
 
    char fps_txt[128], fps_text_buf[128];
    bool fps_draw = g_settings.fps_show;
    gfx_get_fps(fps_txt, sizeof(fps_txt),
          fps_draw ? fps_text_buf : NULL, sizeof(fps_text_buf));
 
-   if (fps_draw)
+   if (fps_draw && !g_settings.video.drawdone)
    {
       char mem1_txt[128];
+      char mem2_txt[128];
       unsigned x = 15;
       unsigned y = 35;
+
+	  mem1_txt[0] = mem2_txt[0] = '\0';
+	  (void)mem2_txt;
 
       gx_blit_line(x, y, fps_text_buf);
       y += FONT_HEIGHT * (gx->double_strike ? 1 : 2);
@@ -1105,25 +1342,26 @@ static bool gx_frame(void *data, const void *frame,
       gx_blit_line(x, y, mem1_txt);
 #ifdef HW_RVL
       y += FONT_HEIGHT * (gx->double_strike ? 1 : 2);
-      char mem2_txt[128];
       snprintf(mem2_txt, sizeof(mem2_txt), "MEM2: %8d / %8d",
             gx_mem2_used(), gx_mem2_total());
       gx_blit_line(x, y, mem2_txt);
 #endif
    }
 
-   if (msg && !gx->menu_texture_enable)
+   /*if (msg && !gx->menu_texture_enable)
    {
       unsigned x = 7 * (gx->double_strike ? 1 : 2);
       unsigned y = gx->vp.full_height - (35 * (gx->double_strike ? 1 : 2));
       gx_blit_line(x, y, msg);
       clear_efb = GX_TRUE;
-   }
+   }*/
 
    GX_CopyDisp(g_framebuf[g_current_framebuf], clear_efb);
    GX_Flush();
-   VISetNextFrameBuffer(g_framebuf[g_current_framebuf]);
-   VIFlush();
+
+   VIDEO_SetNextFramebuffer(g_framebuf[g_current_framebuf]);
+   VIDEO_Flush();
+   need_wait = true;
 
    _CPU_ISR_Disable(level);
    ++referenceRetraceCount;
@@ -1131,7 +1369,7 @@ static bool gx_frame(void *data, const void *frame,
    
    g_extern.frame_count++;
 
-   RARCH_PERFORMANCE_STOP(gx_frame);
+   //RARCH_PERFORMANCE_STOP(gx_frame);
 
    return true;
 }
@@ -1171,9 +1409,9 @@ static void gx_free(void *data)
    GX_DrawDone();
    GX_AbortFrame();
    GX_Flush();
-   VISetBlack(true);
-   VIFlush();
-   VIWaitForRetrace();
+   VIDEO_SetBlack(true);
+   VIDEO_Flush();
+   VIDEO_WaitVSync();
 
    free(data);
 }
@@ -1364,6 +1602,9 @@ static void gx_render_overlay(void *data)
 {
    gx_video_t *gx = (gx_video_t*)data;
 
+   if (gx->overlay_full_screen)
+       GX_SetViewport(0, 0, gx_mode.fbWidth, gx_mode.xfbHeight, 0, 1);
+
    GX_SetCurrentMtx(GX_PNMTX1);
    GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
    GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
@@ -1403,6 +1644,9 @@ static void gx_render_overlay(void *data)
    GX_SetVtxDesc(GX_VA_POS, GX_INDEX8);
    GX_SetVtxDesc(GX_VA_TEX0, GX_INDEX8);
    GX_SetVtxDesc(GX_VA_CLR0, GX_INDEX8);
+   
+   if (gx->overlay_full_screen)
+       GX_SetViewport(gx->vp.x, gx->vp.y, gx->vp.width, gx->vp.height, 0, 1);
 }
 
 static const video_overlay_interface_t gx_overlay_interface = {
@@ -1418,10 +1662,6 @@ static void gx_get_overlay_interface(void *data, const video_overlay_interface_t
 {
    (void)data;
    *iface = &gx_overlay_interface;
-   if (driver.video_data)
-      gx_set_video_mode(driver.video_data, menu_gx_resolutions
-            [g_settings.video.vres][0],
-            menu_gx_resolutions[g_settings.video.vres][1]);
 }
 #endif
 

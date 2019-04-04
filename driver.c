@@ -734,11 +734,14 @@ static void adjust_system_rates(void)
             (float)info->fps);
 
       /* We won't be able to do VSync reliably as game FPS > monitor FPS. */
-      if (info->fps > g_settings.video.refresh_rate)
+    /*  if (info->fps > g_settings.video.refresh_rate)
       {
          g_extern.system.force_nonblock = true;
          RARCH_LOG("Game FPS > Monitor FPS. Cannot rely on VSync.\n");
-      }
+      } */
+	  
+	  // Esto no parece ser correcto,
+	  // si el emulador usa 60 fps pero el Wii esta en 60/1.001 entonces no hay vsync!
 
       g_extern.audio_data.in_rate = info->sample_rate;
    }
@@ -760,6 +763,11 @@ static void adjust_system_rates(void)
 
 void driver_set_monitor_refresh_rate(float hz)
 {
+   //char msg[PATH_MAX];
+   //snprintf(msg, sizeof(msg), "Setting refresh rate to: %.3f Hz.", hz);
+   //msg_queue_push(g_extern.msg_queue, msg, 1, 180);
+   //RARCH_LOG("%s\n", msg);
+
    g_settings.video.refresh_rate = hz;
    adjust_system_rates();
 
@@ -837,18 +845,18 @@ retro_proc_address_t driver_get_proc_address(const char *sym)
 bool driver_update_system_av_info(const struct retro_system_av_info *info)
 {
    g_extern.system.av_info = *info;
-   rarch_main_command(RARCH_CMD_REINIT);
+   //rarch_main_command(RARCH_CMD_REINIT);
 
    /* Cannot continue recording with different parameters.
     * Take the easiest route out and just restart the recording. */
-   if (driver.recording_data)
+  /* if (driver.recording_data)
    {
       static const char *msg = "Restarting recording due to driver reinit.";
       msg_queue_push(g_extern.msg_queue, msg, 2, 180);
       RARCH_WARN("%s\n", msg);
       rarch_main_command(RARCH_CMD_RECORD_DEINIT);
       rarch_main_command(RARCH_CMD_RECORD_INIT);
-   }
+   } */
 
    return true;
 }
@@ -1070,8 +1078,7 @@ static void init_video_filter(enum retro_pixel_format colfmt)
    height  = geom->max_height;
 
    g_extern.filter.filter = rarch_softfilter_new(
-         g_settings.video.softfilter_plugin,
-         RARCH_SOFTFILTER_THREADS_AUTO, colfmt, width, height);
+         g_settings.video.softfilter_plugin, colfmt, width, height);
 
    if (!g_extern.filter.filter)
    {
@@ -1115,7 +1122,7 @@ static void init_video_input(void)
    static uint16_t dummy_pixels[32] = {0};
 
    init_video_filter(g_extern.system.pix_fmt);
-   rarch_main_command(RARCH_CMD_SHADER_DIR_INIT);
+   //rarch_main_command(RARCH_CMD_SHADER_DIR_INIT);
 
    geom = (const struct retro_game_geometry*)&g_extern.system.av_info.geometry;
    max_dim = max(geom->max_width, geom->max_height);
@@ -1186,14 +1193,18 @@ static void init_video_input(void)
    video.vsync = g_settings.video.vsync && !g_extern.system.force_nonblock;
    video.force_aspect = g_settings.video.force_aspect;
 #ifdef GEKKO
+   video.drawdone = g_settings.video.drawdone;
    video.viwidth = g_settings.video.viwidth;
    video.vfilter = g_settings.video.vfilter;
-   video.rgui_reset = g_settings.video.rgui_reset;
+   video.dither = g_settings.video.dither;
+   video.vbright = g_settings.video.vbright;
    video.vres = g_settings.video.vres;
+#ifdef HAVE_RENDERSCALE
+   video.renderscale = g_settings.video.renderscale;
 #endif
-   video.hover_color = g_settings.video.hover_color;
-   video.text_color = g_settings.video.text_color;
+#endif
    video.smooth = g_settings.video.smooth;
+   video.menu_smooth = g_settings.video.menu_smooth;
    video.input_scale = scale;
    video.rgb32 = g_extern.filter.filter ? 
       g_extern.filter.out_rgb32 : 
@@ -1495,7 +1506,7 @@ static void uninit_video_input(void)
 
    deinit_video_filter();
 
-   rarch_main_command(RARCH_CMD_SHADER_DIR_DEINIT);
+ //  rarch_main_command(RARCH_CMD_SHADER_DIR_DEINIT);
    compute_monitor_fps_statistics();
 }
 

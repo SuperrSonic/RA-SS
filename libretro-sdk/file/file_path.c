@@ -264,7 +264,7 @@ void fill_dated_filename(char *out_filename,
    time(&cur_time);
 
    strftime(out_filename, size,
-         "RetroArch-%m%d-%H%M%S.", localtime(&cur_time));
+         "%m%d-%H%M%S.", localtime(&cur_time));
    strlcat(out_filename, ext, size);
 }
 
@@ -432,6 +432,12 @@ void fill_pathname_join(char *out_path,
       fill_pathname_slash(out_path, size);
 
    rarch_assert(strlcat(out_path, path, size) < size);
+}
+
+void fill_pathname_config(char *out_path,
+      const char *dir, size_t size)
+{
+   rarch_assert(strlcpy(out_path, dir, size) < size);
 }
 
 void fill_pathname_join_delim(char *out_path, const char *dir,

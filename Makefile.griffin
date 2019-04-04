@@ -1,10 +1,15 @@
-DEBUG			               = 0
+DEBUG			            = 0
 HAVE_LOGGER		            = 0
-HAVE_FILE_LOGGER	         = 0
-WHOLE_ARCHIVE_LINK         = 0
+HAVE_FILE_LOGGER	        = 0
+WHOLE_ARCHIVE_LINK          = 0
 BIG_STACK		            = 0
 PC_DEVELOPMENT_IP_ADDRESS	= 255.255.255.255
 PC_DEVELOPMENT_UDP_PORT		= 3490
+HAVE_WIIUSE_MOD             = 0
+HAVE_5PLAYERS               = 0
+HAVE_WII_WHEEL              = 0
+NO_BUILD_WARN               = 1
+RENDER_SCALE_TEST           = 0
 
 ifneq ($(EMSCRIPTEN),)
    platform = emscripten
@@ -32,6 +37,28 @@ else ifneq ($(findstring Darwin,$(shell uname -a)),)
    system_platform = osx
 else ifneq ($(findstring MINGW,$(shell uname -a)),)
    system_platform = win
+endif
+
+ifeq ($(HAVE_WIIUSE_MOD), 1)
+CFLAGS += -DHAVE_WIIUSE
+else
+LDFLAGS_WIIUSE := -lwiiuse
+endif
+
+ifeq ($(HAVE_5PLAYERS), 1)
+CFLAGS += -DHAVE_5PLAY
+endif
+
+ifeq ($(HAVE_WII_WHEEL), 1)
+CFLAGS += -DHAVE_WIIWHEEL
+endif
+
+ifeq ($(NO_BUILD_WARN), 1)
+CFLAGS += -DNO_WARN
+endif
+
+ifeq ($(RENDER_SCALE_TEST), 1)
+CFLAGS += -DHAVE_RENDERSCALE
 endif
 
 TARGET_NAME := retroarch
@@ -100,7 +127,7 @@ else ifeq ($(platform), wii)
 ifeq ($(BIG_STACK), 1)
    LDFLAGS += -T gx/ld/rvl.ld
 endif
-  LIBS := -lfat $(WHOLE_START) -lretro_wii $(WHOLE_END) -logc -lwiiuse -lbte 
+  LIBS := -lfat $(WHOLE_START) -lretro_wii $(WHOLE_END) -logc $(LDFLAGS_WIIUSE) -lbte 
   APP_BOOTER_DIR = wii/app_booter
   PLATOBJS := $(APP_BOOTER_DIR)/app_booter.binobj
   PLATCFLAGS := -DGEKKO

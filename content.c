@@ -168,7 +168,7 @@ static void dump_to_file_desperate(const void *data,
       goto error;
 
    char path[PATH_MAX];
-   snprintf(path, sizeof(path), "%s/RetroArch-recovery-%u", base, type);
+   snprintf(path, sizeof(path), "%s/recovery-%u", base, type);
    char timebuf[PATH_MAX];
 
    time_t time_;

@@ -84,10 +84,21 @@ static uint16_t green_filler(unsigned x, unsigned y)
    y >>= 1;
    unsigned col = ((x + y) & 1) + 1;
 #if defined(GEKKO) || defined(PSP)
-   return (6 << 12) | (col << 8) | (col << 4) | (col << 0);
+   return (6 << 12) | (col << 8) | (col << 4) | (col << 1);
 #else
    return (col << 13) | (col << 10) | (col << 5) | (12 << 0);
 #endif
+}
+
+static uint16_t custom_filler(unsigned x, unsigned y)
+{
+   return g_settings.menu_bg_clr;
+
+}
+
+static uint16_t custom_msg_filler(unsigned x, unsigned y)
+{
+   return g_settings.menu_msg_clr;
 }
 
 static void fill_rect(uint16_t *buf, unsigned pitch,
@@ -104,9 +115,49 @@ static void fill_rect(uint16_t *buf, unsigned pitch,
 static void blit_line(int x, int y, const char *message, bool green)
 {
    int j, i;
+   unsigned hov_col = 32767;
+   unsigned tex_col = 54965;
 
    if (!driver.menu)
       return;
+
+   if (g_settings.theme_preset == 0) {
+	  /* Type 0 is default, custom values */
+      hov_col = g_settings.hover_color;
+      tex_col = g_settings.text_color;
+   } else if (g_settings.theme_preset == 1) {
+	   /* Type 1 is green/white */
+	   hov_col = 46060;
+	   tex_col = 32767;
+   } else if (g_settings.theme_preset == 2) {
+	   /* Type 2 is mute red/white */
+	   hov_col = 60647;
+	   tex_col = 32767;
+   } else if (g_settings.theme_preset == 3) {
+       /* Type 3 is yellow/white */
+	   hov_col = 64450;
+	   tex_col = 32767;
+   } else if (g_settings.theme_preset == 4) {
+       /* Type 4 is pink/white */
+	   hov_col = 64927;
+	   tex_col = 32767;
+   } else if (g_settings.theme_preset == 5) {
+	   /* Type 5 is white/gray */
+	   hov_col = 32767;
+	   tex_col = 54965;
+   } else if (g_settings.theme_preset == 6) {
+	   /* Type 6 is cyan/gray */
+	   hov_col = 46046;
+	   tex_col = 35351;
+   } else if (g_settings.theme_preset == 7) {
+	   /* Type 7 is purple/white */
+	   hov_col = 56383;
+	   tex_col = 32767;
+   } else if (g_settings.theme_preset == 8) {
+	   /* Type 8 is red/gold */
+	   hov_col = 64512;
+	   tex_col = 60071;
+   }
 
    while (*message)
    {
@@ -124,7 +175,7 @@ static void blit_line(int x, int y, const char *message, bool green)
                driver.menu->frame_buf[(y + j) *
                   (driver.menu->frame_buf_pitch >> 1) + (x + i)] = green ?
 #if defined(GEKKO)|| defined(PSP)
-               g_settings.video.hover_color : g_settings.video.text_color;
+               hov_col : tex_col;
 #else
                (15 << 0) | (7 << 4) | (15 << 8) | (7 << 12) : 0xFFFF;
 #endif
@@ -184,9 +235,9 @@ static void rgui_render_background(void)
       return;
 
    fill_rect(driver.menu->frame_buf, driver.menu->frame_buf_pitch,
-         0, 0, driver.menu->width, driver.menu->height, gray_filler);
+         0, 0, driver.menu->width, driver.menu->height, g_settings.menu_solid ? custom_filler : gray_filler);
 
-   fill_rect(driver.menu->frame_buf, driver.menu->frame_buf_pitch,
+  /* fill_rect(driver.menu->frame_buf, driver.menu->frame_buf_pitch,
          5, 5, driver.menu->width - 10, 5, green_filler);
 
    fill_rect(driver.menu->frame_buf, driver.menu->frame_buf_pitch,
@@ -198,7 +249,7 @@ static void rgui_render_background(void)
 
    fill_rect(driver.menu->frame_buf, driver.menu->frame_buf_pitch,
          driver.menu->width - 10, 5, 5, driver.menu->height - 10,
-         green_filler);
+         green_filler);*/
 }
 
 static void rgui_render_messagebox(const char *message)
@@ -242,19 +293,19 @@ static void rgui_render_messagebox(const char *message)
    int y = (driver.menu->height - height) / 2;
 
    fill_rect(driver.menu->frame_buf, driver.menu->frame_buf_pitch,
-         x + 5, y + 5, width - 10, height - 10, gray_filler);
+         x + 5, y + 5, width - 10, height - 10, g_settings.menu_solid ? custom_filler : gray_filler);
 
    fill_rect(driver.menu->frame_buf, driver.menu->frame_buf_pitch,
-         x, y, width - 5, 5, green_filler);
+         x, y, width - 5, 5, g_settings.menu_msg_clr ? custom_msg_filler : green_filler);
 
    fill_rect(driver.menu->frame_buf, driver.menu->frame_buf_pitch,
-         x + width - 5, y, 5, height - 5, green_filler);
+         x + width - 5, y, 5, height - 5, g_settings.menu_msg_clr ? custom_msg_filler : green_filler);
 
    fill_rect(driver.menu->frame_buf, driver.menu->frame_buf_pitch,
-         x + 5, y + height - 5, width - 5, 5, green_filler);
+         x + 5, y + height - 5, width - 5, 5, g_settings.menu_msg_clr ? custom_msg_filler : green_filler);
 
    fill_rect(driver.menu->frame_buf, driver.menu->frame_buf_pitch,
-         x, y + 5, 5, height - 5, green_filler);
+         x, y + 5, 5, height - 5, g_settings.menu_msg_clr ? custom_msg_filler : green_filler);
 
    for (i = 0; i < list->size; i++)
    {
@@ -309,7 +360,8 @@ static void rgui_render(void)
    char title_buf[256];
    menu_ticker_line(title_buf, RGUI_TERM_WIDTH - 3,
          g_extern.frame_count / RGUI_TERM_START_X, title, true);
-   blit_line(RGUI_TERM_START_X + RGUI_TERM_START_X, RGUI_TERM_START_X, title_buf, true);
+   // Current TITLE
+   blit_line(g_settings.title_posx, g_settings.title_posy, title_buf, true);
 
    char title_msg[64];
    const char *core_name = g_extern.menu.info.library_name;
@@ -324,12 +376,31 @@ static void rgui_render(void)
    if (!core_version)
       core_version = "";
 
-   snprintf(title_msg, sizeof(title_msg), " ", PACKAGE_VERSION,
-         core_name, core_version);
-   blit_line(
-         RGUI_TERM_START_X + RGUI_TERM_START_X,
-         (RGUI_TERM_HEIGHT * FONT_HEIGHT_STRIDE) +
-         RGUI_TERM_START_Y + 2, title_msg, true);
+   if (!g_settings.single_mode) {
+         //snprintf(title_msg, sizeof(title_msg), "%s - %s %s", PACKAGE_VERSION,
+           //  core_name, core_version);
+         snprintf(title_msg, sizeof(title_msg), "%s %s",
+                  core_name, core_version);
+         blit_line(
+             RGUI_TERM_START_X + RGUI_TERM_START_X,
+             (RGUI_TERM_HEIGHT * FONT_HEIGHT_STRIDE) +
+             RGUI_TERM_START_Y + 2, title_msg, true);
+	}
+
+    if (g_settings.clock_show) {
+        char timetxt[10];
+        time_t currenttime = time(0);
+        struct tm * timeinfo = localtime(&currenttime);
+
+     // strftime(timetxt, sizeof(timetxt),
+     //          "%H:%M:%S", timeinfo);
+        strftime(timetxt, sizeof(timetxt),
+                    "%I:%M %p", timeinfo);
+        blit_line(
+             RGUI_TERM_START_X + RGUI_TERM_START_X + 180,
+             (RGUI_TERM_HEIGHT * FONT_HEIGHT_STRIDE) +
+             RGUI_TERM_START_Y + 2, timetxt, true);
+    }
 
    unsigned x, y;
    size_t i;
@@ -373,7 +444,7 @@ static void rgui_render(void)
             w,
             type_str_buf);
 
-      blit_line(x, y, message, selected);
+      blit_line(x + g_settings.item_posx, y + g_settings.item_posy, message, selected);
    }
 
 #ifdef GEKKO
@@ -389,7 +460,7 @@ static void rgui_render(void)
 
    rgui_render_messagebox(message_queue);
 #endif
-
+/*
    if (driver.menu->keyboard.display)
    {
       char msg[PATH_MAX];
@@ -398,7 +469,7 @@ static void rgui_render(void)
          str = "";
       snprintf(msg, sizeof(msg), "%s\n%s", driver.menu->keyboard.label, str);
       rgui_render_messagebox(msg);
-   }
+   }*/
 }
 
 static void *rgui_init(void)
