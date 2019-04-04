@@ -1,4 +1,4 @@
-# RA-SS; A simplified version of RetroArch Wii for use mainly with channels:
+# A simplified version of RetroArch Wii for use mainly with channels:
 - Screen resolution saving.
 - Better documented settings.
 - Removed options that don't apply to RA for Wii.
