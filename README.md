@@ -29,5 +29,6 @@ and then in a hex editor you can find the value already converted in hex, this i
 for calculating alpha values if you plan on using a transparent color for the interface's background; enabled with the setting
 *Solid Color BG*.
 
+[Video preview and link](https://www.youtube.com/watch?v=az5fjJHof68)
 
 [**Donate**](https://www.paypal.me/die5a)
