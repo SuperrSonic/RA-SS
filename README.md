@@ -1,13 +1,15 @@
-# A simplified version of RetroArch Wii for use mainly with channels:
+# A simplified version of RetroArch Wii:
 - Screen resolution saving.
 - Better documented settings.
+- Wii Message Board playlog feature.
+- Full screen support for overlays so can be used as frames/borders.
 - Removed options that don't apply to RA for Wii.
 - Making the interface simpler when single game loading.
 - Per-game settings using arguments.
 - You can change text and highlighted text color by editing text_color and hover_color. 
 - Wii Remote tilting for OutRun engine. (Cannonball)
 - More customization, fade effects, ux improvements, etc.
-- En Español.
+- En EspaÃ±ol.
 
 
 ![Alt text](https://user-images.githubusercontent.com/6880539/55585031-b548ce80-56f3-11e9-89f2-236e88c60ae3.png?raw=true "TRON") ![Alt text](https://user-images.githubusercontent.com/6880539/55585036-b974ec00-56f3-11e9-964b-9b75ffa4d176.png?raw=true "El Dorado")
