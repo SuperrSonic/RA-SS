@@ -2,9 +2,9 @@
 - Screen resolution saving.
 - Better documented settings.
 - Wii Message Board playlog feature.
-- Full screen support for overlays so can be used as frames/borders.
-- Removed options that don't apply to RA for Wii.
-- Making the interface simpler when single game loading.
+- Full screen overlays are now supported.
+- Reworked input to allow multiple controllers on the same player.
+- The interface will become simpler when single game loading.
 - Per-game settings using arguments.
 - You can change text and highlighted text color by editing text_color and hover_color. 
 - Wii Remote tilting for OutRun engine. (Cannonball)
@@ -16,7 +16,7 @@
 ![Alt text](https://user-images.githubusercontent.com/6880539/55585018-b0841a80-56f3-11e9-856c-6d150ad10297.png?raw=true "Default colors") ![Alt text](https://user-images.githubusercontent.com/6880539/55585607-12914f80-56f5-11e9-83e0-0e309a51561a.png?raw=true "Original")
 
 
-For editing color values:
+Editing color values:
 *Default values are gray(54965) and white(32767) respectively, you may write them in hex, they will be converted to decimal on exit.
 To convert RGB8 to the required ARGB5 you must first convert to 15-bit values and then follow this formula:
 
