@@ -16,8 +16,9 @@
 ![Alt text](https://user-images.githubusercontent.com/6880539/55585018-b0841a80-56f3-11e9-856c-6d150ad10297.png?raw=true "Default colors") ![Alt text](https://user-images.githubusercontent.com/6880539/55585607-12914f80-56f5-11e9-83e0-0e309a51561a.png?raw=true "Original")
 
 
-Editing color values:
-*Default values are gray(54965) and white(32767) respectively, you may write them in hex, they will be converted to decimal on exit.
+**Editing color values:**
+
+Default values are gray(54965) and white(32767) respectively, you may write them in hex, they will be converted to decimal on exit.
 To convert RGB8 to the required ARGB5 you must first convert to 15-bit values and then follow this formula:
 
 R * 1024 + G * 32 + B + 32768
