@@ -121,28 +121,30 @@ void main_exit(args_type() args)
 
 static void check_defaults_dirs(void)
 {
-   if (*g_defaults.autoconfig_dir)
-      path_mkdir(g_defaults.autoconfig_dir);
+   /* Trouble here, port_dir used to be way at the bottom
+    * which was causing some folders to not get created on the first run. */
+   if (*g_defaults.port_dir)
+	  path_mkdir(g_defaults.port_dir);
+  // if (*g_defaults.autoconfig_dir)
+    //  path_mkdir(g_defaults.autoconfig_dir);
    if (*g_defaults.audio_filter_dir)
       path_mkdir(g_defaults.audio_filter_dir);
    if (*g_defaults.video_filter_dir)
       path_mkdir(g_defaults.video_filter_dir);
    if (*g_defaults.screenshot_dir)
       path_mkdir(g_defaults.screenshot_dir);
-   if (*g_defaults.assets_dir)
-      path_mkdir(g_defaults.assets_dir);
-   if (*g_defaults.playlist_dir)
-      path_mkdir(g_defaults.playlist_dir);
+  // if (*g_defaults.assets_dir)
+    //  path_mkdir(g_defaults.assets_dir);
+  // if (*g_defaults.playlist_dir)
+    //  path_mkdir(g_defaults.playlist_dir);
    if (*g_defaults.core_dir)
       path_mkdir(g_defaults.core_dir);
-   if (*g_defaults.core_info_dir)
-      path_mkdir(g_defaults.core_info_dir);
+  // if (*g_defaults.core_info_dir)
+    //  path_mkdir(g_defaults.core_info_dir);
    if (*g_defaults.overlay_dir)
       path_mkdir(g_defaults.overlay_dir);
-   if (*g_defaults.port_dir)
-      path_mkdir(g_defaults.port_dir);
-   if (*g_defaults.shader_dir)
-      path_mkdir(g_defaults.shader_dir);
+  // if (*g_defaults.shader_dir)
+    //  path_mkdir(g_defaults.shader_dir);
    if (*g_defaults.savestate_dir)
       path_mkdir(g_defaults.savestate_dir);
    if (*g_defaults.sram_dir)

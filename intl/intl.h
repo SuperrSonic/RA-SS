@@ -17,6 +17,10 @@
 #ifndef __INTL_INTERNATIONAL_H
 #define __INTL_INTERNATIONAL_H
 
+#ifdef USE_ESP
+#include "english_esp.h"
+#else
 #include "english.h"
+#endif
 
 #endif

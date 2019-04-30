@@ -203,6 +203,7 @@ struct defaults
    char core_info_dir[PATH_MAX];
    char overlay_dir[PATH_MAX];
    char port_dir[PATH_MAX];
+   char port_dir_first[PATH_MAX];
    char shader_dir[PATH_MAX];
    char savestate_dir[PATH_MAX];
    char resampler_dir[PATH_MAX];
@@ -399,10 +400,12 @@ struct settings
    bool hide_resume;
    bool hide_reset;
    bool hide_exit;
+   bool hide_cursor;
    unsigned title_posx;
    unsigned title_posy;
    unsigned item_posx;
    unsigned item_posy;
+   unsigned clock_posx;
    bool single_mode;
 
    char core_options_path[PATH_MAX];

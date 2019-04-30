@@ -33,7 +33,11 @@
 #include "../../../settings_data.h"
 #include "../../../gfx/fonts/bitmap.h"
 
+#ifdef USE_ESP
+#include "shared_esp.h"
+#else
 #include "shared.h"
+#endif
 
 typedef struct rgui_handle
 {
@@ -397,7 +401,7 @@ static void rgui_render(void)
         strftime(timetxt, sizeof(timetxt),
                     "%I:%M %p", timeinfo);
         blit_line(
-             RGUI_TERM_START_X + RGUI_TERM_START_X + 180,
+             g_settings.clock_posx,
              (RGUI_TERM_HEIGHT * FONT_HEIGHT_STRIDE) +
              RGUI_TERM_START_Y + 2, timetxt, true);
     }
@@ -436,8 +440,7 @@ static void rgui_render(void)
       menu_ticker_line(type_str_buf, w, g_extern.frame_count / RGUI_TERM_START_X,
             type_str, selected);
 
-      snprintf(message, sizeof(message), "%c %-*.*s %-*s",
-            selected ? '>' : ' ',
+      snprintf(message, sizeof(message), "%c %-*.*s %-*s", selected ? !g_settings.hide_cursor ? '>' : ' ' : ' ',
             RGUI_TERM_WIDTH - (w + 1 + 2),
             RGUI_TERM_WIDTH - (w + 1 + 2),
             entry_title_buf,

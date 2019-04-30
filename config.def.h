@@ -435,6 +435,9 @@ static const bool hide_exit = false;
 /* Hide Settings, only accessible by editing the cfg */
 static const bool hide_settings = false;
 
+/* Hide cursor '>', only accessible by editing the cfg */
+static const bool hide_cursor = false;
+
 /* Position X of TITLE element of the Menu. */
 static const unsigned title_posx = 30;
 
@@ -446,6 +449,9 @@ static const unsigned item_posx = 0;
 
 /* Vertical position offset for items overall. */
 static const unsigned item_posy = 0;
+
+/* Horizontal position offset for clock display. */
+static const unsigned clock_posx = 200;
 
 /* Reset button toggles RGUI */
 static const bool rgui_reset = true;

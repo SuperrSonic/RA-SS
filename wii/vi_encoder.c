@@ -56,8 +56,8 @@
 
 extern void udelay(int us);
 
-static u32 i2cIdentFirst = 0;
-static u32 i2cIdentFlag = 1;
+//static u32 i2cIdentFirst = 0;
+//static u32 i2cIdentFlag = 1;
 static vu32* const _i2cReg = (u32*)0xCD800000;
 
 static inline void __viOpenI2C(u32 channel)
@@ -81,7 +81,7 @@ static inline void __viSetSDA(u32 channel)
 }
 
 #define __viGetSDA() (_SHIFTR(_i2cReg[50],15,1))
-
+/*
 static u32 __sendSlaveAddress(u8 addr)
 {
 	u32 i;
@@ -208,4 +208,4 @@ void VIDEO_SetTrapFilter(bool enable)
 end:
 
   udelay(2);
-}
+}*/

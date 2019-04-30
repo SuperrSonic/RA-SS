@@ -255,11 +255,13 @@ static void config_set_defaults(void)
    g_settings.hide_reset = hide_reset;
    g_settings.hide_exit = hide_exit;
    g_settings.hide_settings = hide_settings;
+   g_settings.hide_cursor = hide_cursor;
    g_settings.title_posx = title_posx;
    g_settings.title_posy = title_posy;
    g_settings.item_posx = item_posx;
    g_settings.item_posy = item_posy;
    g_settings.clock_show = clock_show;
+   g_settings.clock_posx = clock_posx;
   // g_settings.single_mode = false; // No point setting this here
 
   // g_settings.video.font_enable = font_enable;
@@ -485,7 +487,7 @@ static void config_set_defaults(void)
       if (!*g_settings.input.overlay)
             fill_pathname_join(g_settings.input.overlay,
                   g_extern.overlay_dir,
-                  "none.cfg",
+                  "...", // this used to be nul.cfg, but there's no point in naming this
                   sizeof(g_settings.input.overlay));
    }
 #endif
@@ -896,11 +898,13 @@ static bool config_load_file(const char *path, bool set_defaults)
    CONFIG_GET_BOOL(hide_resume, "hide_resume");
    CONFIG_GET_BOOL(hide_reset, "hide_reset");
    CONFIG_GET_BOOL(hide_exit, "hide_exit");
+   CONFIG_GET_BOOL(hide_settings, "hide_settings");
+   CONFIG_GET_BOOL(hide_cursor, "hide_cursor");
    CONFIG_GET_INT(title_posx, "title_posx");
    CONFIG_GET_INT(title_posy, "title_posy");
    CONFIG_GET_INT(item_posx, "item_posx");
    CONFIG_GET_INT(item_posy, "item_posy");
-   CONFIG_GET_INT(hide_settings, "hide_settings");
+   CONFIG_GET_INT(clock_posx, "clock_posx");
 
    CONFIG_GET_INT_EXTERN(console.screen.viewports.custom_vp.x,
          "custom_viewport_x");
@@ -1727,7 +1731,7 @@ bool config_save_file(const char *path)
    config_set_int(conf,  "theme_preset",    g_settings.theme_preset);
    config_set_int(conf,  "menu_bg_clr",     g_settings.menu_bg_clr);
    config_set_bool(conf, "menu_solid",      g_settings.menu_solid);
-   config_set_int(conf,  "menu_msg_clr",     g_settings.menu_msg_clr);
+   config_set_int(conf,  "menu_msg_clr",    g_settings.menu_msg_clr);
    config_set_bool(conf, "menu_fullscreen", g_settings.menu_fullscreen);
    config_set_bool(conf, "hide_core",       g_settings.hide_core);
    config_set_bool(conf, "hide_states",     g_settings.hide_states);
@@ -1736,10 +1740,12 @@ bool config_save_file(const char *path)
    config_set_bool(conf, "hide_reset",      g_settings.hide_reset);
    config_set_bool(conf, "hide_settings",   g_settings.hide_settings);
    config_set_bool(conf, "hide_exit",       g_settings.hide_exit);
-   config_set_int(conf,  "title_posx",       g_settings.title_posx);
-   config_set_int(conf,  "title_posy",       g_settings.title_posy);
-   config_set_int(conf,  "item_posx",        g_settings.item_posx);
-   config_set_int(conf,  "item_posy",        g_settings.item_posy);
+   config_set_bool(conf, "hide_cursor",     g_settings.hide_cursor);
+   config_set_int(conf,  "title_posx",      g_settings.title_posx);
+   config_set_int(conf,  "title_posy",      g_settings.title_posy);
+   config_set_int(conf,  "item_posx",       g_settings.item_posx);
+   config_set_int(conf,  "item_posy",       g_settings.item_posy);
+   config_set_int(conf,  "clock_posx",      g_settings.clock_posx);
 
 #ifdef HAVE_NETPLAY
    config_set_bool(conf, "netplay_spectator_mode_enable",

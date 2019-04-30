@@ -202,6 +202,11 @@ static void frontend_gx_get_environment_settings(int *argc, char *argv[],
    if (last_slash)
       *last_slash = 0;
    char *device_end = strchr(g_defaults.core_dir, '/');
+   // Make sure the private directory exists
+   snprintf(g_defaults.port_dir_first, sizeof(g_defaults.port_dir_first),
+            "%.*s/private", device_end - g_defaults.core_dir,
+            g_defaults.core_dir);
+   path_mkdir(g_defaults.port_dir_first);
    if (device_end)
       snprintf(g_defaults.port_dir, sizeof(g_defaults.port_dir),
             "%.*s/private/other", device_end - g_defaults.core_dir,

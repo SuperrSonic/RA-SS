@@ -6,10 +6,12 @@ BIG_STACK		            = 0
 PC_DEVELOPMENT_IP_ADDRESS	= 255.255.255.255
 PC_DEVELOPMENT_UDP_PORT		= 3490
 HAVE_WIIUSE_MOD             = 0
+NO_BUILD_WARN               = 1
 HAVE_5PLAYERS               = 0
 HAVE_WII_WHEEL              = 0
-NO_BUILD_WARN               = 1
 RENDER_SCALE_TEST           = 0
+NO_SCREEN_TEARING           = 0
+USE_ESP                     = 0
 
 ifneq ($(EMSCRIPTEN),)
    platform = emscripten
@@ -59,6 +61,14 @@ endif
 
 ifeq ($(RENDER_SCALE_TEST), 1)
 CFLAGS += -DHAVE_RENDERSCALE
+endif
+
+ifeq ($(NO_SCREEN_TEARING), 1)
+CFLAGS += -DNO_SCREENTEAR
+endif
+
+ifeq ($(USE_ESP), 1)
+CFLAGS += -DUSE_ESP
 endif
 
 TARGET_NAME := retroarch

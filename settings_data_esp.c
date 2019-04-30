@@ -41,6 +41,48 @@
 #include "frontend/menu/menu_shader.h"
 #endif
 
+/* Translation binaries */
+
+// Core = Núcleo
+static const char nucleo[7] = { 0x4E, 0xFA, 0x63, 0x6C, 0x65, 0x6F, 0x00 };
+
+// Load Content = Selecciona el juego
+//static const char selecciona_juego[20] = { 0x53, 0x65, 0x6C, 0x65, 0x63, 0x63, 0x69, 0x6F, 0x6E, 0x61, 0x20, 0x65, 0x6C, 0x20, 0x6A, 0x75, 0x65, 0x67, 0x6F, 0x00 };
+
+// Core Options = Opciones del núcleo
+static const char nucleo_opciones[20] = { 0x4F, 0x70, 0x63, 0x69, 0x6F, 0x6E, 0x65, 0x73, 0x20, 0x64, 0x65, 0x6C, 0x20, 0x6E, 0xFA, 0x63, 0x6C, 0x65, 0x6F, 0x00 };
+
+// Save State = Crear punto de restauración
+//static const char crear_punto[28] = { 0x43, 0x72, 0x65, 0x61, 0x72, 0x20, 0x70, 0x75, 0x6E, 0x74, 0x6F, 0x20, 0x64, 0x65, 0x20, 0x72, 0x65, 0x73, 0x74, 0x61, 0x75, 0x72, 0x61, 0x63, 0x69, 0xF3, 0x6E, 0x00 };
+
+// Load State
+//static const char cargar_punto[29] = { 0x43, 0x61, 0x72, 0x67, 0x61, 0x72, 0x20, 0x70, 0x75, 0x6E, 0x74, 0x6F, 0x20, 0x64, 0x65, 0x20, 0x72, 0x65, 0x73, 0x74, 0x61, 0x75, 0x72, 0x61, 0x63, 0x69, 0xF3, 0x6E, 0x00 };
+
+// Menu = Menú
+//static const char menu_simpl[5] = { 0x4D, 0x65, 0x6E, 0xFA, 0x00 };
+
+// Title Position = Posición del título
+static const char title_pos[20] = { 0x50, 0x6F, 0x73, 0x69, 0x63, 0x69, 0xF3, 0x6E, 0x20, 0x64, 0x65, 0x6C, 0x20, 0x74, 0xED, 0x74, 0x75, 0x6C, 0x6F, 0x00 };
+
+// pos x
+static const char pos_generalx[11] = { 0x50, 0x6F, 0x73, 0x69, 0x63, 0x69, 0xF3, 0x6E, 0x20, 0x58, 0x00 };
+
+// pos y
+static const char pos_generaly[11] = { 0x50, 0x6F, 0x73, 0x69, 0x63, 0x69, 0xF3, 0x6E, 0x20, 0x59, 0x00 };
+
+// YES = Sí
+static const char sip[3] = { 0x53, 0xED, 0x00 };
+
+// Aspect Ratio Index = Índice relación de aspecto
+static const char indice_aspect[27] = { 0xCD, 0x6E, 0x64, 0x69, 0x63, 0x65, 0x20, 0x72, 0x65, 0x6C, 0x61, 0x63, 0x69, 0xF3, 0x6E, 0x20, 0x64, 0x65, 0x20, 0x61, 0x73, 0x70, 0x65, 0x63, 0x74, 0x6F, 0x00 };
+
+// Integer Scale = Por íntegro
+static const char por_int[12] = { 0x50, 0x6F, 0x72, 0x20, 0xED, 0x6E, 0x74, 0x65, 0x67, 0x72, 0x6F, 0x00 };
+
+// Rotation = Rotación
+static const char rotacion[9] = { 0x52, 0x6F, 0x74, 0x61, 0x63, 0x69, 0xF3, 0x6E, 0x00 };
+
+
 static void get_input_config_prefix(char *buf, size_t sizeof_buf,
       rarch_setting_t *setting)
 {
@@ -571,7 +613,7 @@ static void menu_common_setting_set_label_st_uint(rarch_setting_t *setting,
          snprintf(type_str, type_str_size, "%u seconds",
                *setting->value.unsigned_integer);
       else
-         strlcpy(type_str, "OFF", type_str_size);
+         strlcpy(type_str, "No", type_str_size);
    }
   /* else if (!strcmp(setting->name, "user_language"))
    {
@@ -1523,10 +1565,7 @@ int setting_data_get_description(const char *label, char *msg,
    if (!strcmp(label, "input_driver"))
    {
       snprintf(msg, sizeof_msg,
-               " -- Input driver.\n"
-               " \n"
-               "Depending on video driver, it might \n"
-               "force a different input driver.");
+               " -- Input driver.\n");
    }
   /* else if (!strcmp(label, "load_content"))
    {
@@ -1583,15 +1622,15 @@ int setting_data_get_description(const char *label, char *msg,
    {
       if (!strcmp(g_settings.audio.resampler, "SINC"))
          snprintf(msg, sizeof_msg,
-               " -- Windowed SINC implementation.");
+               " -- Windowed SINC");
       else if (!strcmp(g_settings.audio.resampler, "CC"))
          snprintf(msg, sizeof_msg,
-               " -- Convoluted Cosine implementation.");
+               " -- Convoluted Cosine");
 	  else if (!strcmp(g_settings.audio.resampler, "Nearest"))
          snprintf(msg, sizeof_msg,
-               " -- Nearest implementation.");
+               " -- Nearest");
    }
-   else if (!strcmp(label, "video_driver"))
+ /*  else if (!strcmp(label, "video_driver"))
    {
       snprintf(msg, sizeof_msg,
                " -- Current Video Driver.");
@@ -1624,7 +1663,7 @@ int setting_data_get_description(const char *label, char *msg,
             " \n"
             "Where to search for core \n"
             "implementations.");
-   }
+   } */
   /* else if (!strcmp(label, "video_disable_composition"))
    {
       snprintf(msg, sizeof_msg,
@@ -1662,7 +1701,7 @@ int setting_data_get_description(const char *label, char *msg,
             "-- Enable or disable frontend \n"
             "performance counters.");
    }*/
-   else if (!strcmp(label, "system_directory"))
+ /*  else if (!strcmp(label, "system_directory"))
    {
       snprintf(msg, sizeof_msg,
             "-- System Directory. \n"
@@ -1671,7 +1710,7 @@ int setting_data_get_description(const char *label, char *msg,
             "Implementations can query for this\n"
             "directory to load a BIOS, \n"
             "system-specific configs, etc.");
-   }
+   } */
   /* else if (!strcmp(label, "rgui_show_start_screen"))
    {
       snprintf(msg, sizeof_msg,
@@ -1682,7 +1721,7 @@ int setting_data_get_description(const char *label, char *msg,
             "This is only updated in config if\n"
             "'Config Save On Exit' is set to true.\n");
    }*/
-   else if (!strcmp(label, "config_save_on_exit"))
+ /*  else if (!strcmp(label, "config_save_on_exit"))
    {
       snprintf(msg, sizeof_msg,
             " -- Flushes config to disk on exit.\n"
@@ -1693,7 +1732,7 @@ int setting_data_get_description(const char *label, char *msg,
       snprintf(msg, sizeof_msg,
             " -- Load up a specific config file \n"
             "based on the core being used.\n");
-   }
+   } */
   /* else if (!strcmp(label, "video_scale"))
    {
       snprintf(msg, sizeof_msg,
@@ -1737,32 +1776,28 @@ int setting_data_get_description(const char *label, char *msg,
    else if (!strcmp(label, "video_frame_delay"))
    {
       snprintf(msg, sizeof_msg,
-            " -- Sets how many milliseconds to delay\n"
-            "after VSync before running the core.\n"
+            " -- Cuantos ms retrasar el juego\n"
+            "despues del vsync. Esto puede"
             "\n"
-            "Can reduce latency at cost of\n"
-            "higher risk of stuttering.\n"
+            "hacer que el control sea mas activo,\n"
+            "pero puede causar problemas de velocidad.\n"
             " \n"
-            "Maximum is 15.");
+            "El max es 15.");
    }
    else if (!strcmp(label, "audio_rate_control_delta"))
    {
       snprintf(msg, sizeof_msg,
-            " -- Audio rate control.\n"
+            " -- Control del audio constante.\n"
             " \n"
-            "Setting this to 0 disables rate control.\n"
-            " \n"
-            "Defines how much input rate can be adjusted \n"
-            "dynamically.\n"
-            " \n"
-            " Input rate is defined as: \n"
-            " input rate * (1.0 +/- (rate control delta))");
+            "Requiere que el video y audio\n"
+			"esten sincronizados.");
    }
    else if (!strcmp(label, "video_filter"))
    {
 #ifdef HAVE_FILTERS_BUILTIN
       snprintf(msg, sizeof_msg,
-            " -- CPU-based video filter. Restart.");
+            " -- Filtra imagen usando la CPU.\n"
+			"Requiere un reinicio.");
 #else
       snprintf(msg, sizeof_msg,
             " -- CPU-based video filter.\n"
@@ -1823,19 +1858,13 @@ int setting_data_get_description(const char *label, char *msg,
             "possible cost of latency and more video \n"
             "stuttering.");
    }*/
-   else if (!strcmp(label, "video_scale_integer"))
+  /* else if (!strcmp(label, "video_scale_integer"))
    {
       snprintf(msg, sizeof_msg,
             " -- Scale video in integer steps. \n"
             " \n"
-            "The base size depends on system-reported \n"
-            "geometry and aspect ratio.\n"
-            " \n"
-            "Select Custom Ratio to use this option. \n"
-			" \n"
-            "If the scale is higher than the screen, \n"
-			"the current res will be used instead.");
-   }
+            "The base size depends on system-reported \n");
+   }*/
  /*  else if (!strcmp(label, "video_crop_overscan"))
    {
       snprintf(msg, sizeof_msg,
@@ -1855,7 +1884,7 @@ int setting_data_get_description(const char *label, char *msg,
             "monitor), suggests RetroArch to use that \n"
             "particular monitor.");
    }*/
-   else if (!strcmp(label, "video_rotation"))
+ /*  else if (!strcmp(label, "video_rotation"))
    {
       snprintf(msg, sizeof_msg,
             " -- Forces a certain rotation \n"
@@ -1864,8 +1893,8 @@ int setting_data_get_description(const char *label, char *msg,
             "The rotation is added to rotations which\n"
             "the libretro core sets (see Video Allow\n"
             "Rotate).");
-   }
-   else if (!strcmp(label, "video_viwidth"))
+   }*/
+ /*  else if (!strcmp(label, "video_viwidth"))
    {
       snprintf(msg, sizeof_msg,
             " -- Set VI scaling width. \n"
@@ -1953,7 +1982,7 @@ int setting_data_get_description(const char *label, char *msg,
             " \n"
             "Do not rely on this cap to be perfectly \n"
             "accurate.");
-   }
+   }*/
   /* else if (!strcmp(label, "pause_nonactive"))
    {
       snprintf(msg, sizeof_msg,
@@ -1966,7 +1995,7 @@ int setting_data_get_description(const char *label, char *msg,
             " -- Screenshots output of GPU shaded \n"
             "material if available.");
    }*/
-   else if (!strcmp(label, "autosave_interval"))
+  /* else if (!strcmp(label, "autosave_interval"))
    {
       snprintf(msg, sizeof_msg,
             " -- Autosaves the non-volatile SRAM \n"
@@ -1984,7 +2013,7 @@ int setting_data_get_description(const char *label, char *msg,
             " \n"
             "Directory to save screenshots to."
             );
-   }
+   }*/
   /* else if (!strcmp(label, "video_swap_interval"))
    {
       snprintf(msg, sizeof_msg,
@@ -2005,7 +2034,7 @@ int setting_data_get_description(const char *label, char *msg,
             "audio_input_rate = game input rate * display \n"
             "refresh rate / game refresh rate \n");
    }*/
-   else if (!strcmp(label, "savefile_directory"))
+  /* else if (!strcmp(label, "savefile_directory"))
    {
       snprintf(msg, sizeof_msg,
             " -- Savefile Directory. \n"
@@ -2021,7 +2050,7 @@ int setting_data_get_description(const char *label, char *msg,
             " \n"
             "Save all save states (*.state) to this \n"
             "directory. \n");
-   }
+   }*/
   /* else if (!strcmp(label, "assets_directory"))
    {
       snprintf(msg, sizeof_msg,
@@ -2031,16 +2060,16 @@ int setting_data_get_description(const char *label, char *msg,
             "menu interfaces try to look for loadable \n"
             "assets, etc.");
    }*/
-   else if (!strcmp(label, "slowmotion_ratio"))
+/*   else if (!strcmp(label, "slowmotion_ratio"))
    {
       snprintf(msg, sizeof_msg,
             " -- Slowmotion ratio."
             " \n"
             "When slowmotion, content will slow\n"
             "down by factor.");
-   }
+   }*/
 #ifdef HAVE_5PLAY
-   else if (!strcmp(label, "input_key_profile"))
+ /*  else if (!strcmp(label, "input_key_profile"))
    {
       snprintf(msg, sizeof_msg,
             " -- Change Key Layout.\n"
@@ -2052,9 +2081,9 @@ int setting_data_get_description(const char *label, char *msg,
             "Profile 2: Alternate X/Y. \n"
 			"Profile 3: Separate GC from Wii keys. "
 			);
-   }
+   }*/
 #else
-   else if (!strcmp(label, "input_key_profile"))
+  /* else if (!strcmp(label, "input_key_profile"))
    {
       snprintf(msg, sizeof_msg,
             " -- Change Key Layout.\n"
@@ -2065,9 +2094,9 @@ int setting_data_get_description(const char *label, char *msg,
             "Profile 1: Mirror to unused keys. \n"
             "Profile 2: Alternate X/Y. \n"
 			);
-   }
+   }*/
 #endif
-   else if (!strcmp(label, "input_poll_rate"))
+ /*  else if (!strcmp(label, "input_poll_rate"))
    {
       snprintf(msg, sizeof_msg,
             " -- Defines polling rate.\n"
@@ -2105,7 +2134,7 @@ int setting_data_get_description(const char *label, char *msg,
             " \n"
             "How fast turbo buttons will toggle. \n"
             );
-   }
+   }*/
   /* else if (!strcmp(label, "rewind_granularity"))
    {
       snprintf(msg, sizeof_msg,
@@ -2124,14 +2153,14 @@ int setting_data_get_description(const char *label, char *msg,
             "This will take a performance hit, \n"
             "so it is disabled by default.");
    }*/
-   else if (!strcmp(label, "input_autodetect_enable"))
+ /*  else if (!strcmp(label, "input_autodetect_enable"))
    {
       snprintf(msg, sizeof_msg,
             " -- Enable input auto-detection.\n"
             " \n"
             "Will attempt to auto-configure \n"
             "controllers with basic mappings.");
-   }
+   }*/
   /* else if (!strcmp(label, "camera_allow"))
    {
       snprintf(msg, sizeof_msg,
@@ -2144,7 +2173,7 @@ int setting_data_get_description(const char *label, char *msg,
             " -- Allow or disallow location services \n"
             "access by cores.");
    }*/
-   else if (!strcmp(label, "savestate_auto_save"))
+ /*  else if (!strcmp(label, "savestate_auto_save"))
    {
       snprintf(msg, sizeof_msg,
             " -- Automatically writes a savestate on exit. \n"
@@ -2152,7 +2181,7 @@ int setting_data_get_description(const char *label, char *msg,
             "This will automatically load a state \n"
             "with the '.auto' extension on startup \n"
             "if 'Auto Load State' is set.");
-   }
+   }*/
   /* else if (!strcmp(label, "shader_apply_changes"))
    {
       snprintf(msg, sizeof_msg,
@@ -2277,7 +2306,7 @@ int setting_data_get_description(const char *label, char *msg,
             "pass or not."
             );
    }*/
-   else if (
+ /*  else if (
          !strcmp(label, "l_x_plus")  ||
          !strcmp(label, "l_x_minus") ||
          !strcmp(label, "l_y_plus")  ||
@@ -2304,7 +2333,7 @@ int setting_data_get_description(const char *label, char *msg,
             "itself (not turbo button) is released.");
    else if (!strcmp(label, "exit_emulator"))
       snprintf(msg, sizeof_msg,
-            " -- Key to exit cleanly."
+            " -- Key to exit cleanly."*/
 #if !defined(RARCH_MOBILE) && !defined(RARCH_CONSOLE)
             "\nKilling it in any hard way (SIGKILL, \n"
             "etc) will terminate without saving\n"
@@ -2312,13 +2341,13 @@ int setting_data_get_description(const char *label, char *msg,
             "SIGINT/SIGTERM allows\n"
             "a clean deinitialization."
 #endif
-            );
+         //   );
    /*else if (!strcmp(label, "rewind"))
       snprintf(msg, sizeof_msg,
             " -- Hold button down to rewind.\n"
             " \n"
             "Rewind must be enabled.");*/
-   else if (!strcmp(label, "load_state"))
+ /*  else if (!strcmp(label, "load_state"))
       snprintf(msg, sizeof_msg,
             " -- Loads state.");
    else if (!strcmp(label, "save_state"))
@@ -2331,13 +2360,13 @@ int setting_data_get_description(const char *label, char *msg,
             " \n"
             "With slot set to 0, save state name \n"
             "is *.state. Otherwise the slot will \n"
-            "be appended to the end of the filename.");
+            "be appended to the end of the filename."); */
   /* else if (!strcmp(label, "netplay_flip_players"))
       snprintf(msg, sizeof_msg,
             " -- Netplay flip players.");*/
-   else if (!strcmp(label, "frame_advance"))
-      snprintf(msg, sizeof_msg,
-            " -- Frame advance when content is paused.");
+ //  else if (!strcmp(label, "frame_advance"))
+   //   snprintf(msg, sizeof_msg,
+     //       " -- Frame advance when content is paused.");
   /* else if (!strcmp(label, "enable_hotkey"))
       snprintf(msg, sizeof_msg,
             " -- Enable other hotkeys.\n"
@@ -2351,7 +2380,7 @@ int setting_data_get_description(const char *label, char *msg,
             "implementations which query a large area of \n"
             "the keyboard, where it is not desirable that \n"
             "hotkeys get in the way.");*/
-   else if (!strcmp(label, "slowmotion"))
+  /* else if (!strcmp(label, "slowmotion"))
       snprintf(msg, sizeof_msg,
             " -- Hold for slowmotion.");
    else if (!strcmp(label, "pause_toggle"))
@@ -2360,13 +2389,13 @@ int setting_data_get_description(const char *label, char *msg,
    else if (!strcmp(label, "hold_fast_forward"))
       snprintf(msg, sizeof_msg,
             " -- Hold for fast-forward. Releasing button \n"
-            "disables fast-forward.");
+            "disables fast-forward."); */
   /* else if (!strcmp(label, "shader_next"))
       snprintf(msg, sizeof_msg,
             " -- Applies next shader in directory.");*/
-   else if (!strcmp(label, "reset"))
-      snprintf(msg, sizeof_msg,
-            " -- Reset the content.\n");
+ //  else if (!strcmp(label, "reset"))
+   //   snprintf(msg, sizeof_msg,
+     //       " -- Reset the content.\n");
   /* else if (!strcmp(label, "cheat_index_plus"))
       snprintf(msg, sizeof_msg,
             " -- Increment cheat index.\n");
@@ -2379,7 +2408,7 @@ int setting_data_get_description(const char *label, char *msg,
    else if (!strcmp(label, "shader_prev"))
       snprintf(msg, sizeof_msg,
             " -- Applies previous shader in directory."); */
-   else if (!strcmp(label, "audio_mute"))
+ /*  else if (!strcmp(label, "audio_mute"))
       snprintf(msg, sizeof_msg,
             " -- Mute/unmute audio.");
    else if (!strcmp(label, "screenshot"))
@@ -2406,7 +2435,7 @@ int setting_data_get_description(const char *label, char *msg,
             " -- Cycles through disk images. Use after \n"
             "ejecting. \n"
             " \n"
-            " Complete by toggling eject again.");
+            " Complete by toggling eject again."); */
   /* else if (!strcmp(label, "grab_mouse_toggle"))
       snprintf(msg, sizeof_msg,
             " -- Toggles mouse grab.\n"
@@ -2415,7 +2444,7 @@ int setting_data_get_description(const char *label, char *msg,
             "hidden, and keeps the mouse pointer inside \n"
             "the window to allow relative mouse input to \n"
             "work better."); */
-   else if (!strcmp(label, "menu_toggle"))
+   /*else if (!strcmp(label, "menu_toggle"))
       snprintf(msg, sizeof_msg,
             " -- Toggles menu.");
    else if (!strcmp(label, "input_bind_device_id"))
@@ -2430,10 +2459,10 @@ int setting_data_get_description(const char *label, char *msg,
             " \n"
             "Picks which device type to use. This is \n"
             "relevant for the libretro core itself."
-            );
+            );*/
    else
       snprintf(msg, sizeof_msg,
-            "-- No info available. --\n");
+            "-- No hay info disponible. --\n");
 
    return 0;
 }
@@ -3028,7 +3057,7 @@ static bool setting_data_append_list_main_menu_options(
 #if defined(HAVE_DYNAMIC) || defined(HAVE_LIBRETRO_MANAGEMENT)
    CONFIG_ACTION(
          "core_list",
-         "Core",
+         nucleo,
          group_info.name,
          subgroup_info.name);
    settings_data_list_current_add_flags(
@@ -3059,7 +3088,7 @@ static bool setting_data_append_list_main_menu_options(
    } */
    CONFIG_ACTION(
          "load_content",
-         "Load Content",
+         "Selecciona el juego",
          group_info.name,
          subgroup_info.name);
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
@@ -3067,7 +3096,7 @@ static bool setting_data_append_list_main_menu_options(
    if (!g_settings.hide_core) {
       CONFIG_ACTION(
             "core_options",
-            "Core Options",
+            nucleo_opciones,
             group_info.name,
             subgroup_info.name);
       settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
@@ -3076,7 +3105,7 @@ static bool setting_data_append_list_main_menu_options(
    if (!g_settings.hide_core) {
       CONFIG_ACTION(
             "core_options",
-            "System Options",
+            "Opciones del sistema",
             group_info.name,
             subgroup_info.name);
       settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
@@ -3111,15 +3140,13 @@ static bool setting_data_append_list_main_menu_options(
             subgroup_info.name);
       settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
    }*/
-   
 
-   
    if (g_extern.main_is_init && !g_extern.libretro_dummy)
    {
      if (!g_settings.hide_states) {
       CONFIG_ACTION(
             "savestate",
-            "Save State",
+            "Salvar estado",
             group_info.name,
             subgroup_info.name);
      // (*list)[list_info->index - 1].action_toggle = &setting_data_bool_action_toggle_savestates;
@@ -3130,7 +3157,7 @@ static bool setting_data_append_list_main_menu_options(
 
       CONFIG_ACTION(
             "loadstate",
-            "Load State",
+            "Cargar estado",
             group_info.name,
             subgroup_info.name);
      // (*list)[list_info->index - 1].action_toggle = &setting_data_bool_action_toggle_savestates;
@@ -3144,7 +3171,7 @@ static bool setting_data_append_list_main_menu_options(
    if (!g_settings.hide_settings) {
          CONFIG_ACTION(
                "settings",
-               "Settings",
+               "Configurar",
                group_info.name,
                subgroup_info.name);
          settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
@@ -3155,7 +3182,7 @@ static bool setting_data_append_list_main_menu_options(
      if (!g_settings.hide_screenshot) {
       CONFIG_ACTION(
             "take_screenshot",
-            "Take Screenshot",
+            "Tomar foto",
             group_info.name,
             subgroup_info.name);
       settings_list_current_add_cmd  (list, list_info, RARCH_CMD_TAKE_SCREENSHOT);
@@ -3165,7 +3192,7 @@ static bool setting_data_append_list_main_menu_options(
      if (!g_settings.hide_resume) {
       CONFIG_ACTION(
             "resume_content",
-            "Resume Game",
+            "Regresar al juego",
             group_info.name,
             subgroup_info.name);
       settings_list_current_add_cmd  (list, list_info, RARCH_CMD_RESUME);
@@ -3176,7 +3203,7 @@ static bool setting_data_append_list_main_menu_options(
      if (!g_settings.hide_reset) {
       CONFIG_ACTION(
             "restart_content",
-            "Reset",
+            "Reiniciar",
             group_info.name,
             subgroup_info.name);
       settings_list_current_add_cmd(list, list_info, RARCH_CMD_RESET);
@@ -3219,7 +3246,7 @@ static bool setting_data_append_list_main_menu_options(
    if (!g_settings.hide_exit) {
      CONFIG_ACTION(
            "quit_retroarch",
-           "Exit",
+           "Salir",
            group_info.name,
            subgroup_info.name);
      settings_list_current_add_cmd(list, list_info, RARCH_CMD_QUIT_RETROARCH);
@@ -3291,10 +3318,10 @@ static bool setting_data_append_list_driver_options(
    CONFIG_BOOL(
          g_settings.input.rgui_reset,
          "rgui_reset",
-         "Open Menu with Reset",
+         "Abrir con Reiniciar",
          rgui_reset,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3303,7 +3330,7 @@ static bool setting_data_append_list_driver_options(
    CONFIG_UINT(
          g_settings.title_posx,
          "title_posx",
-         "Title Position",
+         title_pos,
          title_posx,
          group_info.name,
          subgroup_info.name,
@@ -3314,7 +3341,7 @@ static bool setting_data_append_list_driver_options(
    CONFIG_UINT(
          g_settings.item_posx,
          "item_posx",
-         "Items Position X",
+         pos_generalx,
          item_posx,
          group_info.name,
          subgroup_info.name,
@@ -3325,7 +3352,7 @@ static bool setting_data_append_list_driver_options(
    CONFIG_UINT(
          g_settings.item_posy,
          "item_posy",
-         "Items Position Y",
+         pos_generaly,
          item_posy,
          group_info.name,
          subgroup_info.name,
@@ -3336,10 +3363,10 @@ static bool setting_data_append_list_driver_options(
    CONFIG_BOOL(
          g_settings.hide_core,
          "hide_core",
-         "Hide Options",
+         "Esconder opciones",
          hide_core,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3348,10 +3375,10 @@ static bool setting_data_append_list_driver_options(
    CONFIG_BOOL(
          g_settings.hide_states,
          "hide_states",
-         "Hide Save/Load States",
+         "Esconder estados",
          hide_states,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3360,10 +3387,10 @@ static bool setting_data_append_list_driver_options(
    CONFIG_BOOL(
          g_settings.hide_screenshot,
          "hide_screenshot",
-         "Hide Take Screenshot",
+         "Esconder Toma foto",
          hide_screenshot,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3372,10 +3399,10 @@ static bool setting_data_append_list_driver_options(
    CONFIG_BOOL(
          g_settings.hide_resume,
          "hide_resume",
-         "Hide Resume",
+         "Esconder Regresar al juego",
          hide_resume,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3384,10 +3411,10 @@ static bool setting_data_append_list_driver_options(
    CONFIG_BOOL(
          g_settings.hide_reset,
          "hide_reset",
-         "Hide Reset",
+         "Esconder Reiniciar",
          hide_reset,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3396,10 +3423,10 @@ static bool setting_data_append_list_driver_options(
    CONFIG_BOOL(
          g_settings.hide_cursor,
          "hide_cursor",
-         "Hide Cursor",
+         "Esconder cursor",
          hide_cursor,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3442,7 +3469,7 @@ static bool setting_data_append_list_driver_options(
    CONFIG_UINT(
          g_settings.theme_preset,
          "theme_preset",
-         "Menu Color Type",
+         "Color",
          theme_preset,
          group_info.name,
          subgroup_info.name,
@@ -3453,10 +3480,10 @@ static bool setting_data_append_list_driver_options(
    CONFIG_BOOL(
          g_settings.menu_fullscreen,
          "menu_fullscreen",
-         "Menu Fullscreen",
+         "Imagen completa",
          menu_fullscreen,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3465,10 +3492,10 @@ static bool setting_data_append_list_driver_options(
    CONFIG_BOOL(
          g_settings.menu_solid,
          "menu_solid",
-         "Solid Color BG",
+         "Color del fondo",
          menu_solid,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3477,10 +3504,10 @@ static bool setting_data_append_list_driver_options(
    CONFIG_BOOL(
          g_settings.clock_show,
          "clock_show",
-         "Display Time",
+         "La hora",
          clock_show,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3489,7 +3516,7 @@ static bool setting_data_append_list_driver_options(
    CONFIG_UINT(
          g_settings.clock_posx,
          "clock_posx",
-         "Clock Position",
+         "Pos X del reloj",
          clock_posx,
          group_info.name,
          subgroup_info.name,
@@ -3500,10 +3527,10 @@ static bool setting_data_append_list_driver_options(
    CONFIG_BOOL(
          g_settings.fadein,
          "fadein",
-         "Fade-in",
+         "Fundido de entrada",
          fadein,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3512,7 +3539,7 @@ static bool setting_data_append_list_driver_options(
    CONFIG_UINT(
          g_settings.reset_fade,
          "reset_fade",
-         "Fade Method for Reset",
+         "Fundido al reiniciar",
          reset_fade,
          group_info.name,
          subgroup_info.name,
@@ -3523,10 +3550,10 @@ static bool setting_data_append_list_driver_options(
    CONFIG_BOOL(
          g_settings.exit_fade,
          "exit_fade",
-         "Fade-out",
+         "Fundido de salida",
          exit_fade,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3577,8 +3604,8 @@ static bool setting_data_append_list_general_options(
          "log_verbosity",
          "Logging Verbosity",
          false,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3598,8 +3625,8 @@ static bool setting_data_append_list_general_options(
          "perfcnt_enable",
          "Performance Counters",
          false,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3607,10 +3634,10 @@ static bool setting_data_append_list_general_options(
 
    CONFIG_BOOL(g_settings.config_save_on_exit,
          "config_save_on_exit",
-         "Config Save On Exit",
+         "Guardar ajustes",
          config_save_on_exit,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3619,10 +3646,10 @@ static bool setting_data_append_list_general_options(
    CONFIG_BOOL(
          g_settings.core_specific_config,
          "core_specific_config",
-         "Per-Core Config",
+         "Config por sistema",
          default_core_specific_config,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3633,8 +3660,8 @@ static bool setting_data_append_list_general_options(
          "dummy_on_core_shutdown",
          "Dummy On Core Shutdown",
          load_dummy_on_core_shutdown,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3643,10 +3670,10 @@ static bool setting_data_append_list_general_options(
    if (!g_settings.video.drawdone) {
       CONFIG_BOOL(g_settings.fps_show,
             "fps_show",
-            "Show Framerate",
+            "Ver velocidad",
             fps_show,
-            "OFF",
-            "ON",
+            "No",
+            sip,
             group_info.name,
             subgroup_info.name,
             general_write_handler,
@@ -3658,8 +3685,8 @@ static bool setting_data_append_list_general_options(
          "rewind_enable",
          "Rewind",
          rewind_enable,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3691,10 +3718,10 @@ static bool setting_data_append_list_general_options(
    CONFIG_BOOL(
          g_settings.block_sram_overwrite,
          "block_sram_overwrite",
-         "SRAM Block overwrite",
+         "Bloqueo de SRAM",
          block_sram_overwrite,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3704,7 +3731,7 @@ static bool setting_data_append_list_general_options(
    CONFIG_UINT(
          g_settings.autosave_interval,
          "autosave_interval",
-         "SRAM Autosave",
+         "SRAM Autosalvar",
          autosave_interval,
          group_info.name,
          subgroup_info.name,
@@ -3720,8 +3747,8 @@ static bool setting_data_append_list_general_options(
          "video_disable_composition",
          "Window Compositing Disable",
          disable_composition,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3734,8 +3761,8 @@ static bool setting_data_append_list_general_options(
          "pause_nonactive",
          "Window Unfocus Pause",
          pause_nonactive,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3746,8 +3773,8 @@ static bool setting_data_append_list_general_options(
          "fastforward_ratio_throttle_enable",
          "Limit Maximum Run Speed",
          fastforward_ratio_throttle_enable,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3756,7 +3783,7 @@ static bool setting_data_append_list_general_options(
    CONFIG_FLOAT(
          g_settings.fastforward_ratio,
          "fastforward_ratio",
-         "Maximum Run Speed",
+         "Velocidad del juego",
          fastforward_ratio,
          "%.1fx",
          group_info.name,
@@ -3768,7 +3795,7 @@ static bool setting_data_append_list_general_options(
    CONFIG_FLOAT(
          g_settings.slowmotion_ratio,
          "slowmotion_ratio",
-         "Slow-Motion Ratio",
+         "Camara lenta",
          slowmotion_ratio,
          "%.1fx",
          group_info.name,
@@ -3780,10 +3807,10 @@ static bool setting_data_append_list_general_options(
    CONFIG_BOOL(
          g_settings.savestate_auto_index,
          "savestate_auto_index",
-         "Save State Auto Index",
+         "Auto indice de estados",
          savestate_auto_index,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3792,10 +3819,10 @@ static bool setting_data_append_list_general_options(
    CONFIG_BOOL(
          g_settings.regular_state_pause,
          "regular_state_pause",
-         "Pause On Load State",
+         "Pausa al cargar estado",
          regular_state_pause,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3804,10 +3831,10 @@ static bool setting_data_append_list_general_options(
    CONFIG_BOOL(
          g_settings.stateload_pause,
          "stateload_pause",
-         "Pause On Auto Load",
+         "Pausa al cargar auto estado",
          stateload_pause,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3816,10 +3843,10 @@ static bool setting_data_append_list_general_options(
    CONFIG_BOOL(
          g_settings.savestate_auto_once,
          "savestate_auto_once",
-         "Auto Load Once",
+         "Auto cargar una vez",
          savestate_auto_once,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3828,10 +3855,10 @@ static bool setting_data_append_list_general_options(
    CONFIG_BOOL(
          g_settings.savestate_auto_save,
          "savestate_auto_save",
-         "Auto Save State",
+         "Auto salvar estado",
          savestate_auto_save,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3840,10 +3867,10 @@ static bool setting_data_append_list_general_options(
    CONFIG_BOOL(
          g_settings.savestate_auto_load,
          "savestate_auto_load",
-         "Auto Load State",
+         "Auto cargar estado",
          savestate_auto_load,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3852,7 +3879,7 @@ static bool setting_data_append_list_general_options(
    CONFIG_UINT(
          g_settings.state_slot,
          "state_slot",
-         "Current State Slot",
+         "Estado actual",
          state_slot,
          group_info.name,
          subgroup_info.name,
@@ -3873,8 +3900,8 @@ static bool setting_data_append_list_general_options(
          "network_cmd_enable",
          "Network Commands",
          network_cmd_enable,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3894,8 +3921,8 @@ static bool setting_data_append_list_general_options(
          "stdin_cmd_enable",
          "stdin command",
          stdin_cmd_enable,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3924,8 +3951,8 @@ static bool setting_data_append_list_video_options(
          "video_shared_context",
          "HW Shared Context Enable",
          false,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3952,8 +3979,8 @@ static bool setting_data_append_list_video_options(
          "video_fullscreen",
          "Use Fullscreen mode",
          fullscreen,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -3966,8 +3993,8 @@ static bool setting_data_append_list_video_options(
          "video_windowed_fullscreen",
          "Windowed Fullscreen Mode",
          windowed_fullscreen,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4010,8 +4037,8 @@ static bool setting_data_append_list_video_options(
          "video_force_srgb_disable",
          "Force-disable sRGB FBO",
          false,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4027,8 +4054,8 @@ static bool setting_data_append_list_video_options(
          "video_force_aspect",
          "Force aspect ratio",
          force_aspect,
-         "ON",
-         "OFF",
+         sip,
+         "No",
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4050,8 +4077,8 @@ static bool setting_data_append_list_video_options(
          "video_aspect_ratio_auto",
          "Use Auto Aspect Ratio",
          aspect_ratio_auto,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4060,7 +4087,7 @@ static bool setting_data_append_list_video_options(
    CONFIG_UINT(
          g_settings.video.aspect_ratio_idx,
          "aspect_ratio_index",
-         "Aspect Ratio Index",
+         indice_aspect,
          aspect_ratio_idx,
          group_info.name,
          subgroup_info.name,
@@ -4101,10 +4128,10 @@ static bool setting_data_append_list_video_options(
    CONFIG_BOOL(
          g_settings.video.scale_integer,
          "video_scale_integer",
-         "Integer Scale",
+         por_int,
          scale_integer,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4113,7 +4140,7 @@ static bool setting_data_append_list_video_options(
    CONFIG_INT(
          g_extern.console.screen.viewports.custom_vp.x,
          "custom_viewport_x",
-         "Custom Viewport X",
+         "Vista X",
          0,
          group_info.name,
          subgroup_info.name,
@@ -4123,7 +4150,7 @@ static bool setting_data_append_list_video_options(
    CONFIG_INT(
          g_extern.console.screen.viewports.custom_vp.y,
          "custom_viewport_y",
-         "Custom Viewport Y",
+         "Vista Y",
          0,
          group_info.name,
          subgroup_info.name,
@@ -4133,7 +4160,7 @@ static bool setting_data_append_list_video_options(
    CONFIG_UINT(
          g_extern.console.screen.viewports.custom_vp.width,
          "custom_viewport_width",
-         "Custom Viewport Width",
+         "Ancho actual",
          0,
          group_info.name,
          subgroup_info.name,
@@ -4143,7 +4170,7 @@ static bool setting_data_append_list_video_options(
    CONFIG_UINT(
          g_extern.console.screen.viewports.custom_vp.height,
          "custom_viewport_height",
-         "Custom Viewport Height",
+         "Altura actual",
          0,
          group_info.name,
          subgroup_info.name,
@@ -4169,7 +4196,7 @@ static bool setting_data_append_list_video_options(
    CONFIG_UINT(
          g_settings.video.viwidth,
          "video_viwidth",
-         "Set Screen Width",
+         "El ancho del VI",
          video_viwidth,
          group_info.name,
          subgroup_info.name,
@@ -4180,10 +4207,10 @@ static bool setting_data_append_list_video_options(
    CONFIG_BOOL(
          g_settings.video.vfilter,
          "video_vfilter",
-         "Deflicker",
+         "Defliqueador",
          video_vfilter,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4194,8 +4221,8 @@ static bool setting_data_append_list_video_options(
          "video_dither",
          "Dither",
          video_dither,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4206,10 +4233,10 @@ static bool setting_data_append_list_video_options(
    CONFIG_BOOL(
          g_extern.console.softfilter_enable,
          "soft_filter",
-         "Trap Filter",
+         "Filtro Trampa",
          false,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4223,10 +4250,10 @@ static bool setting_data_append_list_video_options(
    CONFIG_BOOL(
          g_settings.video.smooth,
          "video_smooth",
-         "Texture Scaling",
+         "Filtro de textura",
          video_smooth,
-         "Point",
-         "Bilinear",
+         "Punto",
+         "Bilineal",
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4235,10 +4262,10 @@ static bool setting_data_append_list_video_options(
    CONFIG_BOOL(
          g_settings.video.menu_smooth,
          "video_menu_smooth",
-         "Menu Scaling",
+         "Filtro del interfaz",
          video_menu_smooth,
-         "Point",
-         "Bilinear",
+         "Punto",
+         "Bilineal",
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4263,8 +4290,8 @@ static bool setting_data_append_list_video_options(
          "pal60_enable",
          "Use PAL60 Mode",
          false,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4274,7 +4301,7 @@ static bool setting_data_append_list_video_options(
    CONFIG_FLOAT(
          g_settings.video.vbright,
          "video_vbright",
-         "Brightness",
+         "Brillo",
          video_vbright,
 		 "%.0f",
          group_info.name,
@@ -4322,8 +4349,8 @@ static bool setting_data_append_list_video_options(
          "video_threaded",
          "Threaded Video",
          video_threaded,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4335,7 +4362,7 @@ static bool setting_data_append_list_video_options(
    CONFIG_UINT(
          g_settings.video.rotation,
          "video_rotation",
-         "Rotation",
+         rotacion,
          0,
          group_info.name,
          subgroup_info.name,
@@ -4348,8 +4375,8 @@ static bool setting_data_append_list_video_options(
          "video_vsync",
          "VSync",
          vsync,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4373,8 +4400,8 @@ static bool setting_data_append_list_video_options(
          "video_hard_sync",
          "Hard GPU Sync",
          hard_sync,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4394,7 +4421,7 @@ static bool setting_data_append_list_video_options(
    CONFIG_UINT(
          g_settings.video.frame_delay,
          "video_frame_delay",
-         "Frame Delay",
+         "Retraso de imagen",
          frame_delay,
          group_info.name,
          subgroup_info.name,
@@ -4408,8 +4435,8 @@ static bool setting_data_append_list_video_options(
          "video_black_frame_insertion",
          "Black Frame Insertion",
          black_frame_insertion,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4430,8 +4457,8 @@ static bool setting_data_append_list_video_options(
          "video_post_filter_record",
          "Post filter record Enable",
          post_filter_record,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4442,8 +4469,8 @@ static bool setting_data_append_list_video_options(
          "video_gpu_record",
          "GPU Record Enable",
          gpu_record,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4454,8 +4481,8 @@ static bool setting_data_append_list_video_options(
          "video_gpu_screenshot",
          "GPU Screenshots",
          gpu_screenshot,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4466,8 +4493,8 @@ static bool setting_data_append_list_video_options(
          "video_allow_rotate",
          "Allow Rotation",
          allow_rotate,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4478,8 +4505,8 @@ static bool setting_data_append_list_video_options(
          "video_crop_overscan",
          "Crop Overscan (reload)",
          crop_overscan,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4489,7 +4516,7 @@ static bool setting_data_append_list_video_options(
    CONFIG_PATH(
          g_settings.video.softfilter_plugin,
          "video_filter",
-         "Software Texture Filter",
+         "Filtro CPU",
          g_settings.video.filter_dir,
          group_info.name,
          subgroup_info.name,
@@ -4549,8 +4576,8 @@ static bool setting_data_append_list_shader_options(
          "video_shader_enable",
          "Enable Shaders",
          shader_enable,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          NULL,
@@ -4612,8 +4639,8 @@ static bool setting_data_append_list_font_options(
          "video_font_enable",
          "OSD Font Enable",
          font_enable,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4668,8 +4695,8 @@ static bool setting_data_append_list_audio_options(
          "audio_enable",
          "Audio Enable (Restart)",
          audio_enable,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4678,7 +4705,7 @@ static bool setting_data_append_list_audio_options(
    CONFIG_STRING(
          g_settings.audio.resampler,
          "audio_resampler_driver",
-         "Resampler",
+         "Remuestreo",
          config_get_default_audio_resampler(),
          group_info.name,
          subgroup_info.name,
@@ -4700,10 +4727,10 @@ static bool setting_data_append_list_audio_options(
    CONFIG_BOOL(
          g_extern.audio_data.mute,
          "audio_mute_enable",
-         "Audio Mute",
+         "Mute",
          false,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4712,7 +4739,7 @@ static bool setting_data_append_list_audio_options(
    CONFIG_FLOAT(
          g_settings.audio.volume,
          "audio_volume",
-         "Volume Level",
+         "Nivel del volumen",
          audio_volume,
          "%.1f",
          group_info.name,
@@ -4727,8 +4754,8 @@ static bool setting_data_append_list_audio_options(
          "system_bgm_enable",
          "System BGM Enable",
          false,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4747,10 +4774,10 @@ static bool setting_data_append_list_audio_options(
    CONFIG_BOOL(
          g_settings.audio.sync,
          "audio_sync",
-         "Audio Sync",
+         "Sincronizar",
          audio_sync,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -4772,7 +4799,7 @@ static bool setting_data_append_list_audio_options(
    CONFIG_FLOAT(
          g_settings.audio.rate_control_delta,
          "audio_rate_control_delta",
-         "Rate Control Delta",
+         "Velocidad control delta",
          rate_control_delta,
          "%.3f",
          group_info.name,
@@ -4832,7 +4859,7 @@ static bool setting_data_append_list_audio_options(
    CONFIG_PATH(
          g_settings.audio.dsp_plugin,
          "audio_dsp_plugin",
-         "DSP Plugin",
+         "Plugin DSP",
          g_settings.audio.filter_dir,
          group_info.name,
          subgroup_info.name,
@@ -4857,17 +4884,17 @@ static bool setting_data_append_list_input_options(
    unsigned i, player;
 
    /* Input Options is now Input */
-   START_GROUP(group_info, "Input");
+   START_GROUP(group_info, "Controles");
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_IS_CATEGORY);
    START_SUB_GROUP(list, list_info, "State", group_info.name, subgroup_info);
 
    CONFIG_BOOL(
          g_settings.input.autodetect_enable,
          "input_autodetect_enable",
-         "Autodetect",
+         "Autodetectar",
          input_autodetect_enable,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -5064,7 +5091,7 @@ static bool setting_data_append_list_input_options(
    CONFIG_UINT(
          g_settings.input.turbo_period,
          "input_turbo_period",
-         "Turbo Period",
+         "Periodo turbo",
          turbo_period,
          group_info.name,
          subgroup_info.name,
@@ -5170,8 +5197,8 @@ static bool setting_data_append_list_input_options(
          "osk_enable",
          "Onscreen Keyboard Enable",
          false,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -5191,8 +5218,8 @@ static bool setting_data_append_list_input_options(
          "netplay_client_swap_input",
          "Swap Netplay Input",
          netplay_client_swap_input,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -5212,14 +5239,14 @@ static bool setting_data_append_list_overlay_options(
    rarch_setting_group_info_t subgroup_info;
 
    /* Overlay Options is now Overlays */
-   START_GROUP(group_info, "Overlays");
+   START_GROUP(group_info, "Sobreponer");
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_IS_CATEGORY);
    START_SUB_GROUP(list, list_info, "State", group_info.name, subgroup_info);
 
    CONFIG_PATH(
          g_settings.input.overlay,
          "input_overlay",
-         "Overlay Preset",
+         "Sobreponer imagen",
          g_extern.overlay_dir,
          group_info.name,
          subgroup_info.name,
@@ -5232,7 +5259,7 @@ static bool setting_data_append_list_overlay_options(
    CONFIG_FLOAT(
          g_settings.input.overlay_opacity,
          "input_overlay_opacity",
-         "Overlay Opacity",
+         "Sobreponer opacidad",
          0.7f,
          "%.2f",
          group_info.name,
@@ -5246,7 +5273,7 @@ static bool setting_data_append_list_overlay_options(
    CONFIG_FLOAT(
          g_settings.input.overlay_scale,
          "input_overlay_scale",
-         "Overlay Scale",
+         "Sobreponer escala",
          1.0f,
          "%.2f",
          group_info.name,
@@ -5281,8 +5308,8 @@ static bool setting_data_append_list_menu_options(
          "rgui_show_start_screen",
          "Show Start Screen",
          menu_show_start_screen,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -5293,8 +5320,8 @@ static bool setting_data_append_list_menu_options(
          "menu_pause_libretro",
          "Pause Libretro",
          true,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -5325,8 +5352,8 @@ static bool setting_data_append_list_netplay_options(
          "netplay_enable",
          "Netplay Enable",
          false,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -5348,8 +5375,8 @@ static bool setting_data_append_list_netplay_options(
          "netplay_mode",
          "Netplay Client Enable",
          false,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -5360,8 +5387,8 @@ static bool setting_data_append_list_netplay_options(
          "netplay_spectator_mode_enable",
          "Netplay Spectator Enable",
          false,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -5413,8 +5440,8 @@ static bool setting_data_append_list_playlist_options(
          "history_list_enable",
          "History List Enable",
          true,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -5503,7 +5530,7 @@ static bool setting_data_append_list_path_options(
    CONFIG_DIR(
          g_settings.menu_content_directory,
          "rgui_browser_directory",
-         "Browser",
+         "Buscador",
          "",
          "<default>",
          group_info.name,
@@ -5549,7 +5576,7 @@ static bool setting_data_append_list_path_options(
    CONFIG_DIR(
          g_settings.libretro_directory,
          "libretro_dir_path",
-         "Core Select",
+         "Sistema",
          g_defaults.core_dir,
          "<None>",
          group_info.name,
@@ -5565,7 +5592,7 @@ static bool setting_data_append_list_path_options(
    CONFIG_DIR(
          g_settings.menu_config_directory,
          "rgui_config_directory",
-         "Configurations",
+         "Configuraciones",
          "",
          "<default>",
          group_info.name,
@@ -5598,7 +5625,7 @@ static bool setting_data_append_list_path_options(
    CONFIG_PATH(
          g_settings.core_options_path,
          "core_options_path",
-         "Core Options",
+         "Opciones del sistema",
          "",
          "Paths",
          subgroup_info.name,
@@ -5641,7 +5668,7 @@ static bool setting_data_append_list_path_options(
    CONFIG_DIR(
          g_settings.video.filter_dir,
          "video_filter_dir",
-         "Video Filters",
+         "Filtros de video",
          "",
          "<default>",
          group_info.name,
@@ -5656,7 +5683,7 @@ static bool setting_data_append_list_path_options(
    CONFIG_DIR(
          g_settings.audio.filter_dir,
          "audio_filter_dir",
-         "Audio Filters",
+         "Filtros de sonido",
          "",
          "<default>",
          group_info.name,
@@ -5689,7 +5716,7 @@ static bool setting_data_append_list_path_options(
    CONFIG_DIR(
          g_extern.overlay_dir,
          "overlay_directory",
-         "Overlay Data",
+         "Data de sobreponer",
          g_defaults.overlay_dir,
          "<default>",
          group_info.name,
@@ -5707,7 +5734,7 @@ static bool setting_data_append_list_path_options(
          "resampler_directory",
          "Resampler Directory",
          "",
-         "<Content dir>",
+         "<Dir del juego>",
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -5720,9 +5747,9 @@ static bool setting_data_append_list_path_options(
    CONFIG_DIR(
          g_settings.screenshot_directory,
          "screenshot_directory",
-         "Screenshots",
+         "Fotos",
          "",
-         "<Content dir>",
+         "<Dir del juego>",
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -5765,9 +5792,9 @@ static bool setting_data_append_list_path_options(
    CONFIG_DIR(
          g_extern.savefile_dir,
          "savefile_directory",
-         "Save Data",
+         "Data de partidas",
          "",
-         "<Content dir>",
+         "<Dir del juego>",
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -5776,9 +5803,9 @@ static bool setting_data_append_list_path_options(
    CONFIG_DIR(
          g_extern.savestate_dir,
          "savestate_directory",
-         "Save State Data",
+         "Data de estados",
          "",
-         "<Content dir>",
+         "<Dir del juego>",
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -5787,9 +5814,9 @@ static bool setting_data_append_list_path_options(
    CONFIG_DIR(
          g_settings.system_directory,
          "system_directory",
-         "System Data",
+         "Data del sistema",
          "",
-         "<Content dir>",
+         "<Dir del juego>",
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -5798,9 +5825,9 @@ static bool setting_data_append_list_path_options(
    CONFIG_DIR(
          g_settings.extraction_directory,
          "extraction_directory",
-         "Extracted Data",
+         "Data temporera",
          "",
-         "<Content dir>",
+         "<Dir del juego>",
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -5827,8 +5854,8 @@ static bool setting_data_append_list_privacy_options(
          "camera_allow",
          "Allow Camera",
          false,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,
@@ -5839,8 +5866,8 @@ static bool setting_data_append_list_privacy_options(
          "location_allow",
          "Allow Location",
          false,
-         "OFF",
-         "ON",
+         "No",
+         sip,
          group_info.name,
          subgroup_info.name,
          general_write_handler,

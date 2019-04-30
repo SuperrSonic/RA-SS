@@ -198,9 +198,15 @@ u8 color_ptr[16] ATTRIBUTE_ALIGN(32)  = {
    0xFF, 0xFF, 0xFF, 0xFF,
 };
 
+u8 clear_efb = GX_FALSE;
+
 void Draw_VIDEO()
 {
+#ifdef NO_SCREENTEAR
+	need_wait=true;
+#else
 	need_wait=false;
+#endif
 	//VIDEO_Flush();
 }
 
@@ -213,6 +219,15 @@ static void retrace_callback(u32 retrace_count)
    _CPU_ISR_Disable(level);
    retraceCount = retrace_count;
    _CPU_ISR_Restore(level);
+
+#ifdef NO_SCREENTEAR
+   if (need_wait) {
+    need_wait = false;
+	g_current_framebuf ^= 1;
+    GX_CopyDisp(g_framebuf[g_current_framebuf], clear_efb);
+    GX_Flush();
+   }
+#endif
 }
 
 #ifdef HAVE_OVERLAY
@@ -523,6 +538,7 @@ static void fadeout_copyfilter(void)
   if (fade == 0 && start_exitfade) {
        // start_exitfade = false; // pointless, we outta here
         exit_safe = true;
+		VIDEO_SetBlack(true);
         rarch_main_command(RARCH_CMD_QUIT);
   } else if (fade == 0) {
     start_resetfade = false;
@@ -1150,7 +1166,6 @@ static bool gx_frame(void *data, const void *frame,
 {
 
    gx_video_t *gx = (gx_video_t*)data;
-   u8 clear_efb = GX_FALSE;
    u32 level = 0;
 
    //RARCH_PERFORMANCE_INIT(gx_frame);
@@ -1182,7 +1197,11 @@ static bool gx_frame(void *data, const void *frame,
    }
 
    g_draw_done = false;
+#ifndef NO_SCREENTEAR
    g_current_framebuf ^= 1;
+#else
+   need_wait = false;
+#endif
 
 
    if (frame)
@@ -1303,7 +1322,7 @@ static bool gx_frame(void *data, const void *frame,
    else if ((g_settings.exit_fade && start_exitfade) || start_resetfade)
 	  fadeout_copyfilter();
 
-   if (need_wait && g_settings.video.drawdone)
+   if (g_settings.video.drawdone && need_wait)
       GX_WaitDrawDone();
 
    _CPU_ISR_Disable(level);
@@ -1355,13 +1374,17 @@ static bool gx_frame(void *data, const void *frame,
       gx_blit_line(x, y, msg);
       clear_efb = GX_TRUE;
    }*/
-
+#ifndef NO_SCREENTEAR
    GX_CopyDisp(g_framebuf[g_current_framebuf], clear_efb);
    GX_Flush();
+#endif
 
    VIDEO_SetNextFramebuffer(g_framebuf[g_current_framebuf]);
    VIDEO_Flush();
+
+#ifndef NO_SCREENTEAR
    need_wait = true;
+#endif
 
    _CPU_ISR_Disable(level);
    ++referenceRetraceCount;

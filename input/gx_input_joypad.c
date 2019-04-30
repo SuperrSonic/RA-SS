@@ -353,6 +353,111 @@ int32_t gxpad_mlposy(void) {
 	return _gx_mldata.y;
 }
 
+#define PI_2 3.14159265f
+
+static int16_t WPAD_StickX(WPADData *data, u8 right)
+{
+  float mag = 0.0f;
+  float ang = 0.0f;
+
+  int min;
+  int max;
+
+  switch (data->exp.type)
+  {
+    case WPAD_EXP_NUNCHUK:
+    case WPAD_EXP_GUITARHERO3:
+      if (right == 0)
+      {
+        mag = data->exp.nunchuk.js.mag;
+        ang = data->exp.nunchuk.js.ang;
+      }
+      break;
+
+    case WPAD_EXP_CLASSIC:
+      if (right == 0)
+      {
+        mag = data->exp.classic.ljs.mag;
+        ang = data->exp.classic.ljs.ang;
+      }
+      else
+      {
+        mag = data->exp.classic.rjs.mag;
+        ang = data->exp.classic.rjs.ang;
+      }
+		min = data->exp.classic.ljs.min.x;
+		max = data->exp.classic.ljs.max.x;
+	    if(min == max) {
+          return 0;
+        }
+      break;
+
+    default:
+      break;
+  }
+
+  /* calculate X value (angle need to be converted into radian) */
+  if (mag > 1.0f)
+     mag = 1.0f;
+  else if (mag < -1.0f)
+     mag = -1.0f;
+  double val = mag * sin(PI_2 * ang/180.0f);
+
+  return (int16_t)(val * 32767.0f);
+}
+
+static int16_t WPAD_StickY(WPADData *data, u8 right)
+{
+   double val;
+   float mag = 0.0f;
+   float ang = 0.0f;
+
+   int min;
+   int max;
+
+   switch (data->exp.type)
+   {
+      case WPAD_EXP_NUNCHUK:
+      case WPAD_EXP_GUITARHERO3:
+         if (right == 0)
+         {
+            mag = data->exp.nunchuk.js.mag;
+            ang = data->exp.nunchuk.js.ang;
+         }
+         break;
+
+      case WPAD_EXP_CLASSIC:
+         if (right == 0)
+         {
+            mag = data->exp.classic.ljs.mag;
+            ang = data->exp.classic.ljs.ang;
+         }
+         else
+         {
+            mag = data->exp.classic.rjs.mag;
+            ang = data->exp.classic.rjs.ang;
+         }
+		 min = data->exp.classic.ljs.min.x;
+		 max = data->exp.classic.ljs.max.x;
+	     if(min == max) {
+           return 0;
+         }
+         break;
+
+      default:
+         break;
+   }
+
+   /* calculate Y value (angle need to be converted into radian) */
+   if (mag > 1.0f)
+      mag = 1.0f;
+   else if (mag < -1.0f)
+      mag = -1.0f;
+   val    = -mag * cos(PI_2 * ang/180.0f);
+
+   return (int16_t)(val * 32767.0f);
+}
+
 static void gx_joypad_poll(void)
 {
    unsigned i, j, port;
@@ -420,7 +525,6 @@ static void gx_joypad_poll(void)
             *state_cur |= (down & WPAD_BUTTON_RIGHT) ? (1ULL << GX_WIIMOTE_UP) : 0;
          //}
 
-
          if (ptype == WPAD_EXP_CLASSIC)
          {
 		 /* Mirror */
@@ -472,43 +576,13 @@ static void gx_joypad_poll(void)
             *state_cur |= (down & WPAD_CLASSIC_BUTTON_ZL) ? (1ULL << GX_CLASSIC_ZL_TRIGGER) : 0;
             *state_cur |= (down & WPAD_CLASSIC_BUTTON_ZR) ? (1ULL << GX_CLASSIC_ZR_TRIGGER) : 0;*/
 
-            float ljs_mag = exp->classic.ljs.mag;
-            float ljs_ang = exp->classic.ljs.ang;
-
-            float rjs_mag = exp->classic.rjs.mag;
-            float rjs_ang = exp->classic.rjs.ang;
-
-            if (ljs_mag > 1.0f)
-               ljs_mag = 1.0f;
-            else if (ljs_mag < -1.0f)
-               ljs_mag = -1.0f;
-
-            if (rjs_mag > 1.0f)
-               rjs_mag = 1.0f;
-            else if (rjs_mag < -1.0f)
-               rjs_mag = -1.0f;
-
-            double ljs_val_x = ljs_mag * sin(M_PI * ljs_ang / 180.0);
-            double ljs_val_y = -ljs_mag * cos(M_PI * ljs_ang / 180.0);
-
-            double rjs_val_x = rjs_mag * sin(M_PI * rjs_ang / 180.0);
-            double rjs_val_y = -rjs_mag * cos(M_PI * rjs_ang / 180.0);
-
-            int16_t ls_x = (int16_t)(ljs_val_x * 32767.0f);
-            int16_t ls_y = (int16_t)(ljs_val_y * 32767.0f);
-
-            int16_t rs_x = (int16_t)(rjs_val_x * 32767.0f);
-            int16_t rs_y = (int16_t)(rjs_val_y * 32767.0f);
-
-            analog_state[port][RETRO_DEVICE_INDEX_ANALOG_LEFT][RETRO_DEVICE_ID_ANALOG_X] = ls_x;
+           /* analog_state[port][RETRO_DEVICE_INDEX_ANALOG_LEFT][RETRO_DEVICE_ID_ANALOG_X] = ls_x;
             analog_state[port][RETRO_DEVICE_INDEX_ANALOG_LEFT][RETRO_DEVICE_ID_ANALOG_Y] = ls_y;
             analog_state[port][RETRO_DEVICE_INDEX_ANALOG_RIGHT][RETRO_DEVICE_ID_ANALOG_X] = rs_x;
-            analog_state[port][RETRO_DEVICE_INDEX_ANALOG_RIGHT][RETRO_DEVICE_ID_ANALOG_Y] = rs_y;
+            analog_state[port][RETRO_DEVICE_INDEX_ANALOG_RIGHT][RETRO_DEVICE_ID_ANALOG_Y] = rs_y;*/
 			
 			if (gcpad & (1 << port))
          {
-            int16_t ls_x, ls_y, rs_x, rs_y;
-
 			if (g_settings.input.gc_once)
             	down = PAD_ButtonsDown(port);
 			else
@@ -548,18 +622,47 @@ static void gx_joypad_poll(void)
             *state_cur |= (down & PAD_BUTTON_START) ? (1ULL << GX_WIIMOTE_PLUS) : 0;
             *state_cur |= (down & PAD_TRIGGER_Z) ? (1ULL << GX_WIIMOTE_MINUS) : 0;
 
-            ls_x = (int16_t)PAD_StickX(port) * 256;
+		    //ptype = WPAD_EXP_GAMECUBE; // Breaks things
+          }
+		    int16_t ls_x, ls_y, rs_x, rs_y;
+          // CC sticks
+		  /*  float ljs_mag = exp->classic.ljs.mag;
+            float ljs_ang = exp->classic.ljs.ang;
+
+            float rjs_mag = exp->classic.rjs.mag;
+            float rjs_ang = exp->classic.rjs.ang;
+
+            if (ljs_mag > 1.0f)
+               ljs_mag = 1.0f;
+            else if (ljs_mag < -1.0f)
+               ljs_mag = -1.0f;
+
+            if (rjs_mag > 1.0f)
+               rjs_mag = 1.0f;
+            else if (rjs_mag < -1.0f)
+               rjs_mag = -1.0f;
+
+            double ljs_val_x = ljs_mag * sin(M_PI * ljs_ang / 180.0);
+            double ljs_val_y = -ljs_mag * cos(M_PI * ljs_ang / 180.0);
+
+            double rjs_val_x = rjs_mag * sin(M_PI * rjs_ang / 180.0);
+            double rjs_val_y = -rjs_mag * cos(M_PI * rjs_ang / 180.0);
+
+            int16_t ls_x_cc = (int16_t)(ljs_val_x * 32767.0f);
+            int16_t ls_y_cc = (int16_t)(ljs_val_y * 32767.0f);
+
+            int16_t rs_x_cc = (int16_t)(rjs_val_x * 32767.0f);
+            int16_t rs_y_cc = (int16_t)(rjs_val_y * 32767.0f);*/
+		  // GC sticks
+		    ls_x = (int16_t)PAD_StickX(port) * 256;
             ls_y = (int16_t)PAD_StickY(port) * -256;
             rs_x = (int16_t)PAD_SubStickX(port) * 256;
             rs_y = (int16_t)PAD_SubStickY(port) * -256;
 
-            analog_state[port][RETRO_DEVICE_INDEX_ANALOG_LEFT][RETRO_DEVICE_ID_ANALOG_X] = ls_x;
-            analog_state[port][RETRO_DEVICE_INDEX_ANALOG_LEFT][RETRO_DEVICE_ID_ANALOG_Y] = ls_y;
-            analog_state[port][RETRO_DEVICE_INDEX_ANALOG_RIGHT][RETRO_DEVICE_ID_ANALOG_X] = rs_x;
-            analog_state[port][RETRO_DEVICE_INDEX_ANALOG_RIGHT][RETRO_DEVICE_ID_ANALOG_Y] = rs_y;
-		    //ptype = WPAD_EXP_GAMECUBE; // Breaks things
-          }
-			
+		    analog_state[port][RETRO_DEVICE_INDEX_ANALOG_LEFT][RETRO_DEVICE_ID_ANALOG_X] = ls_x | WPAD_StickX(wpaddata, 0);
+            analog_state[port][RETRO_DEVICE_INDEX_ANALOG_LEFT][RETRO_DEVICE_ID_ANALOG_Y] = ls_y | WPAD_StickY(wpaddata, 0);
+            analog_state[port][RETRO_DEVICE_INDEX_ANALOG_RIGHT][RETRO_DEVICE_ID_ANALOG_X] = rs_x | WPAD_StickX(wpaddata, 1);
+            analog_state[port][RETRO_DEVICE_INDEX_ANALOG_RIGHT][RETRO_DEVICE_ID_ANALOG_Y] = rs_y | WPAD_StickY(wpaddata, 1);
          }
          else if (ptype == WPAD_EXP_NUNCHUK)
          {

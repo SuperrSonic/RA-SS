@@ -656,7 +656,13 @@ MENU
 #include "../frontend/menu/menu_action.c"
 #include "../frontend/menu/menu_list.c"
 #include "../frontend/menu/menu_entries.c"
+
+#ifdef USE_ESP
+#include "../frontend/menu/menu_entries_cbs_esp.c"
+#else
 #include "../frontend/menu/menu_entries_cbs.c"
+#endif
+
 #include "../frontend/menu/menu_shader.c"
 #include "../frontend/menu/menu_navigation.c"
 #include "../frontend/menu/menu_animation.c"
@@ -757,7 +763,11 @@ XML
  SETTINGS
 ============================================================ */
 #include "../settings_list.c"
+#ifdef USE_ESP
+#include "../settings_data_esp.c"
+#else
 #include "../settings_data.c"
+#endif
 
 /*============================================================
  AUDIO UTILS

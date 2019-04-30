@@ -38,6 +38,6 @@
  ****************************************************************************************/
 #ifdef HW_RVL
 
-extern void VIDEO_SetTrapFilter(bool enable);
+//extern void VIDEO_SetTrapFilter(bool enable);
 
 #endif
