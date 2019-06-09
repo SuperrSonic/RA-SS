@@ -2736,6 +2736,9 @@ static void general_write_handler(void *data)
    }
    else if (!strcmp(setting->name, "video_vfilter") || !strcmp(setting->name, "video_vbright"))
    {
+      // solo se cambia gx_mode.vfilter[3], asi que el limite es diferente dependiendo del deflicker
+      if (g_settings.video.vfilter && g_settings.video.vbright < -12)
+        g_settings.video.vbright = -12;
       if (driver.video_data)
         update_deflicker();
    }
@@ -3166,6 +3169,18 @@ static bool setting_data_append_list_main_menu_options(
      // (*list)[list_info->index - 1].get_string_representation = &get_string_representation_loadstate;
       settings_list_current_add_cmd  (list, list_info, RARCH_CMD_LOAD_STATE);
 	 }
+     if (!g_settings.hide_curr_state) {
+         CONFIG_UINT(
+             g_settings.state_slot,
+             "state_slot",
+             "Estado actual",
+             state_slot,
+             group_info.name,
+             subgroup_info.name,
+             general_write_handler,
+             general_read_handler);
+         settings_list_current_add_range(list, list_info, 1, 10, 1, true, true);
+     }
 	}
 
    if (!g_settings.hide_settings) {
@@ -3425,6 +3440,18 @@ static bool setting_data_append_list_driver_options(
          "hide_cursor",
          "Esconder cursor",
          hide_cursor,
+         "No",
+         sip,
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
+   CONFIG_BOOL(
+         g_settings.hide_curr_state,
+         "hide_curr_state",
+         "Esconder estado actual",
+         hide_curr_state,
          "No",
          sip,
          group_info.name,
@@ -3885,7 +3912,7 @@ static bool setting_data_append_list_general_options(
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
-   settings_list_current_add_range(list, list_info, 0, 10, 1, true, true);
+   settings_list_current_add_range(list, list_info, 1, 10, 1, true, true);
 
    END_SUB_GROUP(list, list_info);
    START_SUB_GROUP(
@@ -4227,6 +4254,18 @@ static bool setting_data_append_list_video_options(
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
+
+   CONFIG_BOOL(
+         g_settings.video.blendframe,
+         "video_blendframe",
+         "Mezclar imagen",
+         video_blendframe,
+         "No",
+         sip,
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
 #endif
 
 #if defined(_XBOX1) || defined(HW_RVL)
@@ -4271,6 +4310,18 @@ static bool setting_data_append_list_video_options(
          general_write_handler,
          general_read_handler);
 
+   CONFIG_BOOL(
+         g_settings.video.blend_smooth,
+         "video_blend_smooth",
+         "Filtro de imagen mezclada",
+         video_blend_smooth,
+         "Punto",
+         "Bilineal",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
 #ifdef HAVE_RENDERSCALE
    CONFIG_UINT(
          g_settings.video.renderscale,
@@ -4308,7 +4359,7 @@ static bool setting_data_append_list_video_options(
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
-   settings_list_current_add_range(list, list_info, -12, 30, 1, true, true);
+   settings_list_current_add_range(list, list_info, -22, 30, 1, true, true);
 
 #if defined(HW_RVL) || defined(_XBOX360)
    CONFIG_UINT(

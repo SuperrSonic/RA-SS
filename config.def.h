@@ -410,9 +410,28 @@ static const float video_vbright = 0;
 
 /* VI screen resolution. */
 static const unsigned video_vres = 40;
+
+/* TEV frame blending + 2x upscale. */
+static const bool video_blendframe = false;
+
+/* TEV frame blending scaling filter. */
+static const bool video_blend_smooth = true;
+
 #ifdef HAVE_RENDERSCALE
 /* Render x times the original res. */
 static const unsigned video_renderscale = 1;
+
+/* Renderscale top value */
+static const float video_top = 1;
+
+/* Renderscale bottom value */
+static const float video_bottom = -1;
+
+/* Renderscale left value */
+static const float video_left = -1;
+
+/* Renderscale right value */
+static const float video_right = 1;
 #endif
 /* Hide Save/Love States */
 static const bool hide_states = false;
@@ -435,8 +454,11 @@ static const bool hide_exit = false;
 /* Hide Settings, only accessible by editing the cfg */
 static const bool hide_settings = false;
 
-/* Hide cursor '>', only accessible by editing the cfg */
+/* Hide cursor '>' from menu */
 static const bool hide_cursor = false;
+
+/* Hide "Current State Slot" from main menu */
+static const bool hide_curr_state = true;
 
 /* Position X of TITLE element of the Menu. */
 static const unsigned title_posx = 30;

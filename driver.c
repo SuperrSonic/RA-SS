@@ -1199,8 +1199,14 @@ static void init_video_input(void)
    video.dither = g_settings.video.dither;
    video.vbright = g_settings.video.vbright;
    video.vres = g_settings.video.vres;
+   video.blendframe = g_settings.video.blendframe;
+   video.blend_smooth = g_settings.video.blend_smooth;
 #ifdef HAVE_RENDERSCALE
    video.renderscale = g_settings.video.renderscale;
+   video.top = g_settings.video.top;
+   video.bottom = g_settings.video.bottom;
+   video.left = g_settings.video.left;
+   video.right = g_settings.video.right;
 #endif
 #endif
    video.smooth = g_settings.video.smooth;

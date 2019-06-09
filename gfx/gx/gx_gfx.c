@@ -163,6 +163,10 @@ static uint16_t* rescaleTexmem;
 static GXTexObj rescaleTex;
 #endif
 
+static uint16_t* interframeTexmem;
+static GXTexObj interframeTex;
+//static bool interframeBlending = true;
+
 static struct
 {
    uint32_t data[240 * 200];
@@ -590,7 +594,7 @@ static void setup_video_mode(void *data)
 
 static void init_texture(void *data, unsigned width, unsigned height)
 {
-   unsigned g_filter, menu_filter, menu_w, menu_h;
+   unsigned g_filter, blend_filter, menu_filter, menu_w, menu_h;
    gx_video_t *gx = (gx_video_t*)data;
    GXTexObj *fb_ptr   	= (GXTexObj*)&g_tex.obj;
    GXTexObj *menu_ptr 	= (GXTexObj*)&menu_tex.obj;
@@ -599,6 +603,7 @@ static void init_texture(void *data, unsigned width, unsigned height)
    height &= ~3;
    g_filter = g_settings.video.smooth ? GX_LINEAR : GX_NEAR;
    menu_filter = g_settings.video.menu_smooth ? GX_LINEAR : GX_NEAR;
+   blend_filter = g_settings.video.blend_smooth ? GX_LINEAR : GX_NEAR;
    menu_w = 320;
    menu_h = 240;
 
@@ -621,6 +626,9 @@ static void init_texture(void *data, unsigned width, unsigned height)
    GX_InitTexObj(&rescaleTex, rescaleTexmem, width * 2, height * 2, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
    GX_InitTexObjFilterMode(&rescaleTex, GX_LINEAR, GX_LINEAR);
 #endif
+   GX_InitTexObj(&interframeTex, interframeTexmem, width, height,
+         (gx->rgb32) ? GX_TF_RGBA8 : GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
+   GX_InitTexObjFilterMode(&interframeTex, blend_filter, blend_filter);
 
    GX_InvalidateTexAll();
 }
@@ -656,16 +664,22 @@ static void init_vtx(void *data, const video_info_t *video)
    GX_SetArray(GX_VA_TEX0, vertex_ptr, 2 * sizeof(float));
    GX_SetArray(GX_VA_CLR0, color_ptr, 4 * sizeof(u8));
 
-   GX_SetNumTexGens(1);
-   GX_SetNumChans(1);
-   GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_REG,
-         GX_SRC_VTX, GX_LIGHTNULL, GX_DF_NONE, GX_AF_NONE);
-   GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
-   GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+   // interframeBlending
+    GX_SetNumTevStages(1);
+	GX_SetNumChans(1);
+	GX_SetNumTexGens(1);
+	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+	GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
+	GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+	GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_DIVIDE_2, GX_TRUE, GX_TEVPREV);
+	GX_SetTevAlphaOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+	GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_TEXC, GX_CC_ONE, GX_CC_CPREV);
+	GX_SetTevAlphaIn(GX_TEVSTAGE1, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_APREV);
+
    GX_InvVtxCache();
 
-   GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA,
-         GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+  // GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+   GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
 
    if (gx->scale != video->input_scale ||
          gx->rgb32 != video->rgb32)
@@ -677,6 +691,11 @@ static void init_vtx(void *data, const video_info_t *video)
 	  rescaleTexmem = memalign(32, 4 * RARCH_SCALE_BASE * RARCH_SCALE_BASE * video->input_scale *
             video->input_scale * (video->rgb32 ? 4 : 2));
 #endif
+      free(interframeTexmem);
+      interframeTexmem = memalign(32,
+            RARCH_SCALE_BASE * RARCH_SCALE_BASE * video->input_scale *
+            video->input_scale * (video->rgb32 ? 4 : 2));
+
       g_tex.data = memalign(32,
             RARCH_SCALE_BASE * RARCH_SCALE_BASE * video->input_scale *
             video->input_scale * (video->rgb32 ? 4 : 2));
@@ -691,6 +710,11 @@ static void init_vtx(void *data, const video_info_t *video)
 
    DCFlushRange(g_tex.data, g_tex.width *
          g_tex.height * video->rgb32 ? 4 : 2);
+   DCFlushRange(interframeTexmem, g_tex.width *
+         g_tex.height * video->rgb32 ? 4 : 2);
+
+  // memset(g_tex.data, 0, g_tex.width * g_tex.height * video->rgb32 ? 4 : 2);
+   //memset(interframeTexmem, 0, g_tex.width * g_tex.height * video->rgb32 ? 4 : 2);
 
    gx->rgb32 = video->rgb32;
    gx->scale = video->input_scale;
@@ -1033,7 +1057,8 @@ static void gx_resize(void *data)
    gx->vp.height = height;
 
 #ifdef HAVE_RENDERSCALE
-   if ((gx->menu_texture_enable && g_settings.menu_fullscreen) || g_settings.video.renderscale >= 2)
+   //if ((gx->menu_texture_enable && g_settings.menu_fullscreen) || g_settings.video.renderscale >= 2)
+   if (gx->menu_texture_enable && g_settings.menu_fullscreen)
 #else
    if (gx->menu_texture_enable && g_settings.menu_fullscreen)
 #endif
@@ -1168,6 +1193,9 @@ static bool gx_frame(void *data, const void *frame,
    gx_video_t *gx = (gx_video_t*)data;
    u32 level = 0;
 
+   if (g_settings.video.blendframe)
+      memcpy(interframeTexmem, g_tex.data, g_tex.height * (g_tex.width << (gx->rgb32 ? 2 : 1)));
+
    //RARCH_PERFORMANCE_INIT(gx_frame);
    //RARCH_PERFORMANCE_START(gx_frame);
 
@@ -1216,6 +1244,9 @@ static bool gx_frame(void *data, const void *frame,
       else
          convert_texture16(frame, g_tex.data, width, height, pitch);
       DCFlushRange(g_tex.data, height * (width << (gx->rgb32 ? 2 : 1)));
+	  // interframeBlending
+	  if (g_settings.video.blendframe)
+	     DCFlushRange(interframeTexmem, g_tex.height * (g_tex.width << (gx->rgb32 ? 2 : 1)));
 
       //RARCH_PERFORMANCE_STOP(gx_frame_convert);
    }
@@ -1231,15 +1262,26 @@ static bool gx_frame(void *data, const void *frame,
    GX_InvalidateTexAll();
 
    GX_SetCurrentMtx(GX_PNMTX0);
-   GX_LoadTexObj(&g_tex.obj, GX_TEXMAP0);
+  // GX_LoadTexObj(&g_tex.obj, GX_TEXMAP0);
+   if (!gx->menu_texture_enable && g_settings.video.blendframe) {
+	     GX_LoadTexObj(&interframeTex, GX_TEXMAP0);
+         GX_LoadTexObj(&g_tex.obj, GX_TEXMAP1);
+         GX_SetNumTevStages(2);
+   } else {
+	   GX_LoadTexObj(&g_tex.obj, GX_TEXMAP0);
+	   GX_SetNumTevStages(1);
+   }
    GX_CallDispList(display_list, display_list_size);
-  // GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+   //GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
 #ifdef HAVE_RENDERSCALE
    if (g_settings.video.renderscale >= 2) {
         // Works but makes scaling different:
         /* We use default values first */
+		
+		// Super precise GBA: top=1.50, bottom=-1.50, left=-1.334, right=1.334
         Mtx44 m;
-        guOrtho(m, 1 , -1, -1, 1, 0.4, 0.6);
+		if (!gx->menu_texture_enable)
+          guOrtho(m, 1.50, -1.50, -1.334, 1.334, 0.4, 0.6);
         GX_LoadProjectionMtx(m, GX_ORTHOGRAPHIC);
 
         /* We need to clear the efb */
@@ -1262,11 +1304,18 @@ static bool gx_frame(void *data, const void *frame,
 		GX_Color1u32(0xFFFFFFFF);
 		GX_TexCoord2f32(0, 0);
 		GX_End();*/
+		
+		// Prepare image by providing the values needed.
+		gx->vp.width = width * 2;
+		gx->vp.height = height * 2;
+		gx->vp.x = (gx_mode.fbWidth - gx->vp.width) / 2;
+		gx->vp.y = (gx_mode.xfbHeight - gx->vp.height) / 2;
 
-		GX_SetTexCopySrc(0, 0, width * 2, height * 2);
+		GX_SetTexCopySrc(gx->vp.x, gx->vp.y, width * 2, height * 2);
 		GX_SetTexCopyDst(width * 2, height * 2, GX_TF_RGB565, GX_FALSE);
 		GX_CopyTex(rescaleTexmem, GX_TRUE);
 		GX_LoadTexObj(&rescaleTex, GX_TEXMAP0);
+		GX_SetNumTevStages(1);
         GX_CallDispList(display_list, display_list_size);
    }
 #endif
@@ -1280,7 +1329,7 @@ static bool gx_frame(void *data, const void *frame,
 #ifdef HAVE_RENDERSCALE
       if (g_settings.video.renderscale <= 1) {
         Mtx44 m;
-        guOrtho(m, 1 , -1, -1, 1, 0.4, 0.6);
+        guOrtho(m, 1, -1, -1, 1, 0.4, 0.6);
         GX_LoadProjectionMtx(m, GX_ORTHOGRAPHIC);
       }
 #endif
@@ -1289,9 +1338,11 @@ static bool gx_frame(void *data, const void *frame,
    if (g_settings.video.renderscale >= 2) {
    // (increase positives) (decrease negatives) to reduce size, top 1, bottom 2, left 3, right 4
       Mtx44 m;
-     // guOrtho(m, 1 + 0.2, -1 - 1.4, -1 - 0.1, 1 + 0.850, 0.4, 0.6);
-      guOrtho(m, 1 , -1 - 1, -1, 1 + 0.665, 0.4, 0.6); // this equals 640x480 for GBA
+   //   guOrtho(m, 1 + 0.2, -1 - 1.4, -1 - 0.1, 1 * g_settings.video.vbright, 0.4, 0.6);
+	  guOrtho(m, g_settings.video.top, g_settings.video.bottom, g_settings.video.left, g_settings.video.right, 0.4, 0.6);
+   //   guOrtho(m, 1 , -1 - 1, -1, 1 + 0.665, 0.4, 0.6); // this equals 640x480 for GBA
       GX_LoadProjectionMtx(m, GX_ORTHOGRAPHIC);
+	  GX_SetViewportJitter(0, 0, gx_mode.fbWidth, gx_mode.xfbHeight, 0, 1, 1);
    }
 #endif
 
@@ -1314,7 +1365,7 @@ static bool gx_frame(void *data, const void *frame,
 	GX_End();*/
 
 #ifdef HAVE_OVERLAY
-   if (gx->overlay_enable && !gx->menu_texture_enable)
+   if (gx->overlay_enable && !gx->menu_texture_enable) //&& !g_settings.video.blendframe)
       gx_render_overlay(gx);
 #endif
    if (fade_boot || (g_settings.reset_fade && end_resetfade))
@@ -1636,6 +1687,7 @@ static void gx_render_overlay(void *data)
    for (unsigned i = 0; i < gx->overlays; i++)
    {
       GX_LoadTexObj(&gx->overlay[i].tex, GX_TEXMAP0);
+	  GX_SetNumTevStages(1);
 
       GX_Begin(GX_TRIANGLESTRIP, GX_VTXFMT0, 4);
       GX_Position3f32(gx->overlay[i].vertex_coord[0],

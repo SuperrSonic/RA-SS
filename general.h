@@ -251,8 +251,14 @@ struct settings
 	  bool dither;
 	  float vbright;
 	  unsigned vres;
+	  bool blendframe;
+	  bool blend_smooth;
 #ifdef HAVE_RENDERSCALE
 	  unsigned renderscale;
+	  float top;
+	  float bottom;
+	  float left;
+	  float right;
 #endif
 #endif
       bool smooth;
@@ -401,6 +407,7 @@ struct settings
    bool hide_reset;
    bool hide_exit;
    bool hide_cursor;
+   bool hide_curr_state;
    unsigned title_posx;
    unsigned title_posy;
    unsigned item_posx;

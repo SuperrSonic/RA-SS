@@ -187,8 +187,14 @@ typedef struct video_info
    bool dither;
    float vbright;
    unsigned vres;
+   bool blendframe;
+   bool blend_smooth;
 #ifdef HAVE_RENDERSCALE
    unsigned renderscale;
+   float top;
+   float bottom;
+   float left;
+   float right;
 #endif
 #endif
    unsigned filter_idx;

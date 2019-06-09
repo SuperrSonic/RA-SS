@@ -1906,6 +1906,16 @@ int setting_data_get_description(const char *label, char *msg,
 			" \n"
             " Default: OFF");
    }
+   else if (!strcmp(label, "video_blendframe"))
+   {
+      snprintf(msg, sizeof_msg,
+            " -- Enable TEV frame blending. \n"
+            " \n"
+            "Doubles the resolution and blends \n"
+            "the current frame with the previous one. \n"
+			" \n"
+            " Default: OFF");
+   }
    else if (!strcmp(label, "soft_filter"))
    {
       snprintf(msg, sizeof_msg,
@@ -2707,6 +2717,8 @@ static void general_write_handler(void *data)
    }
    else if (!strcmp(setting->name, "video_vfilter") || !strcmp(setting->name, "video_vbright"))
    {
+      if (g_settings.video.vfilter && g_settings.video.vbright < -12)
+        g_settings.video.vbright = -12;
       if (driver.video_data)
         update_deflicker();
    }
@@ -3139,6 +3151,19 @@ static bool setting_data_append_list_main_menu_options(
      // (*list)[list_info->index - 1].get_string_representation = &get_string_representation_loadstate;
       settings_list_current_add_cmd  (list, list_info, RARCH_CMD_LOAD_STATE);
 	 }
+     if (!g_settings.hide_curr_state) {
+         /* Select current State Slot. */
+         CONFIG_UINT(
+            g_settings.state_slot,
+            "state_slot",
+            "State Slot",
+            state_slot,
+            group_info.name,
+            subgroup_info.name,
+            general_write_handler,
+            general_read_handler);
+         settings_list_current_add_range(list, list_info, 1, 10, 1, true, true);
+	 }
 	}
 
    if (!g_settings.hide_settings) {
@@ -3398,6 +3423,18 @@ static bool setting_data_append_list_driver_options(
          "hide_cursor",
          "Hide Cursor",
          hide_cursor,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
+   CONFIG_BOOL(
+         g_settings.hide_curr_state,
+         "hide_curr_state",
+         "Hide Current State",
+         hide_curr_state,
          "OFF",
          "ON",
          group_info.name,
@@ -3858,7 +3895,7 @@ static bool setting_data_append_list_general_options(
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
-   settings_list_current_add_range(list, list_info, 0, 10, 1, true, true);
+   settings_list_current_add_range(list, list_info, 1, 10, 1, true, true);
 
    END_SUB_GROUP(list, list_info);
    START_SUB_GROUP(
@@ -4200,6 +4237,18 @@ static bool setting_data_append_list_video_options(
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
+
+   CONFIG_BOOL(
+         g_settings.video.blendframe,
+         "video_blendframe",
+         "Frame Blend",
+         video_blendframe,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
 #endif
 
 #if defined(_XBOX1) || defined(HW_RVL)
@@ -4244,6 +4293,18 @@ static bool setting_data_append_list_video_options(
          general_write_handler,
          general_read_handler);
 
+   CONFIG_BOOL(
+         g_settings.video.blend_smooth,
+         "video_blend_smooth",
+         "Blend Scaling",
+         video_blend_smooth,
+         "Point",
+         "Bilinear",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
 #ifdef HAVE_RENDERSCALE
    CONFIG_UINT(
          g_settings.video.renderscale,
@@ -4255,6 +4316,54 @@ static bool setting_data_append_list_video_options(
          general_write_handler,
          general_read_handler);
    settings_list_current_add_range(list, list_info, 1, 2, 1, true, true);
+
+   CONFIG_FLOAT(
+         g_settings.video.top,
+         "video_top",
+         "Top",
+         video_top,
+		 "%.2f",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+   settings_list_current_add_range(list, list_info, -50, 50, 0.01, true, true);
+
+   CONFIG_FLOAT(
+         g_settings.video.bottom,
+         "video_bottom",
+         "Bottom",
+         video_bottom,
+		 "%.2f",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+   settings_list_current_add_range(list, list_info, -50, 50, 0.01, true, true);
+
+   CONFIG_FLOAT(
+         g_settings.video.left,
+         "video_left",
+         "Left",
+         video_left,
+		 "%.3f",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+   settings_list_current_add_range(list, list_info, -50, 50, 0.001, true, true);
+
+   CONFIG_FLOAT(
+         g_settings.video.right,
+         "video_right",
+         "Right",
+         video_right,
+		 "%.3f",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+   settings_list_current_add_range(list, list_info, -50, 50, 0.001, true, true);
 #endif
 
 #if defined(__CELLOS_LV2__)
@@ -4281,7 +4390,7 @@ static bool setting_data_append_list_video_options(
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
-   settings_list_current_add_range(list, list_info, -12, 30, 1, true, true);
+   settings_list_current_add_range(list, list_info, -22, 30, 1, true, true);
 
 #if defined(HW_RVL) || defined(_XBOX360)
    CONFIG_UINT(

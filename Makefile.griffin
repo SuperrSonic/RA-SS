@@ -7,9 +7,9 @@ PC_DEVELOPMENT_IP_ADDRESS	= 255.255.255.255
 PC_DEVELOPMENT_UDP_PORT		= 3490
 HAVE_WIIUSE_MOD             = 0
 NO_BUILD_WARN               = 1
+RENDER_SCALE_TEST           = 0
 HAVE_5PLAYERS               = 0
 HAVE_WII_WHEEL              = 0
-RENDER_SCALE_TEST           = 0
 NO_SCREEN_TEARING           = 0
 USE_ESP                     = 0
 

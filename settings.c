@@ -225,8 +225,14 @@ static void config_set_defaults(void)
    g_settings.video.dither = video_dither;
    g_settings.video.vbright = video_vbright;
    g_settings.video.vres = video_vres;
+   g_settings.video.blendframe = video_blendframe;
+   g_settings.video.blend_smooth = video_blend_smooth;
 #ifdef HAVE_RENDERSCALE
    g_settings.video.renderscale = video_renderscale;
+   g_settings.video.top = video_top;
+   g_settings.video.bottom = video_bottom;
+   g_settings.video.left = video_left;
+   g_settings.video.right = video_right;
 #endif
 #endif
    g_settings.video.smooth = video_smooth;
@@ -256,6 +262,7 @@ static void config_set_defaults(void)
    g_settings.hide_exit = hide_exit;
    g_settings.hide_settings = hide_settings;
    g_settings.hide_cursor = hide_cursor;
+   g_settings.hide_curr_state = hide_curr_state;
    g_settings.title_posx = title_posx;
    g_settings.title_posy = title_posy;
    g_settings.item_posx = item_posx;
@@ -835,8 +842,14 @@ static bool config_load_file(const char *path, bool set_defaults)
    CONFIG_GET_BOOL(video.dither, "video_dither");
    CONFIG_GET_FLOAT(video.vbright, "video_vbright");
    CONFIG_GET_INT(video.vres, "video_vres");
+   CONFIG_GET_BOOL(video.blendframe, "video_blendframe");
+   CONFIG_GET_BOOL(video.blend_smooth, "video_blend_smooth");
 #ifdef HAVE_RENDERSCALE
    CONFIG_GET_INT(video.renderscale, "video_renderscale");
+   CONFIG_GET_FLOAT(video.top, "video_top");
+   CONFIG_GET_FLOAT(video.bottom, "video_bottom");
+   CONFIG_GET_FLOAT(video.left, "video_left");
+   CONFIG_GET_FLOAT(video.right, "video_right");
 #endif
 #endif
    CONFIG_GET_BOOL(video.smooth, "video_smooth");
@@ -900,6 +913,7 @@ static bool config_load_file(const char *path, bool set_defaults)
    CONFIG_GET_BOOL(hide_exit, "hide_exit");
    CONFIG_GET_BOOL(hide_settings, "hide_settings");
    CONFIG_GET_BOOL(hide_cursor, "hide_cursor");
+   CONFIG_GET_BOOL(hide_curr_state, "hide_curr_state");
    CONFIG_GET_INT(title_posx, "title_posx");
    CONFIG_GET_INT(title_posy, "title_posy");
    CONFIG_GET_INT(item_posx, "item_posx");
@@ -1554,10 +1568,16 @@ bool config_save_file(const char *path)
    config_set_int(conf,   "video_viwidth", g_settings.video.viwidth);
    config_set_bool(conf,  "video_vfilter", g_settings.video.vfilter);
    config_set_bool(conf,  "video_dither", g_settings.video.dither);
-   config_set_float(conf,  "video_vbright", g_settings.video.vbright);
+   config_set_float(conf, "video_vbright", g_settings.video.vbright);
    config_set_int(conf,   "video_vres", g_settings.video.vres);
+   config_set_bool(conf,  "video_blendframe", g_settings.video.blendframe);
+   config_set_bool(conf,  "video_blend_smooth", g_settings.video.blend_smooth);
 #ifdef HAVE_RENDERSCALE
    config_set_int(conf,   "video_renderscale", g_settings.video.renderscale);
+   config_set_float(conf,  "video_top", g_settings.video.top);
+   config_set_float(conf,  "video_bottom", g_settings.video.bottom);
+   config_set_float(conf,  "video_left", g_settings.video.left);
+   config_set_float(conf,  "video_right", g_settings.video.right);
 #endif
 #endif
    config_set_bool(conf,  "video_smooth", g_settings.video.smooth);
@@ -1741,6 +1761,7 @@ bool config_save_file(const char *path)
    config_set_bool(conf, "hide_settings",   g_settings.hide_settings);
    config_set_bool(conf, "hide_exit",       g_settings.hide_exit);
    config_set_bool(conf, "hide_cursor",     g_settings.hide_cursor);
+   config_set_bool(conf, "hide_curr_state", g_settings.hide_curr_state);
    config_set_int(conf,  "title_posx",      g_settings.title_posx);
    config_set_int(conf,  "title_posy",      g_settings.title_posy);
    config_set_int(conf,  "item_posx",       g_settings.item_posx);
