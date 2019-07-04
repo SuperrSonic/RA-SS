@@ -83,8 +83,12 @@ void main_exit(args_type() args)
 
       /* Flush out the core specific config. */
       if (*g_extern.core_specific_config_path &&
-            g_settings.core_specific_config)
+            g_settings.core_specific_config && g_extern.config_type == CONFIG_PER_CORE)
          config_save_file(g_extern.core_specific_config_path);
+
+     /* Flush out the specific config. */
+      if (*g_extern.specific_config_path && g_extern.config_type != CONFIG_PER_CORE)
+         config_save_file(g_extern.specific_config_path);
 
       /* Wii Message Board */
       if (g_settings.single_mode)

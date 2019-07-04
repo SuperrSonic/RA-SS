@@ -751,7 +751,10 @@ static const unsigned libretro_log_level = 0;
 
 /* KEYBINDS, JOYPAD */
 
-/* Trigger before a full click */
+/* Enable menu calling button combos. */
+static const unsigned menu_combos = 0;
+
+/* Trigger before a full click. */
 static const unsigned trigger_threshold = 80;
 
 /* Simple button layout profiles. */

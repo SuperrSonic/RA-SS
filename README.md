@@ -4,8 +4,8 @@
 - Wii Message Board playlog feature.
 - Full screen overlays are now supported.
 - Reworked input to allow multiple controllers on the same player.
-- The interface will become simpler when single game loading.
-- Per-game settings using arguments.
+- The interface shifts to a simpler look when single game loading.
+- Per-game settings using arguments or the native interface.
 - You can change text and highlighted text color by editing text_color and hover_color. 
 - Wii Remote tilting for OutRun engine. (Cannonball)
 - More customization, fade effects, ux improvements, etc.

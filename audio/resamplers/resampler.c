@@ -66,7 +66,7 @@ void find_next_resampler_driver(void)
       strlcpy(g_settings.audio.resampler, resampler_drivers[i + 1]->ident,
             sizeof(g_settings.audio.resampler));
    else
-      RARCH_WARN("Couldn't find any next resampler driver (current one: \"%s\").\n",
+      RARCH_WARN("No resampler driver (current: \"%s\").\n",
             driver.resampler->ident);
 }
 #endif

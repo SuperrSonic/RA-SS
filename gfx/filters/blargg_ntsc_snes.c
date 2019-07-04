@@ -100,6 +100,11 @@ static void blargg_ntsc_snes_initialize(void *data,
          setup = snes_ntsc_svideo;
          setup.merge_fields = 1;
       }
+      else if (!strcmp(tvtype, "monochrome"))
+      {
+		 setup = snes_ntsc_monochrome;
+         setup.merge_fields = 0;
+      }
    }
    else
    {

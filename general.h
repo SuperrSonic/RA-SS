@@ -113,6 +113,9 @@ enum basic_event
    RARCH_CMD_DSP_FILTER_INIT,
    RARCH_CMD_DSP_FILTER_DEINIT,
    RARCH_CMD_WII_MESSAGE_BOARD,
+   RARCH_CMD_PER_GAME_CFG,
+   RARCH_CMD_PER_GAME_CFG_REMOVE,
+   RARCH_CMD_FILTER,
    RARCH_CMD_RECORD_INIT,
    RARCH_CMD_RECORD_DEINIT,
    RARCH_CMD_HISTORY_DEINIT,
@@ -299,6 +302,10 @@ struct settings
       bool allow_rotate;
       bool shared_context;
       bool force_srgb_disable;
+      bool use_filter;
+#ifdef DONT_CRASH
+	  unsigned exit_cnt;
+#endif
    } video;
 
 #ifdef HAVE_MENU
@@ -367,6 +374,7 @@ struct settings
       unsigned libretro_device[MAX_PLAYERS];
       unsigned analog_dpad_mode[MAX_PLAYERS];
 
+      unsigned menu_combos;
       unsigned trigger_threshold;
 	  unsigned key_profile;
 	  unsigned poll_rate;
@@ -482,6 +490,12 @@ struct settings
    bool config_save_on_exit;
 };
 
+enum config_type_enums
+{
+   CONFIG_PER_CORE = 0,
+   CONFIG_PER_GAME,
+};
+
 typedef struct rarch_resolution
 {
    unsigned idx;
@@ -533,10 +547,14 @@ struct global
    bool has_set_netplay_delay_frames;
    bool has_set_netplay_ip_port;*/
 
+   enum config_type_enums config_type;
+
    /* Config associated with global "default" config. */
    char config_path[PATH_MAX];
    char append_config_path[PATH_MAX];
    char input_config_path[PATH_MAX];
+
+   char specific_config_path[PATH_MAX];
 
 #ifdef HAVE_FILE_LOGGER
    char default_log_file[PATH_MAX];

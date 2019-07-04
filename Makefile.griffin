@@ -7,6 +7,7 @@ PC_DEVELOPMENT_IP_ADDRESS	= 255.255.255.255
 PC_DEVELOPMENT_UDP_PORT		= 3490
 HAVE_WIIUSE_MOD             = 0
 NO_BUILD_WARN               = 1
+DONT_CRASH                  = 1
 RENDER_SCALE_TEST           = 0
 HAVE_5PLAYERS               = 0
 HAVE_WII_WHEEL              = 0
@@ -69,6 +70,10 @@ endif
 
 ifeq ($(USE_ESP), 1)
 CFLAGS += -DUSE_ESP
+endif
+
+ifeq ($(DONT_CRASH), 1)
+CFLAGS += -DDONT_CRASH
 endif
 
 TARGET_NAME := retroarch

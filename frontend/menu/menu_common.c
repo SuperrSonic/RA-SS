@@ -80,7 +80,7 @@ static void menu_environment_get(int *argc, char *argv[],
       wrap_args->libretro_path = *g_settings.libretro ? g_settings.libretro : NULL;
    wrap_args->touched       = true;
 }
-
+/*
 static void push_to_history_playlist(void)
 {
    if (!g_settings.history_list_enable)
@@ -100,12 +100,12 @@ static void push_to_history_playlist(void)
          g_extern.fullpath,
          g_settings.libretro,
          g_extern.menu.info.library_name);
-}
+} */
 
 bool load_menu_content(void)
 {
-   if (*g_extern.fullpath || (driver.menu && driver.menu->load_no_content))
-      push_to_history_playlist();
+  // if (*g_extern.fullpath || (driver.menu && driver.menu->load_no_content))
+    //  push_to_history_playlist();
 
    /* redraw menu frame */
    if (driver.menu)
@@ -135,9 +135,9 @@ bool load_menu_content(void)
    if (driver.menu)
       update_libretro_info(&g_extern.menu.info);
 
-   menu_shader_manager_init(driver.menu);
+  // menu_shader_manager_init(driver.menu);
 
-   rarch_main_command(RARCH_CMD_HISTORY_INIT);
+ //  rarch_main_command(RARCH_CMD_HISTORY_INIT);
    rarch_main_command(RARCH_CMD_VIDEO_SET_ASPECT_RATIO);
    rarch_main_command(RARCH_CMD_RESUME);
 

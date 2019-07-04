@@ -376,6 +376,7 @@ static void config_set_defaults(void)
          if (g_settings.input.binds[i][j].valid)
             rarch_assert(j == g_settings.input.binds[i][j].id);
 
+   g_settings.input.menu_combos = menu_combos;
    g_settings.input.trigger_threshold = trigger_threshold;
    g_settings.input.key_profile = key_profile;
    g_settings.input.poll_rate = poll_rate;
@@ -952,6 +953,7 @@ static bool config_load_file(const char *path, bool set_defaults)
    if (!strcmp(g_settings.audio.filter_dir, "default"))
       *g_settings.audio.filter_dir = '\0';
 
+   CONFIG_GET_INT(input.menu_combos, "input_menu_combos");
    CONFIG_GET_INT(input.trigger_threshold, "input_trigger_threshold");
    CONFIG_GET_INT(input.key_profile, "input_key_profile");
    CONFIG_GET_INT(input.poll_rate, "input_poll_rate");
@@ -1024,6 +1026,8 @@ static bool config_load_file(const char *path, bool set_defaults)
             sizeof(g_settings.libretro_directory));
       *g_settings.libretro = '\0';
    }
+
+   g_extern.config_type = CONFIG_PER_CORE;
 
    CONFIG_GET_BOOL(fps_show, "fps_show");
   // CONFIG_GET_BOOL(load_dummy_on_core_shutdown, "load_dummy_on_core_shutdown");
@@ -1273,9 +1277,6 @@ static void config_load_core_specific(void)
    }
 }
 
-
-
-
 static void parse_config_file(void)
 {
    bool ret;
@@ -1493,12 +1494,32 @@ static void save_keybinds_player(config_file_t *conf, unsigned player)
    }
 }
 
+static void calculate_specific_config_path(const char *in_basename)
+{
+   if (*g_settings.menu_config_directory)
+      strlcpy(g_extern.specific_config_path, g_settings.menu_config_directory, sizeof(g_extern.specific_config_path));
+   else
+   {
+      // Use original config file's directory as a fallback.
+      fill_pathname_basedir(g_extern.specific_config_path, g_extern.config_path, sizeof(g_extern.specific_config_path));
+   }
+   
+   fill_pathname_dir(g_extern.specific_config_path, in_basename, ".cfg", sizeof(g_extern.specific_config_path));
+}
+
 void config_load(void)
 {
    /* Flush out per-core configs before loading a new config. */
    if (*g_extern.core_specific_config_path &&
-         g_settings.config_save_on_exit && g_settings.core_specific_config)
+         g_settings.config_save_on_exit && g_settings.core_specific_config && g_extern.config_type == CONFIG_PER_CORE)
       config_save_file(g_extern.core_specific_config_path);
+
+   if (g_settings.config_save_on_exit)
+   {
+      /* Flush out configs before loading a new one. */
+      if (*g_extern.specific_config_path && g_extern.config_type != CONFIG_PER_CORE)
+         config_save_file(g_extern.specific_config_path);
+   }
 
    if (!g_extern.block_config_read)
    {
@@ -1508,6 +1529,32 @@ void config_load(void)
 
    /* Per-core config handling. */
    config_load_core_specific();
+
+
+   /* Reset to default values */
+   *g_extern.specific_config_path = '\0';
+    g_extern.config_type = CONFIG_PER_CORE;
+   
+   /* First try per-game config (requires game already loaded) */
+   if (*g_extern.basename)
+   {
+      calculate_specific_config_path(g_extern.basename);
+     // RARCH_LOG("Loading game-specific cfg from: %s.\n", g_extern.specific_config_path);
+      if (config_load_file(g_extern.specific_config_path, true))
+         g_extern.config_type = CONFIG_PER_GAME;
+   }
+   
+   /* Try the per-core config if the per-game was unsuccessful */
+  /* if (*g_settings.libretro && g_extern.config_type != CONFIG_PER_GAME)
+   {
+      calculate_specific_config_path(g_settings.libretro);
+      RARCH_LOG("Loading core-specific config from: %s.\n", g_extern.specific_config_path);
+      if (!config_load_file(g_extern.specific_config_path, true))
+         RARCH_WARN("Core-specific config not found, using defaults config.\n");
+   } */
+   
+   /* if reached this point and no config was loaded, defaults are used. 
+    * also the per-core setup is left so next time it gets saved as is. */
 }
 
 bool config_save_file(const char *path)
@@ -1524,6 +1571,8 @@ bool config_save_file(const char *path)
 
    RARCH_LOG("Saving config at path: \"%s\"\n", path);
 
+   config_set_int(conf, "input_menu_combos",
+         g_settings.input.menu_combos);
    config_set_int(conf, "input_trigger_threshold",
          g_settings.input.trigger_threshold);
    config_set_int(conf, "input_key_profile",

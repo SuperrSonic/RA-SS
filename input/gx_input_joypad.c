@@ -209,7 +209,7 @@ static const char *gx_joypad_name(unsigned pad)
          return "GameCube Controller";
    }
 
-   return NULL;
+   return "Default";
 }
 
 static const char *gx_joypad_name_static(unsigned pad)
@@ -232,7 +232,7 @@ static const char *gx_joypad_name_static(unsigned pad)
          return "GameCube Controller";
    }
 
-   return NULL;
+   return "Default";
 }
 
 static void handle_hotplug(unsigned port, uint32_t ptype)
@@ -837,7 +837,7 @@ static void gx_joypad_poll(void)
          if (gcpad & (1 << port))
          {
             int16_t ls_x, ls_y, rs_x, rs_y;
-            //uint64_t menu_combo = 0;
+            uint64_t menu_combo = 0;
 
 		if (g_settings.input.gc_once)
         	down = PAD_ButtonsDown(port);
@@ -902,11 +902,18 @@ static void gx_joypad_poll(void)
             analog_state[port][RETRO_DEVICE_INDEX_ANALOG_RIGHT][RETRO_DEVICE_ID_ANALOG_X] = rs_x;
             analog_state[port][RETRO_DEVICE_INDEX_ANALOG_RIGHT][RETRO_DEVICE_ID_ANALOG_Y] = rs_y;
 
-            /*menu_combo = (1ULL << GX_GC_START) | (1ULL << GX_GC_Z_TRIGGER) | 
-               (1ULL << GX_GC_L_TRIGGER) | (1ULL << GX_GC_R_TRIGGER);
+            if (g_settings.input.menu_combos) {
+                if (g_settings.input.menu_combos == 1) {
+                    menu_combo = (1ULL << GX_WIIMOTE_PLUS) | (1ULL << GX_WIIMOTE_MINUS) | 
+                      (1ULL << GX_GC_L_TRIGGER) | (1ULL << GX_GC_R_TRIGGER);
+                } else {
+                    menu_combo = (1ULL << GX_WIIMOTE_PLUS) | (1ULL << GX_WIIMOTE_B) | 
+                      (1ULL << GX_WIIMOTE_1);
+                }
 
-            if ((*state_cur & menu_combo) == menu_combo)
-               *state_cur |= (1ULL << GX_WIIMOTE_HOME);*/
+                if ((*state_cur & menu_combo) == menu_combo)
+                     *state_cur |= (1ULL << GX_WIIMOTE_HOME);
+            }
 
             ptype = WPAD_EXP_GAMECUBE;
          }

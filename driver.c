@@ -101,98 +101,23 @@ static const audio_driver_t *audio_drivers[] = {
 };
 
 static const video_driver_t *video_drivers[] = {
-#ifdef HAVE_OPENGL
-   &video_gl,
-#endif
-#ifdef XENON
-   &video_xenon360,
-#endif
-#if defined(_XBOX) && (defined(HAVE_D3D8) || defined(HAVE_D3D9)) || defined(HAVE_WIN32_D3D9)
-   &video_d3d,
-#endif
-#ifdef SN_TARGET_PSP2
-   &video_vita,
-#endif
-#ifdef PSP
-   &video_psp1,
-#endif
-#ifdef HAVE_SDL
-   &video_sdl,
-#endif
-#ifdef HAVE_SDL2
-   &video_sdl2,
-#endif
-#ifdef HAVE_XVIDEO
-   &video_xvideo,
-#endif
 #ifdef GEKKO
    &video_gx,
 #endif
-#ifdef HAVE_VG
-   &video_vg,
-#endif
-#ifdef HAVE_OMAP
-   &video_omap,
-#endif
-#ifdef HAVE_EXYNOS
-   &video_exynos,
-#endif
-   &video_null,
+/*
+   &video_null, */
    NULL,
 };
 
 static const input_driver_t *input_drivers[] = {
-#ifdef __CELLOS_LV2__
-   &input_ps3,
-#endif
-#if defined(SN_TARGET_PSP2) || defined(PSP)
-   &input_psp,
-#endif
-#if defined(HAVE_SDL) || defined(HAVE_SDL2)
-   &input_sdl,
-#endif
-#ifdef HAVE_DINPUT
-   &input_dinput,
-#endif
-#ifdef HAVE_X11
-   &input_x,
-#endif
-#ifdef XENON
-   &input_xenon360,
-#endif
-#if defined(HAVE_XINPUT2) || defined(HAVE_XINPUT_XBOX1)
-   &input_xinput,
-#endif
 #ifdef GEKKO
    &input_gx,
-#endif
-#ifdef ANDROID
-   &input_android,
-#endif
-#ifdef HAVE_UDEV
-   &input_udev,
-#endif
-#if defined(__linux__) && !defined(ANDROID)
-   &input_linuxraw,
-#endif
-#if defined(IOS) || defined(OSX)
-   /* Don't use __APPLE__ as it breaks basic SDL builds */
-   &input_apple,
-#endif
-#ifdef __QNX__
-   &input_qnx,
-#endif
-#ifdef EMSCRIPTEN
-   &input_rwebinput,
 #endif
    &input_null,
    NULL,
 };
 
 static const input_osk_driver_t *osk_drivers[] = {
-#ifdef __CELLOS_LV2__
-   &input_ps3_osk,
-#endif
    &input_null_osk,
    NULL,
 };
@@ -636,27 +561,20 @@ static void find_audio_driver(void)
 
 static void find_video_driver(void)
 {
-   int i;
-#if defined(HAVE_OPENGL) && defined(HAVE_FBO)
-   if (g_extern.system.hw_render_callback.context_type)
-   {
-      RARCH_LOG("Using HW render, OpenGL driver forced.\n");
-      driver.video = &video_gl;
-      return;
-   }
-#endif
+   //int i;
 
-   if (driver.frontend_ctx &&
+ /*  if (driver.frontend_ctx &&
        driver.frontend_ctx->get_video_driver)
    {
       driver.video = driver.frontend_ctx->get_video_driver();
 
       if (driver.video)
          return;
-      RARCH_WARN("Frontend supports get_video_driver() but did not specify one.\n");
-   }
+    //  RARCH_WARN("Frontend supports get_video_driver() but did not specify one.\n");
+   } */
 
-   i = find_driver_index("video_driver", g_settings.video.driver);
+   driver.video = &video_gx;
+  /* i = find_driver_index("video_driver", g_settings.video.driver);
    if (i >= 0)
       driver.video = video_drivers[i];
    else
@@ -673,7 +591,7 @@ static void find_video_driver(void)
 
       if (!driver.video)
          rarch_fail(1, "find_video_driver()");
-   }
+   }*/
 }
 
 
@@ -1060,18 +978,21 @@ static void init_video_filter(enum retro_pixel_format colfmt)
    struct retro_game_geometry *geom = NULL;
 
    deinit_video_filter();
-   if (!*g_settings.video.softfilter_plugin)
+   if (!*g_settings.video.softfilter_plugin) {
+       g_settings.video.use_filter = false;
       return;
+   }
+   g_settings.video.use_filter = true;
 
    /* Deprecated format. Gets pre-converted. */
    if (colfmt == RETRO_PIXEL_FORMAT_0RGB1555)
       colfmt = RETRO_PIXEL_FORMAT_RGB565;
 
-   if (g_extern.system.hw_render_callback.context_type)
+  /* if (g_extern.system.hw_render_callback.context_type)
    {
       RARCH_WARN("Cannot use CPU filters when hardware rendering is used.\n");
       return;
-   }
+   }*/
 
    geom    = (struct retro_game_geometry*)&g_extern.system.av_info.geometry;
    width   = geom->max_width;
@@ -1190,7 +1111,7 @@ static void init_video_input(void)
    video.width = width;
    video.height = height;
    video.fullscreen = g_settings.video.fullscreen;
-   video.vsync = g_settings.video.vsync && !g_extern.system.force_nonblock;
+   video.vsync = g_settings.video.vsync; // && !g_extern.system.force_nonblock;
    video.force_aspect = g_settings.video.force_aspect;
 #ifdef GEKKO
    video.drawdone = g_settings.video.drawdone;
@@ -1262,14 +1183,6 @@ static void init_video_input(void)
       driver.video->set_rotation(driver.video_data,
             (g_settings.video.rotation + g_extern.system.rotation) % 4);
 
-#ifdef HAVE_X11
-   if (driver.display_type == RARCH_DISPLAY_X11)
-   {
-      RARCH_LOG("Suspending screensaver (X11).\n");
-      x11_suspend_screensaver(driver.video_window);
-   }
-#endif
-
    if (!driver.input)
    {
       /* Video driver didn't provide an input driver,
@@ -1303,6 +1216,8 @@ static void init_video_input(void)
 
    g_extern.measure_data.frame_time_samples_count = 0;
 
+   // Only do this once, for dummy to not show glowy garbage
+   if (g_extern.libretro_dummy) {
    g_extern.frame_cache.width = 4;
    g_extern.frame_cache.height = 4;
    g_extern.frame_cache.pitch = 8;
@@ -1311,6 +1226,7 @@ static void init_video_input(void)
    if (driver.video_poke && driver.video_poke->set_texture_frame)
       driver.video_poke->set_texture_frame(driver.video_data,
                &dummy_pixels, false, 1, 1, 1.0f);
+  }
 
 }
 
@@ -1512,7 +1428,6 @@ static void uninit_video_input(void)
 
    deinit_video_filter();
 
- //  rarch_main_command(RARCH_CMD_SHADER_DIR_DEINIT);
    compute_monitor_fps_statistics();
 }
 

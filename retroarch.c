@@ -60,6 +60,9 @@
 #endif
 
 bool first_run_state = true;
+
+//static uint16_t dum_pixels[32] = {0};
+
 /*
 static bool take_screenshot_viewport(void)
 {
@@ -373,24 +376,10 @@ static void init_recording(void)
 
 void rarch_render_cached_frame(void)
 {
-   void *recording   = driver.recording_data;
-
-   /* Cannot allow recording when pushing duped frames. */
-   driver.recording_data = NULL;
-
-   /* Not 100% safe, since the library might have
-    * freed the memory, but no known implementations do this.
-    * It would be really stupid at any rate ...
-    */
-   if (driver.retro_ctx.frame_cb)
-      driver.retro_ctx.frame_cb(
-            (g_extern.frame_cache.data == RETRO_HW_FRAME_BUFFER_VALID)
-            ? NULL : g_extern.frame_cache.data,
-            g_extern.frame_cache.width,
-            g_extern.frame_cache.height,
-            g_extern.frame_cache.pitch);
-
-   driver.recording_data = recording;
+   video_frame(g_extern.frame_cache.data,
+         g_extern.frame_cache.width,
+         g_extern.frame_cache.height,
+         g_extern.frame_cache.pitch);
 }
 
 #include "config.features.h"
@@ -2060,6 +2049,11 @@ void rarch_main_set_state(unsigned cmd)
          if (driver.frontend_ctx && driver.frontend_ctx->content_loaded) {
             driver.frontend_ctx->content_loaded();
 		 }
+#ifdef DONT_CRASH
+         ++g_settings.video.exit_cnt;
+		 if (g_settings.video.exit_cnt > 15)
+             rarch_main_command(RARCH_CMD_QUIT);
+#endif
          break;
       case RARCH_ACTION_STATE_MENU_RUNNING_FINISHED:
 #ifdef HAVE_MENU
@@ -2436,9 +2430,77 @@ bool rarch_main_command(unsigned cmd)
             RARCH_ERR("[DSP]: Failed to initialize DSP filter \"%s\".\n",
                   g_settings.audio.dsp_plugin);
          break;
+      case RARCH_CMD_FILTER:
+         if (!g_settings.video.use_filter)
+			 break;
+         VIDEO_SetBlack(true);
+         deinit_video_filter();
+         init_video_filter(g_extern.system.pix_fmt);
+		 rarch_render_cached_frame();
+         VIDEO_SetBlack(false);
+
+#ifdef DONT_CRASH
+     //    ++g_settings.video.exit_cnt;
+	//	 if (g_settings.video.exit_cnt > 15)
+      //       rarch_main_command(RARCH_CMD_QUIT);
+#endif
+         /* Reset to 640x480 to prevent messed up menu text. */
+     /*    gx_set_video_mode(driver.video_data, menu_gx_resolutions
+            [40][0],
+            menu_gx_resolutions[40][1]);
+
+		 VIDEO_SetBlack(true);
+
+		 uninit_drivers(DRIVER_VIDEO);
+		 init_drivers(DRIVER_VIDEO);
+
+         rarch_main_command(RARCH_CMD_VIDEO_SET_ASPECT_RATIO);
+		 gx_set_video_mode(driver.video_data, menu_gx_resolutions
+            [g_settings.video.vres][0],
+            menu_gx_resolutions[g_settings.video.vres][1]);
+			*/
+         break;
       case RARCH_CMD_WII_MESSAGE_BOARD:
         /* Update message board time */
          Playlog_Exit();
+         break;
+      case RARCH_CMD_PER_GAME_CFG:
+         if (*g_extern.basename && g_extern.config_type != CONFIG_PER_GAME)
+         {
+           // Calculate the game specific config path
+           path_basedir(g_extern.specific_config_path);
+           fill_pathname_dir(g_extern.specific_config_path, g_extern.basename, ".cfg", sizeof(g_extern.specific_config_path));
+           RARCH_LOG("Saving game cfg: %s.\n", g_extern.specific_config_path);            
+           if (config_save_file(g_extern.specific_config_path))
+             {
+                  g_extern.config_type = CONFIG_PER_GAME;
+                  char msg[64];
+#ifdef USE_ESP
+                  snprintf(msg, sizeof(msg), "Configuraciones del juego han sido creadas.\n");
+#else
+                  snprintf(msg, sizeof(msg), "Game settings have been created.\n");
+#endif
+                  msg_queue_push(g_extern.msg_queue, msg, 0, 80);
+              }
+         }
+		 break;
+      case RARCH_CMD_PER_GAME_CFG_REMOVE:
+         if (g_extern.config_type == CONFIG_PER_GAME)
+            {
+               /* Remove game specific config file, */
+               RARCH_LOG("Removing game-specific config from: %s.\n", g_extern.specific_config_path);            
+               remove(g_extern.specific_config_path);
+               *g_extern.specific_config_path = '\0';
+               /* and load per-core config if available.*/
+               config_load();
+               char msg[64];
+#ifdef USE_ESP
+               snprintf(msg, sizeof(msg), "Configuraciones del juego removidas.\n");
+#else
+               snprintf(msg, sizeof(msg), "Game settings removed.\n");
+#endif
+               msg_queue_push(g_extern.msg_queue, msg, 0, 80);
+            }
          break;
       case RARCH_CMD_RECORD_DEINIT:
          if (!driver.recording_data || !driver.recording)

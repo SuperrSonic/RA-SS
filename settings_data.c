@@ -700,7 +700,7 @@ void setting_data_get_string_representation(rarch_setting_t* setting,
          break;
    }
 }
-
+/*
 static int setting_data_bool_action_start_savestates(void *data)
 {
    rarch_setting_t *setting = (rarch_setting_t*)data;
@@ -712,7 +712,7 @@ static int setting_data_bool_action_start_savestates(void *data)
 
    return 0;
 }
-
+*/
 static int setting_data_uint_action_toggle_analog_dpad_mode(void *data, unsigned action)
 {
    unsigned port = 0;
@@ -862,7 +862,7 @@ static int setting_data_action_toggle_bind_device(void *data, unsigned action)
             (*p)--;
          break;
       case MENU_ACTION_RIGHT:
-         if (*p < MAX_PLAYERS)
+         if (*p < MAX_PLAYERS - 12)
             (*p)++;
          break;
    }
@@ -2090,6 +2090,16 @@ int setting_data_get_description(const char *label, char *msg,
 			"less compatibility it has been changed. \n"
 			" A restart is required.");
    }
+   else if (!strcmp(label, "input_menu_combos"))
+   {
+      snprintf(msg, sizeof_msg,
+            " -- Defines menu combo type.\n"
+            " \n"
+            "Toggle menu using a GameCube Controller. \n"
+            "0: No combo. \n"
+            "1: Hold L, R, Z, and Start. \n"
+			"2: Hold X, B, and Start. ");
+   }
    else if (!strcmp(label, "input_trigger_threshold"))
    {
       snprintf(msg, sizeof_msg,
@@ -2536,21 +2546,22 @@ static void get_string_representation_bind_device(void * data, char *type_str,
    unsigned map = 0;
    rarch_setting_t *setting = (rarch_setting_t*)data;
 
-   if (!setting || !type_str || !type_str_size)
-      return;
+   /* For whatever reason. */
+  // if (!setting || !type_str || !type_str_size)
+    //  return;
 
    map = g_settings.input.joypad_map[setting->index_offset];
 
-   if (map < MAX_PLAYERS)
+   if (map < MAX_PLAYERS - 12)
    {
       const char *device_name = 
          g_settings.input.device_names[map];
 
-      if (*device_name)
+    //  if (*device_name)
          strlcpy(type_str, device_name, type_str_size);
-      else
-         snprintf(type_str, type_str_size,
-               "N/A (port #%d)", map);
+     // else
+      //   snprintf(type_str, type_str_size,
+        //       "N/A (port #%d)", map);
    }
    else
       strlcpy(type_str, "None", type_str_size);
@@ -3130,23 +3141,23 @@ static bool setting_data_append_list_main_menu_options(
    {
      if (!g_settings.hide_states) {
       CONFIG_ACTION(
-            "savestate",
+            "savestate_nonsense_long_name",
             "Save State",
             group_info.name,
             subgroup_info.name);
      // (*list)[list_info->index - 1].action_toggle = &setting_data_bool_action_toggle_savestates;
-      (*list)[list_info->index - 1].action_start = &setting_data_bool_action_start_savestates;
+   //   (*list)[list_info->index - 1].action_start = &setting_data_bool_action_start_savestates;
       (*list)[list_info->index - 1].action_ok = &setting_data_bool_action_ok_exit;
      // (*list)[list_info->index - 1].get_string_representation = &get_string_representation_savestate;
       settings_list_current_add_cmd  (list, list_info, RARCH_CMD_SAVE_STATE);
 
       CONFIG_ACTION(
-            "loadstate",
+            "loadstate_nonsense_long_name",
             "Load State",
             group_info.name,
             subgroup_info.name);
      // (*list)[list_info->index - 1].action_toggle = &setting_data_bool_action_toggle_savestates;
-      (*list)[list_info->index - 1].action_start = &setting_data_bool_action_start_savestates;
+   //   (*list)[list_info->index - 1].action_start = &setting_data_bool_action_start_savestates;
       (*list)[list_info->index - 1].action_ok = &setting_data_bool_action_ok_exit;
      // (*list)[list_info->index - 1].get_string_representation = &get_string_representation_loadstate;
       settings_list_current_add_cmd  (list, list_info, RARCH_CMD_LOAD_STATE);
@@ -3664,6 +3675,34 @@ static bool setting_data_append_list_general_options(
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
+
+   /*CONFIG_BOOL(
+         g_settings.game_specific_config,
+         "game_specific_config",
+         "Per-Game Config",
+         game_specific_config,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);*/
+
+   CONFIG_ACTION(
+           "game_specific_config_create",
+           "Create Per-Game Config",
+           group_info.name,
+           subgroup_info.name);
+     settings_list_current_add_cmd(list, list_info, RARCH_CMD_PER_GAME_CFG);
+     settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
+
+   CONFIG_ACTION(
+           "game_specific_config_remove",
+           "Remove Per-Game Config",
+           group_info.name,
+           subgroup_info.name);
+     settings_list_current_add_cmd(list, list_info, RARCH_CMD_PER_GAME_CFG_REMOVE);
+     settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
 
   /* CONFIG_BOOL(
          g_settings.load_dummy_on_core_shutdown,
@@ -4605,7 +4644,7 @@ static bool setting_data_append_list_video_options(
          general_write_handler,
          general_read_handler);
    settings_list_current_add_values(list, list_info, "filt");
-  // settings_list_current_add_cmd(list, list_info, RARCH_CMD_REINIT);
+   settings_list_current_add_cmd(list, list_info, RARCH_CMD_FILTER);
   // CPU filters always crash on the 16th switch.
    settings_data_list_current_add_flags(list, list_info, SD_FLAG_ALLOW_EMPTY);
 #endif
@@ -5191,6 +5230,17 @@ static bool setting_data_append_list_input_options(
          general_write_handler,
          general_read_handler);
    settings_list_current_add_range(list, list_info, 1, 0, 1, true, false);
+
+   CONFIG_UINT(
+         g_settings.input.menu_combos,
+         "input_menu_combos",
+         "Menu Combo",
+         menu_combos,
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+   settings_list_current_add_range(list, list_info, 0, 2, 1, true, true);
 
    END_SUB_GROUP(list, list_info);
 
