@@ -1122,6 +1122,7 @@ static void init_video_input(void)
    video.vres = g_settings.video.vres;
    video.blendframe = g_settings.video.blendframe;
    video.blend_smooth = g_settings.video.blend_smooth;
+   video.force_288p = g_settings.video.force_288p;
 #ifdef HAVE_RENDERSCALE
    video.renderscale = g_settings.video.renderscale;
    video.top = g_settings.video.top;

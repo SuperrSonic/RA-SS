@@ -227,6 +227,7 @@ static void config_set_defaults(void)
    g_settings.video.vres = video_vres;
    g_settings.video.blendframe = video_blendframe;
    g_settings.video.blend_smooth = video_blend_smooth;
+   g_settings.video.force_288p = video_force_288p;
 #ifdef HAVE_RENDERSCALE
    g_settings.video.renderscale = video_renderscale;
    g_settings.video.top = video_top;
@@ -845,6 +846,7 @@ static bool config_load_file(const char *path, bool set_defaults)
    CONFIG_GET_INT(video.vres, "video_vres");
    CONFIG_GET_BOOL(video.blendframe, "video_blendframe");
    CONFIG_GET_BOOL(video.blend_smooth, "video_blend_smooth");
+   CONFIG_GET_BOOL(video.force_288p, "video_force_288p");
 #ifdef HAVE_RENDERSCALE
    CONFIG_GET_INT(video.renderscale, "video_renderscale");
    CONFIG_GET_FLOAT(video.top, "video_top");
@@ -1621,6 +1623,7 @@ bool config_save_file(const char *path)
    config_set_int(conf,   "video_vres", g_settings.video.vres);
    config_set_bool(conf,  "video_blendframe", g_settings.video.blendframe);
    config_set_bool(conf,  "video_blend_smooth", g_settings.video.blend_smooth);
+   config_set_bool(conf,  "video_force_288p", g_settings.video.force_288p);
 #ifdef HAVE_RENDERSCALE
    config_set_int(conf,   "video_renderscale", g_settings.video.renderscale);
    config_set_float(conf,  "video_top", g_settings.video.top);

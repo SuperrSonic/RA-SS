@@ -189,6 +189,7 @@ typedef struct video_info
    unsigned vres;
    bool blendframe;
    bool blend_smooth;
+   bool force_288p;
 #ifdef HAVE_RENDERSCALE
    unsigned renderscale;
    float top;

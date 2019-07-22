@@ -417,6 +417,9 @@ static const bool video_blendframe = false;
 /* TEV frame blending scaling filter. */
 static const bool video_blend_smooth = true;
 
+/* Force 288p 50Hz. */
+static const bool video_force_288p = false;
+
 #ifdef HAVE_RENDERSCALE
 /* Render x times the original res. */
 static const unsigned video_renderscale = 1;

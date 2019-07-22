@@ -2546,7 +2546,7 @@ static void get_string_representation_bind_device(void * data, char *type_str,
    unsigned map = 0;
    rarch_setting_t *setting = (rarch_setting_t*)data;
 
-   /* For whatever reason. */
+   /* Getting device name is unstable. */
   // if (!setting || !type_str || !type_str_size)
     //  return;
 
@@ -2734,7 +2734,7 @@ static void general_write_handler(void *data)
         update_deflicker();
    }
      // Needs a better way of updating
-   else if (!strcmp(setting->name, "video_dither"))
+   else if (!strcmp(setting->name, "video_dither") || !strcmp(setting->name, "video_force_288p"))
    {
       if (driver.video_data)
       gx_set_video_mode(driver.video_data, menu_gx_resolutions
@@ -4132,6 +4132,20 @@ static bool setting_data_append_list_video_options(
          subgroup_info.name,
          general_write_handler,
          general_read_handler);*/
+
+   if (CONF_GetVideo() != CONF_VIDEO_NTSC) {
+       CONFIG_BOOL(
+             g_settings.video.force_288p,
+             "video_force_288p",
+             "Force 288p",
+             video_force_288p,
+             "OFF",
+             "ON",
+             group_info.name,
+             subgroup_info.name,
+             general_write_handler,
+             general_read_handler);
+   }
 
    CONFIG_UINT(
          g_settings.video.aspect_ratio_idx,

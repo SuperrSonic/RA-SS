@@ -323,10 +323,17 @@ void gx_set_video_mode(void *data, unsigned fbWidth, unsigned lines)
    {
       modetype = VI_NON_INTERLACE;
       viHeightMultiplier = 2;
+
+	  if (g_settings.video.force_288p && tvmode != VI_NTSC) {
+          tvmode = VI_PAL;
+          lines = 288;
+		  max_height = VI_MAX_HEIGHT_PAL;
+      }
    }
    else
    {
-      modetype = progressive ? VI_PROGRESSIVE : VI_INTERLACE;
+      //modetype = progressive ? VI_PROGRESSIVE : VI_INTERLACE;
+      modetype = progressive ? tvmode == VI_PAL ? VI_TVMODE_PAL_PROG : VI_PROGRESSIVE : VI_INTERLACE;
    }
 
    if (lines > max_height)
