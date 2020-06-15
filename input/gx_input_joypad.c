@@ -44,7 +44,15 @@
 #endif
 
 #ifndef MAX_PADS
+#ifdef HAVE_5PLAY
+#define MAX_PADS 5
+#elif HAVE_6PLAY
+#define MAX_PADS 6
+#elif HAVE_8PLAY
+#define MAX_PADS 8
+#else
 #define MAX_PADS 4
+#endif
 #endif
 
 enum
@@ -167,27 +175,27 @@ void removal_cb(void *usrdata)
    g_menu = true;
 }*/
 
-static inline void _gx_get_mlinfo(uint32_t b) {
+/*static inline void _gx_get_mlinfo(uint32_t b) {
  	uint8_t i;
  	ir_t ir;
- 	/* Get the IR data from the wiimote */
+ 	// Get the IR data from the wiimote
  	WPAD_IR(WPAD_CHAN_0, &ir);
     if (ir.valid) {
 		_gx_mldata.x = ir.x;
 		_gx_mldata.y = ir.y;
 	} else {
-		/* reset the position if the wiimote is offscreen */
+		// reset the position if the wiimote is offscreen
 		_gx_mldata.x = 0;
 		_gx_mldata.y = 0;
 	}
 
- 	_gx_mldata.ml_buttons = 0; /* reset button state */
+ 	_gx_mldata.ml_buttons = 0; // reset button state
  	for (i = 0; i < GX_ML_BSET; i++) {
  		_gx_mldata.ml_buttons |= (b & _gx_mlmask[i]) ? (1 << i) : 0;
  	}
- 	/* Small adjustment to match the RA buttons */
+ 	// Small adjustment to match the RA buttons
  	_gx_mldata.ml_buttons = _gx_mldata.ml_buttons << 2;
-}
+}*/
 
 static const char *gx_joypad_name(unsigned pad)
 {
@@ -353,6 +361,65 @@ int32_t gxpad_mlposy(void) {
 	return _gx_mldata.y;
 }
 
+#ifdef HW_RVL
+#define MAX_MOUSEBUTTONS 6
+static const uint32_t gx_mousemask[MAX_MOUSEBUTTONS] = {WPAD_BUTTON_B, WPAD_BUTTON_A, WPAD_BUTTON_1, WPAD_BUTTON_2, 
+                                   WPAD_BUTTON_PLUS, WPAD_BUTTON_MINUS};
+#endif
+
+struct gx_mousedata
+{
+   int32_t x, y;
+   uint32_t mouse_button;
+   bool valid;
+};
+
+static struct gx_mousedata gx_mouse[2];
+
+static bool gx_joypad_query_pad(unsigned pad);
+
+// p2
+
+static inline void gx_mouse_info(uint32_t joybutton, unsigned port) {
+   uint8_t i;
+   ir_t ir;
+
+   /* Get the IR data from the wiimote */
+   WPAD_IR(port, &ir);
+   if (ir.valid)
+   {
+      gx_mouse[port].valid = true;
+      gx_mouse[port].x = ir.x;
+      gx_mouse[port].y = ir.y;
+   }
+   else
+   {
+      gx_mouse[port].valid = false;
+   }
+
+   /* reset button state */
+   gx_mouse[port].mouse_button = 0; 
+   for (i = 0; i < MAX_MOUSEBUTTONS; i++) {
+      gx_mouse[port].mouse_button |= (joybutton & gx_mousemask[i]) ? (1 << i) : 0;
+   }
+
+   /* Small adjustment to match the RA buttons */
+   gx_mouse[port].mouse_button = gx_mouse[port].mouse_button << 2;
+}
+
+bool gxpad_mousevalid(unsigned port)
+{
+   return gx_mouse[port].valid;
+}
+
+void gx_joypad_read_mouse(unsigned port, int *irx, int *iry, uint32_t *button)
+{
+   *irx = gx_mouse[port].x;
+   *iry = gx_mouse[port].y;
+   *button = gx_mouse[port].mouse_button;
+}
+
+
 #define PI_2 3.14159265f
 
 static int16_t WPAD_StickX(WPADData *data, u8 right)
@@ -504,7 +571,14 @@ static void gx_joypad_poll(void)
 
         /* MOUSE & LIGHTGUN
          * Get data only from the first wiimote (port 0) */
-        if (port == WPAD_CHAN_0) _gx_get_mlinfo(wpaddata->btns_h);
+       // if (port == WPAD_CHAN_0) _gx_get_mlinfo(wpaddata->btns_h);
+		
+		/* Mouse & Lightgun: Retrieve IR data */
+         if (ptype == WPAD_EXP_NONE)
+         {
+            if (port == WPAD_CHAN_0 || port == WPAD_CHAN_1)
+               gx_mouse_info(wpaddata->btns_h, port);
+         }
 
          exp = (expansion_t*)&wpaddata->exp;
 
@@ -697,6 +771,7 @@ static void gx_joypad_poll(void)
 		 else if (gcpad & (1 << port))
          {
             int16_t ls_x, ls_y, rs_x, rs_y;
+           // uint64_t menu_combo = 0;
 
 			if (g_settings.input.gc_once)
             	down = PAD_ButtonsDown(port);
@@ -711,7 +786,7 @@ static void gx_joypad_poll(void)
             *state_cur |= (down & PAD_BUTTON_Y) ? (1ULL << GX_WIIMOTE_1) : 0;
             *state_cur |= ((down & PAD_TRIGGER_L) || PAD_TriggerL(port) > g_settings.input.trigger_threshold) ? (1ULL << GX_WIIMOTE_B) : 0;
             *state_cur |= ((down & PAD_TRIGGER_R) || PAD_TriggerR(port) > g_settings.input.trigger_threshold) ? (1ULL << GX_WIIMOTE_A) : 0;
-#ifdef HAVE_5PLAY
+#if defined HAVE_5PLAY || defined HAVE_6PLAY || defined HAVE_8PLAY
 		    *state_cur |= (down & PAD_BUTTON_UP) ? (1ULL << GX_WIIMOTE_UP) : 0;
             *state_cur |= (down & PAD_BUTTON_DOWN) ? (1ULL << GX_WIIMOTE_DOWN) : 0;
             *state_cur |= (down & PAD_BUTTON_LEFT) ? (1ULL << GX_WIIMOTE_LEFT) : 0;
@@ -737,7 +812,7 @@ static void gx_joypad_poll(void)
             *state_cur |= (down & PAD_BUTTON_Y) ? (1ULL << GX_WIIMOTE_A) : 0;
             *state_cur |= ((down & PAD_TRIGGER_L) || PAD_TriggerL(port) > g_settings.input.trigger_threshold) ? (1ULL << GX_GC_L_TRIGGER) : 0;
             *state_cur |= ((down & PAD_TRIGGER_R) || PAD_TriggerR(port) > g_settings.input.trigger_threshold) ? (1ULL << GX_GC_R_TRIGGER) : 0;
-#ifdef HAVE_5PLAY
+#if defined HAVE_5PLAY || defined HAVE_6PLAY || defined HAVE_8PLAY
 		    *state_cur |= (down & PAD_BUTTON_UP) ? (1ULL << GX_WIIMOTE_UP) : 0;
             *state_cur |= (down & PAD_BUTTON_DOWN) ? (1ULL << GX_WIIMOTE_DOWN) : 0;
             *state_cur |= (down & PAD_BUTTON_LEFT) ? (1ULL << GX_WIIMOTE_LEFT) : 0;
@@ -763,7 +838,8 @@ static void gx_joypad_poll(void)
             *state_cur |= (down & PAD_BUTTON_Y) ? (1ULL << GX_WIIMOTE_B) : 0;
             *state_cur |= ((down & PAD_TRIGGER_L) || PAD_TriggerL(port) > g_settings.input.trigger_threshold) ? (1ULL << GX_GC_L_TRIGGER) : 0;
             *state_cur |= ((down & PAD_TRIGGER_R) || PAD_TriggerR(port) > g_settings.input.trigger_threshold) ? (1ULL << GX_GC_R_TRIGGER) : 0;
-#ifndef HAVE_5PLAY
+#if defined HAVE_5PLAY || defined HAVE_6PLAY || defined HAVE_8PLAY
+#else
 		}
 		// Not profile specific
 #endif
@@ -784,7 +860,7 @@ static void gx_joypad_poll(void)
             analog_state[port][RETRO_DEVICE_INDEX_ANALOG_LEFT][RETRO_DEVICE_ID_ANALOG_Y] = ls_y;
             analog_state[port][RETRO_DEVICE_INDEX_ANALOG_RIGHT][RETRO_DEVICE_ID_ANALOG_X] = rs_x;
             analog_state[port][RETRO_DEVICE_INDEX_ANALOG_RIGHT][RETRO_DEVICE_ID_ANALOG_Y] = rs_y;
-#ifdef HAVE_5PLAY
+#if defined HAVE_5PLAY || defined HAVE_6PLAY || defined HAVE_8PLAY
 		} else if (g_settings.input.key_profile == 3) {
 // Separate GC from Wii keys, enables five players
             *state_cur |= (down & PAD_BUTTON_A) ? (1ULL << GX_GC_A) : 0;
@@ -826,6 +902,18 @@ static void gx_joypad_poll(void)
 
 		 analog_state[port][RETRO_DEVICE_INDEX_ANALOG_LEFT][RETRO_DEVICE_ID_ANALOG_X] = ls_x_main;
 #endif
+       /*  if (g_settings.input.menu_combos) {
+                if (g_settings.input.menu_combos == 1) {
+                    menu_combo = (1ULL << GX_WIIMOTE_PLUS) | (1ULL << GX_WIIMOTE_MINUS) | 
+                      (1ULL << GX_GC_L_TRIGGER) | (1ULL << GX_GC_R_TRIGGER);
+                } else {
+                    menu_combo = (1ULL << GX_WIIMOTE_PLUS) | (1ULL << GX_WIIMOTE_B) | 
+                      (1ULL << GX_WIIMOTE_1);
+                }
+
+                if ((*state_cur & menu_combo) == menu_combo)
+                     *state_cur |= (1ULL << GX_WIIMOTE_HOME);
+            } */
 		//	ptype = WPAD_EXP_GAMECUBE; // Breaks things
          }
       }

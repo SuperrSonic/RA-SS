@@ -188,7 +188,9 @@ typedef struct video_info
    float vbright;
    unsigned vres;
    bool blendframe;
+   bool prescale;
    bool blend_smooth;
+   bool autores;
    bool force_288p;
 #ifdef HAVE_RENDERSCALE
    unsigned renderscale;
@@ -449,6 +451,14 @@ typedef struct video_driver
    void (*poke_interface)(void *data, const video_poke_interface_t **iface);
    unsigned (*wrap_type_to_enum)(enum gfx_wrap_type type);
 } video_driver_t;
+
+bool video_driver_translate_coord_viewport(
+      struct rarch_viewport *vp,
+      int mouse_x, int mouse_y,
+      int16_t *res_x, int16_t *res_y, int16_t *res_screen_x,
+      int16_t *res_screen_y);
+
+bool video_driver_get_viewport_info(struct rarch_viewport *viewport);
 
 enum rarch_display_type
 {

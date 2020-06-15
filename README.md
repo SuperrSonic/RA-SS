@@ -1,15 +1,16 @@
 # A simplified version of RetroArch Wii:
-- Screen resolution saving.
+- Automatic resolution switching and saving.
 - Better documented settings.
 - Wii Message Board playlog feature.
 - Full screen overlays are now supported.
+- Support up to 8 players.
 - Reworked input to allow multiple controllers on the same player.
 - The interface shifts to a simpler look when single game loading.
 - Per-game settings using arguments or the native interface.
 - You can change text and highlighted text color by editing text_color and hover_color. 
 - Wii Remote tilting for OutRun engine. (Cannonball)
 - More customization, fade effects, ux improvements, etc.
-- En EspaÃ±ol.
+- En Español.
 
 
 ![Alt text](https://user-images.githubusercontent.com/6880539/55585031-b548ce80-56f3-11e9-89f2-236e88c60ae3.png?raw=true "TRON") ![Alt text](https://user-images.githubusercontent.com/6880539/55585036-b974ec00-56f3-11e9-964b-9b75ffa4d176.png?raw=true "El Dorado")
@@ -33,5 +34,3 @@ for calculating alpha values if you plan on using a transparent color for the in
 *Solid Color BG*.
 
 [Video preview and link](https://www.youtube.com/watch?v=az5fjJHof68)
-
-[**Donate**](https://www.paypal.me/die5a)

@@ -59,7 +59,18 @@ enum
    GX_RESOLUTIONS_530_240,
    GX_RESOLUTIONS_608_240,
    GX_RESOLUTIONS_640_240,
+#ifdef EXTRA_RES
+   GX_RESOLUTIONS_400_254,
+   GX_RESOLUTIONS_400_255,
+   GX_RESOLUTIONS_404_255,
+   GX_RESOLUTIONS_396_256,
+   GX_RESOLUTIONS_400_256,
+   GX_RESOLUTIONS_410_256,
+#endif
    GX_RESOLUTIONS_512_384,
+#ifdef EXTRA_RES
+   GX_RESOLUTIONS_512_400,
+#endif
    GX_RESOLUTIONS_598_400,
    GX_RESOLUTIONS_640_400,
    GX_RESOLUTIONS_384_448,
@@ -80,6 +91,7 @@ enum
    GX_RESOLUTIONS_530_480,
    GX_RESOLUTIONS_608_480,
    GX_RESOLUTIONS_640_480,
+   GX_RESOLUTIONS_640_576,
    GX_RESOLUTIONS_LAST,
 };
 
@@ -104,7 +116,18 @@ unsigned menu_gx_resolutions[GX_RESOLUTIONS_LAST][2] = {
    { 530, 240 },
    { 608, 240 },
    { 640, 240 },
+#ifdef EXTRA_RES
+   { 400, 254 },
+   { 400, 255 },
+   { 404, 255 },
+   { 396, 256 },
+   { 400, 256 },
+   { 410, 256 },
+#endif
    { 512, 384 },
+#ifdef EXTRA_RES
+   { 512, 400 },
+#endif
    { 598, 400 },
    { 640, 400 },
    { 384, 448 },
@@ -125,6 +148,7 @@ unsigned menu_gx_resolutions[GX_RESOLUTIONS_LAST][2] = {
    { 530, 480 },
    { 608, 480 },
    { 640, 480 },
+   { 640, 576 },
 };
 
 unsigned menu_current_gx_resolution = GX_RESOLUTIONS_640_480;
@@ -149,6 +173,10 @@ bool start_exitfade = false;
 bool reset_safe = false;
 bool exit_safe = false;
 int fade = 0;
+
+//for auto res switch.
+bool hide_black = false;
+bool prefer_240p = false;
 
 static struct
 {
@@ -253,6 +281,12 @@ void gx_set_video_mode(void *data, unsigned fbWidth, unsigned lines)
    unsigned viHeightMultiplier, viWidth, tvmode,
             max_width, max_height, i;
    gx_video_t *gx = (gx_video_t*)data;
+   
+   //Switch res
+   if (g_settings.video.vres < 20) //start of 240p
+	   prefer_240p = true;
+   else
+	   prefer_240p = false;
 
    /* stop vsync callback */
    VIDEO_SetPostRetraceCallback(NULL);
@@ -262,7 +296,9 @@ void gx_set_video_mode(void *data, unsigned fbWidth, unsigned lines)
    do VIDEO_WaitVSync();
    while (!VIDEO_GetNextField());
 
+   if(!hide_black) {
    VIDEO_SetBlack(true);
+   }
    VIDEO_Flush();
    viHeightMultiplier = 1;
    viWidth = g_settings.video.viwidth;
@@ -389,9 +425,10 @@ void gx_set_video_mode(void *data, unsigned fbWidth, unsigned lines)
    gx->vp.full_width = gx_mode.fbWidth;
    gx->vp.full_height = gx_mode.xfbHeight;
    gx->double_strike = (modetype == VI_NON_INTERLACE);
-   gx->should_resize = true;
+   if(!hide_black)
+     gx->should_resize = true;
 
-   if (driver.menu)
+   if (driver.menu && !hide_black)
    {
       driver.menu->height = gx_mode.efbHeight / (gx->double_strike ? 1 : 2);
       driver.menu->height &= ~3;
@@ -414,8 +451,10 @@ void gx_set_video_mode(void *data, unsigned fbWidth, unsigned lines)
 
    GX_SetCopyFilter(gx_mode.aa, gx_mode.sample_pattern,
          GX_TRUE, gx_mode.vfilter);
+	if(!hide_black) {
    GXColor color = { 0, 0, 0, 0xff };
    GX_SetCopyClear(color, GX_MAX_Z24);
+	}
    GX_SetFieldMode(gx_mode.field_rendering,
          (gx_mode.viHeight == 2 * gx_mode.xfbHeight) ? GX_ENABLE : GX_DISABLE);
 
@@ -430,21 +469,31 @@ void gx_set_video_mode(void *data, unsigned fbWidth, unsigned lines)
    
    /* Now apply all the configuration to the screen */
    VIDEO_Configure(&gx_mode);
+   if(!hide_black) {
    VIDEO_ClearFrameBuffer(&gx_mode, g_framebuf[0], COLOR_BLACK);
    VIDEO_ClearFrameBuffer(&gx_mode, g_framebuf[1], COLOR_BLACK);
    VIDEO_SetNextFramebuffer(g_framebuf[0]);
+   }
    g_current_framebuf = 0;
    GX_SetDrawDoneCallback(Draw_VIDEO);
    /* re-activate the Vsync callback */
    VIDEO_SetPostRetraceCallback(retrace_callback);
+   //if(!hide_black)
+	  // usleep(150000);
    VIDEO_SetBlack(false);
    VIDEO_Flush();
-   VIDEO_WaitVSync();
-   VIDEO_WaitVSync();
    
+   if(hide_black) {
+		do VIDEO_WaitVSync();
+		while (!VIDEO_GetNextField());
+   } else {
+		VIDEO_WaitVSync();
+		VIDEO_WaitVSync();
+   }
+ /*  
    RARCH_LOG("GX Resolution: %dx%d (%s)\n", gx_mode.fbWidth,
          gx_mode.efbHeight, (gx_mode.viTVMode & 3) == VI_INTERLACE
-         ? "interlaced" : "progressive");
+         ? "interlaced" : "progressive"); */
 
    if (tvmode == VI_PAL)
    {
@@ -460,6 +509,9 @@ void gx_set_video_mode(void *data, unsigned fbWidth, unsigned lines)
       else
 	     driver_set_monitor_refresh_rate(60.0 / 1.001);
    }
+   
+   //Auto switching
+   hide_black = false;
 }
 
 static void update_screen_width(void)
@@ -1229,6 +1281,21 @@ static bool gx_frame(void *data, const void *frame,
       init_texture(data, width, height);
       gx_old_width = width;
       gx_old_height = height;
+	  
+	  if (g_settings.video.autores && width > 4 && !gx->menu_texture_enable && !g_settings.video.use_filter) {
+		hide_black = true;
+		unsigned og_width = 0;
+		og_width = width;
+		if(og_width * 2 > 640)
+		  og_width = og_width;
+		else
+			og_width *= 2;
+		if(prefer_240p)
+			gx_mode.xfbHeight = height;
+		gx_set_video_mode(driver.video_data, og_width,
+			height > 300 ? height : gx_mode.xfbHeight);
+	  }
+	  
    }
 
    g_draw_done = false;
@@ -1251,9 +1318,12 @@ static bool gx_frame(void *data, const void *frame,
       else
          convert_texture16(frame, g_tex.data, width, height, pitch);
       DCFlushRange(g_tex.data, height * (width << (gx->rgb32 ? 2 : 1)));
+	  
+	  if(g_settings.video.prescale && !g_settings.video.blendframe)
+		  memcpy(interframeTexmem, g_tex.data, g_tex.height * (g_tex.width << (gx->rgb32 ? 2 : 1)));
 	  // interframeBlending
-	  if (g_settings.video.blendframe)
-	     DCFlushRange(interframeTexmem, g_tex.height * (g_tex.width << (gx->rgb32 ? 2 : 1)));
+	  if (g_settings.video.blendframe || g_settings.video.prescale)
+	      DCFlushRange(interframeTexmem, g_tex.height * (g_tex.width << (gx->rgb32 ? 2 : 1)));
 
       //RARCH_PERFORMANCE_STOP(gx_frame_convert);
    }
@@ -1270,7 +1340,7 @@ static bool gx_frame(void *data, const void *frame,
 
    GX_SetCurrentMtx(GX_PNMTX0);
   // GX_LoadTexObj(&g_tex.obj, GX_TEXMAP0);
-   if (!gx->menu_texture_enable && g_settings.video.blendframe) {
+   if (!gx->menu_texture_enable && (g_settings.video.blendframe || g_settings.video.prescale)) {
 	     GX_LoadTexObj(&interframeTex, GX_TEXMAP0);
          GX_LoadTexObj(&g_tex.obj, GX_TEXMAP1);
          GX_SetNumTevStages(2);
@@ -1448,7 +1518,7 @@ static bool gx_frame(void *data, const void *frame,
    ++referenceRetraceCount;
    _CPU_ISR_Restore(level);
    
-   g_extern.frame_count++;
+	g_extern.frame_count++;
 
    //RARCH_PERFORMANCE_STOP(gx_frame);
 

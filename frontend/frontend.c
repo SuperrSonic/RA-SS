@@ -159,6 +159,10 @@ static void check_defaults_dirs(void)
       path_mkdir(g_defaults.resampler_dir);
    if (*g_defaults.extract_dir)
       path_mkdir(g_defaults.extract_dir);
+#ifdef NEOGEO_FOLDER
+   if (*g_defaults.neogeo_dir)
+      path_mkdir(g_defaults.neogeo_dir);
+#endif
 }
 
 static void history_playlist_push(content_playlist_t *playlist,

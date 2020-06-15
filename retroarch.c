@@ -2246,6 +2246,7 @@ bool rarch_main_command(unsigned cmd)
          //RARCH_LOG(RETRO_LOG_RESETTING_CONTENT);
          //msg_queue_clear(g_extern.msg_queue);
         // msg_queue_push(g_extern.msg_queue, "Reset.", 1, 120);
+		 g_extern.frame_count = 0;
          if (g_settings.reset_fade && !reset_safe) {
              start_resetfade = true;
 		 } else {
@@ -2436,7 +2437,12 @@ bool rarch_main_command(unsigned cmd)
          VIDEO_SetBlack(true);
          deinit_video_filter();
          init_video_filter(g_extern.system.pix_fmt);
-		 rarch_render_cached_frame();
+		 //video_info_t video = {0};
+		/* driver.video_data = driver.video->init(&video, &driver.input,
+            &driver.input_data); */
+			//crash after many loads.
+   
+		 //rarch_render_cached_frame();
          VIDEO_SetBlack(false);
 
 #ifdef DONT_CRASH

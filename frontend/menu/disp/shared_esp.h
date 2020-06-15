@@ -14,7 +14,7 @@ static void get_title(const char *label, const char *dir,
       unsigned menu_type, char *title, size_t sizeof_title)
 {
    if (!strcmp(label, "core_list"))
-      snprintf(title, sizeof_title, selec_nucl, dir);
+      snprintf(title, sizeof_title, g_settings.single_mode && g_settings.show_manuals ? "MANUAL" : selec_nucl, dir);
    else if (!strcmp(label, "deferred_core_list"))
       snprintf(title, sizeof_title, "DETECTADO %s", dir);
    else if (!strcmp(label, "configurations"))

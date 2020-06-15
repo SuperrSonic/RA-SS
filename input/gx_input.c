@@ -28,8 +28,30 @@
 #include <stdlib.h>
 
 #ifndef MAX_PADS
+#ifdef HAVE_5PLAY
+#define MAX_PADS 5
+#elif HAVE_6PLAY
+#define MAX_PADS 6
+#elif HAVE_8PLAY
+#define MAX_PADS 8
+#else
 #define MAX_PADS 4
 #endif
+#endif
+
+#define video_driver_translate_coord_viewport_wrap(vp, mouse_x, mouse_y, res_x, res_y, res_screen_x, res_screen_y) \
+   (video_driver_get_viewport_info(vp) ? video_driver_translate_coord_viewport(vp, mouse_x, mouse_y, res_x, res_y, res_screen_x, res_screen_y) : false)
+
+/* gx joypad functions */
+bool gxpad_mousevalid(unsigned port);
+void gx_joypad_read_mouse(unsigned port, int *irx, int *iry, uint32_t *button);
+
+typedef struct
+{
+   int x_abs, y_abs;
+   int x_last, y_last;
+   uint32_t button;
+} gx_input_mouse_t;
 
 uint8_t gxpad_mlbuttons(void);
 int32_t gxpad_mlposx(void);
@@ -43,43 +65,83 @@ typedef struct gx_input
    int ml_x, ml_y;
    int mouse_last_x, mouse_last_y;
    int ml_lastx, ml_lasty;
+   int mouse_max;
+   gx_input_mouse_t *mouse;
 } gx_input_t;
 
-static int16_t gx_mouse_state(gx_input_t *gx, unsigned id)
+static int16_t gx_lightgun_state(gx_input_t *gx, unsigned id, uint16_t idx)
 {
+   struct rarch_viewport vp = {0};
+   video_driver_get_viewport_info(&vp);
+   int16_t res_x               = 0;
+   int16_t res_y               = 0;
+   int16_t res_screen_x        = 0;
+   int16_t res_screen_y        = 0;
+   int16_t x = 0;
+   int16_t y = 0;
+
+   vp.x                        = 0;
+   vp.y                        = 0;
+   vp.width                    = 0;
+   vp.height                   = 0;
+   vp.full_width               = 0;
+   vp.full_height              = 0;
+
+   x = gx->mouse[idx].x_abs;
+   y = gx->mouse[idx].y_abs;
+
+   if (!(video_driver_translate_coord_viewport_wrap(&vp, x, y,
+         &res_x, &res_y, &res_screen_x, &res_screen_y)))
+      return 0;
+
    switch (id)
    {
-      case RETRO_DEVICE_ID_MOUSE_X:
-         return gx->ml_x - gx->ml_lastx;
-      case RETRO_DEVICE_ID_MOUSE_Y:
-         return gx->ml_y - gx->ml_lasty;
-      case RETRO_DEVICE_ID_MOUSE_LEFT:
-         return gx->ml_state & (1 << RETRO_DEVICE_ID_MOUSE_LEFT);
-      case RETRO_DEVICE_ID_MOUSE_RIGHT:
-         return gx->ml_state & (1 << RETRO_DEVICE_ID_MOUSE_RIGHT);
+      case RETRO_DEVICE_ID_LIGHTGUN_SCREEN_X:
+         return res_screen_x;
+      case RETRO_DEVICE_ID_LIGHTGUN_SCREEN_Y:
+         return res_screen_y;
+      case RETRO_DEVICE_ID_LIGHTGUN_TRIGGER:
+         return gx->mouse[idx].button & (1 << RETRO_DEVICE_ID_LIGHTGUN_TRIGGER);
+      case RETRO_DEVICE_ID_LIGHTGUN_AUX_A:
+         return gx->mouse[idx].button & (1 << RETRO_DEVICE_ID_LIGHTGUN_AUX_A);
+      case RETRO_DEVICE_ID_LIGHTGUN_AUX_B:
+         return gx->mouse[idx].button & (1 << RETRO_DEVICE_ID_LIGHTGUN_AUX_B);
+      case RETRO_DEVICE_ID_LIGHTGUN_AUX_C:
+         return gx->mouse[idx].button & (1 << RETRO_DEVICE_ID_LIGHTGUN_AUX_C);
+      case RETRO_DEVICE_ID_LIGHTGUN_START:
+         return gx->mouse[idx].button & (1 << RETRO_DEVICE_ID_LIGHTGUN_START);
+      case RETRO_DEVICE_ID_LIGHTGUN_SELECT:
+         return gx->mouse[idx].button & (1 << RETRO_DEVICE_ID_LIGHTGUN_SELECT);
+      case RETRO_DEVICE_ID_LIGHTGUN_IS_OFFSCREEN:
+         return !gxpad_mousevalid(idx);
       default:
          return 0;
    }
+
+   return 0;
 }
 
-static int16_t gx_lightgun_state(gx_input_t *gx, unsigned id)
+static int16_t gx_mouse_state(gx_input_t *gx, unsigned id, uint16_t idx)
 {
+   int x = 0;
+   int y = 0;
+
+   int x_scale = 1;
+   int y_scale = 1;
+
+   x = (gx->mouse[idx].x_abs - gx->mouse[idx].x_last) * x_scale;
+   y = (gx->mouse[idx].y_abs - gx->mouse[idx].y_last) * y_scale;
+
    switch (id)
    {
-      case RETRO_DEVICE_ID_LIGHTGUN_X:
-         return gx->ml_x - gx->ml_lastx;
-      case RETRO_DEVICE_ID_LIGHTGUN_Y:
-         return gx->ml_y - gx->ml_lasty;
-      case RETRO_DEVICE_ID_LIGHTGUN_TRIGGER:
-         return gx->ml_state & (1 << RETRO_DEVICE_ID_LIGHTGUN_TRIGGER);
-      case RETRO_DEVICE_ID_LIGHTGUN_CURSOR:
-         return gx->ml_state & (1 << RETRO_DEVICE_ID_LIGHTGUN_CURSOR);
-      case RETRO_DEVICE_ID_LIGHTGUN_TURBO:
-         return gx->ml_state & (1 << RETRO_DEVICE_ID_LIGHTGUN_TURBO);
-      case RETRO_DEVICE_ID_LIGHTGUN_PAUSE:
-         return gx->ml_state & (1 << RETRO_DEVICE_ID_LIGHTGUN_PAUSE);
-      case RETRO_DEVICE_ID_LIGHTGUN_START:
-         return gx->ml_state & (1 << RETRO_DEVICE_ID_LIGHTGUN_START);
+      case RETRO_DEVICE_ID_MOUSE_X:
+         return x;
+      case RETRO_DEVICE_ID_MOUSE_Y:
+         return y;
+      case RETRO_DEVICE_ID_MOUSE_LEFT:
+         return gx->mouse[idx].button & (1 << RETRO_DEVICE_ID_MOUSE_LEFT);
+      case RETRO_DEVICE_ID_MOUSE_RIGHT:
+         return gx->mouse[idx].button & (1 << RETRO_DEVICE_ID_MOUSE_RIGHT);
       default:
          return 0;
    }
@@ -100,9 +162,10 @@ static int16_t gx_input_state(void *data, const struct retro_keybind **binds,
       case RETRO_DEVICE_ANALOG:
          return input_joypad_analog(gx->joypad, port, idx, id, binds[port]);
       case RETRO_DEVICE_MOUSE:
-         return gx_mouse_state(gx, id);
-	  case RETRO_DEVICE_LIGHTGUN:
-         return gx_lightgun_state(gx, id);
+         return gx_mouse_state(gx, id, idx);
+
+      case RETRO_DEVICE_LIGHTGUN:
+         return gx_lightgun_state(gx, id, idx);
    }
 
    return 0;
@@ -117,8 +180,33 @@ static void gx_input_free_input(void *data)
 
    if (gx->joypad)
       gx->joypad->destroy();
+  
+   if(gx->mouse)
+      free(gx->mouse);
 
    free(gx);
+}
+
+static inline int gx_count_mouse(gx_input_t *gx)
+{
+   int count = 0;
+
+   if(gx)
+   {
+      for(int i=0; i<4; i++)
+      {
+        // if(gx->joypad->name(i))
+        // {
+           // if(!strcmp(gx->joypad->name(i), "Port #1"))
+           // {
+               count++;
+           // }
+        // }
+      }
+	 // count=1;
+   }
+
+   return count;
 }
 
 static void *gx_input_init(void)
@@ -129,16 +217,49 @@ static void *gx_input_init(void)
 
    gx->joypad = input_joypad_init_driver(g_settings.input.joypad_driver);
 
+   /* Allocate at least 1 mouse at startup */
+   gx->mouse_max = 1;
+   gx->mouse = (gx_input_mouse_t*) calloc(gx->mouse_max, sizeof(gx_input_mouse_t));
+
    return gx;
 }
 
 static void gx_input_poll_mouse(gx_input_t *gx)
 {
-   gx->ml_lastx = gx->ml_x;
-   gx->ml_lasty = gx->ml_y;
-   gx->ml_x = gxpad_mlposx();
-   gx->ml_y = gxpad_mlposy();
-   gx->ml_state = gxpad_mlbuttons();
+   int count = 0;
+   count = gx_count_mouse(gx);
+
+   if(gx && count > 0)
+   {
+      if(count != gx->mouse_max)
+      {
+         gx_input_mouse_t* tmp = NULL;
+
+         tmp = (gx_input_mouse_t*)realloc(gx->mouse, count * sizeof(gx_input_mouse_t));
+         if(!tmp) 
+         {
+            free(gx->mouse);
+         }
+         else
+         {
+            gx->mouse = tmp;
+            gx->mouse_max = count;
+
+            for(int i=0; i<gx->mouse_max; i++)
+            {
+               gx->mouse[i].x_last = 0;
+               gx->mouse[i].y_last = 0;
+            }
+         }
+      }
+
+      for(unsigned i=0; i<gx->mouse_max; i++)
+      {
+         gx->mouse[i].x_last = gx->mouse[i].x_abs;
+         gx->mouse[i].y_last = gx->mouse[i].y_abs;
+         gx_joypad_read_mouse(i, &gx->mouse[i].x_abs, &gx->mouse[i].y_abs, &gx->mouse[i].button);
+      } 
+   }
 }
 
 static void gx_input_poll(void *data)
@@ -149,7 +270,8 @@ static void gx_input_poll(void *data)
       gx->joypad->poll();
 
 	/* poll mouse data */
-    gx_input_poll_mouse(gx);
+   if(gx->mouse)
+      gx_input_poll_mouse(gx);
 }
 
 static bool gx_input_key_pressed(void *data, int key)
@@ -163,7 +285,10 @@ static uint64_t gx_input_get_capabilities(void *data)
 {
    (void)data;
 
-   return (1 << RETRO_DEVICE_JOYPAD) |  (1 << RETRO_DEVICE_ANALOG);
+   return (1 << RETRO_DEVICE_JOYPAD) |
+          (1 << RETRO_DEVICE_ANALOG) |
+          (1 << RETRO_DEVICE_MOUSE) |
+          (1 << RETRO_DEVICE_LIGHTGUN);
 }
 
 static const rarch_joypad_driver_t *gx_input_get_joypad_driver(void *data)

@@ -234,6 +234,10 @@ static void frontend_gx_get_environment_settings(int *argc, char *argv[],
          "screenshots", sizeof(g_defaults.screenshot_dir));
    fill_pathname_join(g_defaults.extract_dir, g_defaults.port_dir,
          "system/temp", sizeof(g_defaults.extract_dir));
+#ifdef NEOGEO_FOLDER
+   fill_pathname_join(g_defaults.neogeo_dir, g_defaults.port_dir,
+         "system/neogeo", sizeof(g_defaults.neogeo_dir));
+#endif
 
 #ifndef IS_SALAMANDER
    /* Determine if we start in single game mode */

@@ -1916,6 +1916,28 @@ int setting_data_get_description(const char *label, char *msg,
 			" \n"
             " Default: OFF");
    }
+   else if (!strcmp(label, "video_autores"))
+   {
+      snprintf(msg, sizeof_msg,
+            " -- Switch resolution automatically. \n"
+            " \n"
+            "240p depends on the current resolution set \n"
+            "unless the height exceeds it. \n"
+			" \n"
+            " Default: OFF");
+   }
+   else if (!strcmp(label, "video_prescale"))
+   {
+      snprintf(msg, sizeof_msg,
+            " -- Enable TEV frame prescaling. \n"
+            " \n"
+            "Doubles the resolution. \n"
+            "It's faster than a CPU filter, \n"
+            "how fast depends on the max \n"
+            "texture size of the core. \n"
+			" \n"
+            " Default: OFF");
+   }
    else if (!strcmp(label, "soft_filter"))
    {
       snprintf(msg, sizeof_msg,
@@ -2049,7 +2071,7 @@ int setting_data_get_description(const char *label, char *msg,
             "When slowmotion, content will slow\n"
             "down by factor.");
    }
-#ifdef HAVE_5PLAY
+#if defined HAVE_5PLAY || defined HAVE_6PLAY || defined HAVE_8PLAY
    else if (!strcmp(label, "input_key_profile"))
    {
       snprintf(msg, sizeof_msg,
@@ -2546,7 +2568,7 @@ static void get_string_representation_bind_device(void * data, char *type_str,
    unsigned map = 0;
    rarch_setting_t *setting = (rarch_setting_t*)data;
 
-   /* Getting device name is unstable. */
+   /* Sometimes this returns for whatever reason. */
   // if (!setting || !type_str || !type_str_size)
     //  return;
 
@@ -2554,14 +2576,17 @@ static void get_string_representation_bind_device(void * data, char *type_str,
 
    if (map < MAX_PLAYERS - 12)
    {
-      const char *device_name = 
-         g_settings.input.device_names[map];
+    //  const char *device_name = 
+      //   g_settings.input.device_names[map];
 
-    //  if (*device_name)
-         strlcpy(type_str, device_name, type_str_size);
+      char cnt_label[64];
+      snprintf(cnt_label, sizeof(cnt_label),
+               "Port #%d", map + 1);
+     // if (*device_name)
+         strlcpy(type_str, cnt_label, type_str_size);
      // else
-      //   snprintf(type_str, type_str_size,
-        //       "N/A (port #%d)", map);
+       //  snprintf(type_str, type_str_size,
+         //      "N/A (port #%d)", map);
    }
    else
       strlcpy(type_str, "None", type_str_size);
@@ -2681,6 +2706,12 @@ static void general_read_handler(void *data)
       *setting->value.integer = g_settings.input.joypad_map[3];
    else if (!strcmp(setting->name, "input_player5_joypad_index"))
       *setting->value.integer = g_settings.input.joypad_map[4];
+   else if (!strcmp(setting->name, "input_player6_joypad_index"))
+      *setting->value.integer = g_settings.input.joypad_map[5];
+   else if (!strcmp(setting->name, "input_player7_joypad_index"))
+      *setting->value.integer = g_settings.input.joypad_map[6];
+   else if (!strcmp(setting->name, "input_player8_joypad_index"))
+      *setting->value.integer = g_settings.input.joypad_map[7];
 }
 
 static void general_write_handler(void *data)
@@ -2821,6 +2852,12 @@ static void general_write_handler(void *data)
       g_settings.input.joypad_map[3] = *setting->value.integer;
    else if (!strcmp(setting->name, "input_player5_joypad_index"))
       g_settings.input.joypad_map[4] = *setting->value.integer;
+   else if (!strcmp(setting->name, "input_player6_joypad_index"))
+      g_settings.input.joypad_map[5] = *setting->value.integer;
+   else if (!strcmp(setting->name, "input_player7_joypad_index"))
+      g_settings.input.joypad_map[6] = *setting->value.integer;
+   else if (!strcmp(setting->name, "input_player8_joypad_index"))
+      g_settings.input.joypad_map[7] = *setting->value.integer;
 #ifdef HAVE_NETPLAY
    else if (!strcmp(setting->name, "netplay_ip_address"))
       g_extern.has_set_netplay_ip_address = (setting->value.string[0] != '\0');
@@ -3184,6 +3221,18 @@ static bool setting_data_append_list_main_menu_options(
                group_info.name,
                subgroup_info.name);
          settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
+   }
+
+   if (g_settings.single_mode && g_settings.show_manuals) {
+         CONFIG_ACTION(
+               "core_list",
+               "Retro Manual",
+               group_info.name,
+               subgroup_info.name);
+         settings_data_list_current_add_flags(
+               list,
+               list_info,
+               SD_FLAG_PUSH_ACTION);
    }
 
    if (g_extern.main_is_init && !g_extern.libretro_dummy)
@@ -4256,6 +4305,18 @@ static bool setting_data_append_list_video_options(
   // settings_list_current_add_range(list, list_info, 0, 38, 1, true, true);
   */
 
+   CONFIG_BOOL(
+         g_settings.video.autores,
+         "video_autores",
+         "Auto-Switch Res",
+         video_autores,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
    CONFIG_UINT(
          g_settings.video.viwidth,
          "video_viwidth",
@@ -4296,6 +4357,18 @@ static bool setting_data_append_list_video_options(
          "video_blendframe",
          "Frame Blend",
          video_blendframe,
+         "OFF",
+         "ON",
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
+	CONFIG_BOOL(
+         g_settings.video.prescale,
+         "video_prescale",
+         "Prescale",
+         video_prescale,
          "OFF",
          "ON",
          group_info.name,
@@ -4871,6 +4944,17 @@ static bool setting_data_append_list_audio_options(
          general_write_handler,
          general_read_handler);
 
+  /* CONFIG_UINT(
+         g_settings.audio.mute_frames,
+         "audio_mute_frames",
+         "Mute Frames",
+         mute_frames,
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+	settings_list_current_add_range(list, list_info, 0, 256, 1, true, true);
+*/
    CONFIG_FLOAT(
          g_settings.audio.volume,
          "audio_volume",
@@ -5055,7 +5139,11 @@ static bool setting_data_append_list_input_options(
          general_write_handler,
          general_read_handler);*/
 #ifdef HAVE_5PLAY
-   for (player = 0; player < (MAX_PLAYERS - 11); player ++)
+   for (player = 0; player < (MAX_PLAYERS - 11); player ++) // 5 players
+#elif HAVE_6PLAY
+   for (player = 0; player < (MAX_PLAYERS - 10); player ++) // 6 players
+#elif HAVE_8PLAY
+   for (player = 0; player < (MAX_PLAYERS - 8); player ++) // 8 players
 #else
    for (player = 0; player < (MAX_PLAYERS - 12); player ++)
 #endif
@@ -5183,7 +5271,7 @@ static bool setting_data_append_list_input_options(
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
-#ifdef HAVE_5PLAY
+#if defined HAVE_5PLAY || defined HAVE_6PLAY || defined HAVE_8PLAY
    settings_list_current_add_range(list, list_info, 0, 3, 1, true, true);
 #else
    settings_list_current_add_range(list, list_info, 0, 2, 1, true, true);
@@ -5283,7 +5371,11 @@ static bool setting_data_append_list_input_options(
    END_SUB_GROUP(list, list_info);
 
 #ifdef HAVE_5PLAY
-   for (player = 0; player < (MAX_PLAYERS - 11); player ++)
+   for (player = 0; player < (MAX_PLAYERS - 11); player ++) // 5 players
+#elif HAVE_6PLAY
+   for (player = 0; player < (MAX_PLAYERS - 10); player ++) // 6 players
+#elif HAVE_8PLAY
+   for (player = 0; player < (MAX_PLAYERS - 8); player ++) // 8 players
 #else
    for (player = 0; player < (MAX_PLAYERS - 12); player ++)
 #endif

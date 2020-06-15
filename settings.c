@@ -226,7 +226,9 @@ static void config_set_defaults(void)
    g_settings.video.vbright = video_vbright;
    g_settings.video.vres = video_vres;
    g_settings.video.blendframe = video_blendframe;
+   g_settings.video.prescale = video_prescale;
    g_settings.video.blend_smooth = video_blend_smooth;
+   g_settings.video.autores = video_autores;
    g_settings.video.force_288p = video_force_288p;
 #ifdef HAVE_RENDERSCALE
    g_settings.video.renderscale = video_renderscale;
@@ -264,6 +266,7 @@ static void config_set_defaults(void)
    g_settings.hide_settings = hide_settings;
    g_settings.hide_cursor = hide_cursor;
    g_settings.hide_curr_state = hide_curr_state;
+   g_settings.show_manuals = show_manuals;
    g_settings.title_posx = title_posx;
    g_settings.title_posy = title_posy;
    g_settings.item_posx = item_posx;
@@ -294,6 +297,7 @@ static void config_set_defaults(void)
 
    g_settings.audio.sinc_taps = sinc_taps;
    g_settings.audio.enable = audio_enable;
+   //g_settings.audio.mute_frames = mute_frames;
    g_settings.audio.out_rate = out_rate;
   // g_settings.audio.block_frames = 0;
   // if (audio_device)
@@ -345,17 +349,25 @@ static void config_set_defaults(void)
    rarch_assert(sizeof(g_settings.input.binds[1]) >= sizeof(retro_keybinds_rest));
    memcpy(g_settings.input.binds[0], retro_keybinds_1, sizeof(retro_keybinds_1));
 #ifdef HAVE_5PLAY
-   for (i = 0; i < MAX_PLAYERS - 11; i++)
+   for (i = 0; i < MAX_PLAYERS - 11; i++) // 5 players
+#elif HAVE_6PLAY
+   for (i = 0; i < MAX_PLAYERS - 10; i++) // 6 players
+#elif HAVE_8PLAY
+   for (i = 0; i < MAX_PLAYERS - 8; i++) // 8 players
 #else
-   for (i = 0; i < MAX_PLAYERS - 12; i++)
+   for (i = 0; i < MAX_PLAYERS - 12; i++) // 4 players
 #endif
       memcpy(g_settings.input.binds[i], retro_keybinds_rest,
             sizeof(retro_keybinds_rest));
 
 #ifdef HAVE_5PLAY
-   for (i = 0; i < MAX_PLAYERS - 11; i++)
+   for (i = 0; i < MAX_PLAYERS - 11; i++) // 5 players
+#elif HAVE_6PLAY
+   for (i = 0; i < MAX_PLAYERS - 10; i++) // 6 players
+#elif HAVE_8PLAY
+   for (i = 0; i < MAX_PLAYERS - 8; i++) // 8 players
 #else
-   for (i = 0; i < MAX_PLAYERS - 12; i++)
+   for (i = 0; i < MAX_PLAYERS - 12; i++) // 4 players
 #endif
    {
       for (j = 0; j < RARCH_BIND_LIST_END; j++)
@@ -369,7 +381,11 @@ static void config_set_defaults(void)
 
    /* Verify that binds are in proper order. */
 #ifdef HAVE_5PLAY
-   for (i = 0; i < MAX_PLAYERS - 11; i++)
+   for (i = 0; i < MAX_PLAYERS - 11; i++) // 5 players
+#elif HAVE_6PLAY
+   for (i = 0; i < MAX_PLAYERS - 10; i++) // 6 players
+#elif HAVE_8PLAY
+   for (i = 0; i < MAX_PLAYERS - 8; i++) // 8 players
 #else
    for (i = 0; i < MAX_PLAYERS - 12; i++)
 #endif
@@ -396,7 +412,11 @@ static void config_set_defaults(void)
   // *g_settings.input.keyboard_layout = '\0';
 
 #ifdef HAVE_5PLAY
-   for (i = 0; i < MAX_PLAYERS - 11; i++)
+   for (i = 0; i < MAX_PLAYERS - 11; i++) // 5 players
+#elif HAVE_6PLAY
+   for (i = 0; i < MAX_PLAYERS - 10; i++) // 6 players
+#elif HAVE_8PLAY
+   for (i = 0; i < MAX_PLAYERS - 8; i++) // 8 players
 #else
    for (i = 0; i < MAX_PLAYERS - 12; i++)
 #endif
@@ -845,7 +865,9 @@ static bool config_load_file(const char *path, bool set_defaults)
    CONFIG_GET_FLOAT(video.vbright, "video_vbright");
    CONFIG_GET_INT(video.vres, "video_vres");
    CONFIG_GET_BOOL(video.blendframe, "video_blendframe");
+   CONFIG_GET_BOOL(video.prescale, "video_prescale");
    CONFIG_GET_BOOL(video.blend_smooth, "video_blend_smooth");
+   CONFIG_GET_BOOL(video.autores, "video_autores");
    CONFIG_GET_BOOL(video.force_288p, "video_force_288p");
 #ifdef HAVE_RENDERSCALE
    CONFIG_GET_INT(video.renderscale, "video_renderscale");
@@ -917,6 +939,7 @@ static bool config_load_file(const char *path, bool set_defaults)
    CONFIG_GET_BOOL(hide_settings, "hide_settings");
    CONFIG_GET_BOOL(hide_cursor, "hide_cursor");
    CONFIG_GET_BOOL(hide_curr_state, "hide_curr_state");
+   CONFIG_GET_BOOL(show_manuals, "show_manuals");
    CONFIG_GET_INT(title_posx, "title_posx");
    CONFIG_GET_INT(title_posy, "title_posy");
    CONFIG_GET_INT(item_posx, "item_posx");
@@ -966,7 +989,11 @@ static bool config_load_file(const char *path, bool set_defaults)
     //     "netplay_client_swap_input");
 
 #ifdef HAVE_5PLAY
-   for (i = 0; i < MAX_PLAYERS - 11; i++)
+   for (i = 0; i < MAX_PLAYERS - 11; i++) // 5 players
+#elif HAVE_6PLAY
+   for (i = 0; i < MAX_PLAYERS - 10; i++) // 6 players
+#elif HAVE_8PLAY
+   for (i = 0; i < MAX_PLAYERS - 8; i++) // 8 players
 #else
    for (i = 0; i < MAX_PLAYERS - 12; i++)
 #endif
@@ -997,6 +1024,7 @@ static bool config_load_file(const char *path, bool set_defaults)
    CONFIG_GET_FLOAT(audio.volume, "audio_volume");
    CONFIG_GET_STRING(audio.resampler, "audio_resampler");
    CONFIG_GET_INT(audio.sinc_taps, "audio_sinc_taps");
+  // CONFIG_GET_INT(audio.mute_frames, "audio_mute_frames");
    g_extern.audio_data.volume_gain = db_to_gain(g_settings.audio.volume);
 
    //CONFIG_GET_STRING(camera.device, "camera_device");
@@ -1363,7 +1391,11 @@ static void config_read_keybinds_conf(config_file_t *conf)
 {
    unsigned i;
 #ifdef HAVE_5PLAY
-   for (i = 0; i < MAX_PLAYERS - 11; i++)
+   for (i = 0; i < MAX_PLAYERS - 11; i++) // 5 players
+#elif HAVE_6PLAY
+   for (i = 0; i < MAX_PLAYERS - 10; i++) // 6 players
+#elif HAVE_8PLAY
+   for (i = 0; i < MAX_PLAYERS - 8; i++) // 8 players
 #else
    for (i = 0; i < MAX_PLAYERS - 12; i++)
 #endif
@@ -1622,7 +1654,9 @@ bool config_save_file(const char *path)
    config_set_float(conf, "video_vbright", g_settings.video.vbright);
    config_set_int(conf,   "video_vres", g_settings.video.vres);
    config_set_bool(conf,  "video_blendframe", g_settings.video.blendframe);
+   config_set_bool(conf,  "video_prescale", g_settings.video.prescale);
    config_set_bool(conf,  "video_blend_smooth", g_settings.video.blend_smooth);
+   config_set_bool(conf,  "video_autores", g_settings.video.autores);
    config_set_bool(conf,  "video_force_288p", g_settings.video.force_288p);
 #ifdef HAVE_RENDERSCALE
    config_set_int(conf,   "video_renderscale", g_settings.video.renderscale);
@@ -1695,6 +1729,7 @@ bool config_save_file(const char *path)
     //     g_settings.resampler_directory);
    config_set_string(conf, "audio_resampler", g_settings.audio.resampler);
    config_set_int(conf, "audio_sinc_taps", g_settings.audio.sinc_taps);
+   //config_set_int(conf, "audio_mute_frames", g_settings.audio.mute_frames);
    config_set_path(conf, "savefile_directory",
          *g_extern.savefile_dir ? g_extern.savefile_dir : "default");
    config_set_path(conf, "savestate_directory",
@@ -1814,6 +1849,7 @@ bool config_save_file(const char *path)
    config_set_bool(conf, "hide_exit",       g_settings.hide_exit);
    config_set_bool(conf, "hide_cursor",     g_settings.hide_cursor);
    config_set_bool(conf, "hide_curr_state", g_settings.hide_curr_state);
+   config_set_bool(conf, "show_manuals",    g_settings.show_manuals);
    config_set_int(conf,  "title_posx",      g_settings.title_posx);
    config_set_int(conf,  "title_posy",      g_settings.title_posy);
    config_set_int(conf,  "item_posx",       g_settings.item_posx);
@@ -1840,7 +1876,11 @@ bool config_save_file(const char *path)
    //config_set_string(conf, "input_keyboard_layout",
      //    g_settings.input.keyboard_layout);
 #ifdef HAVE_5PLAY
-   for (i = 0; i < MAX_PLAYERS - 11; i++)
+   for (i = 0; i < MAX_PLAYERS - 11; i++) // 5 players
+#elif HAVE_6PLAY
+   for (i = 0; i < MAX_PLAYERS - 10; i++) // 6 players
+#elif HAVE_8PLAY
+   for (i = 0; i < MAX_PLAYERS - 8; i++) // 8 players
 #else
    for (i = 0; i < MAX_PLAYERS - 12; i++)
 #endif
@@ -1857,7 +1897,11 @@ bool config_save_file(const char *path)
    }
 
 #ifdef HAVE_5PLAY
-   for (i = 0; i < MAX_PLAYERS - 11; i++)
+   for (i = 0; i < MAX_PLAYERS - 11; i++) // 5 players
+#elif HAVE_6PLAY
+   for (i = 0; i < MAX_PLAYERS - 10; i++) // 6 players
+#elif HAVE_8PLAY
+   for (i = 0; i < MAX_PLAYERS - 8; i++) // 8 players
 #else
    for (i = 0; i < MAX_PLAYERS - 12; i++)
 #endif

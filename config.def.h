@@ -409,16 +409,22 @@ static const bool video_dither = false;
 static const float video_vbright = 0;
 
 /* VI screen resolution. */
-static const unsigned video_vres = 40;
+static const unsigned video_vres = GX_RESOLUTIONS_640_480;
 
-/* TEV frame blending + 2x upscale. */
+/* TEV frame blending + prescale. */
 static const bool video_blendframe = false;
+
+/* TEV frame prescale. */
+static const bool video_prescale = false;
 
 /* TEV frame blending scaling filter. */
 static const bool video_blend_smooth = true;
 
 /* Force 288p 50Hz. */
 static const bool video_force_288p = false;
+
+/* Automatically switch screen resolution as needed. */
+static const bool video_autores = false;
 
 #ifdef HAVE_RENDERSCALE
 /* Render x times the original res. */
@@ -462,6 +468,9 @@ static const bool hide_cursor = false;
 
 /* Hide "Current State Slot" from main menu */
 static const bool hide_curr_state = true;
+
+/* Show "Retro Manual" on main menu, only accessible by editing the cfg */
+static const bool show_manuals = false;
 
 /* Position X of TITLE element of the Menu. */
 static const unsigned title_posx = 30;
@@ -632,6 +641,9 @@ static const unsigned sinc_taps = 8;
 
 /* Will enable audio or not. */
 static const bool audio_enable = true;
+
+/* Number of frames to mute. Hides audio pops or other irregularities at start/reset. */
+//static const unsigned mute_frames = 10;
 
 /* Output samplerate. */
 static const unsigned out_rate = 48000;

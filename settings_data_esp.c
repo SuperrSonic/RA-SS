@@ -2572,14 +2572,17 @@ static void get_string_representation_bind_device(void * data, char *type_str,
 
    if (map < MAX_PLAYERS - 12)
    {
-      const char *device_name = 
-         g_settings.input.device_names[map];
+     // const char *device_name = 
+       //  g_settings.input.device_names[map];
 
+      char cnt_label[64];
+      snprintf(cnt_label, sizeof(cnt_label),
+               "Puerto #%d", map + 1);
      // if (*device_name)
-         strlcpy(type_str, device_name, type_str_size);
+         strlcpy(type_str, cnt_label, type_str_size);
      // else
        //  snprintf(type_str, type_str_size,
-       //        "N/A (puerto #%d)", map);
+         //      "Nada (puerto #%d)", map);
    }
    else
       strlcpy(type_str, "Nada", type_str_size);
@@ -2699,6 +2702,12 @@ static void general_read_handler(void *data)
       *setting->value.integer = g_settings.input.joypad_map[3];
    else if (!strcmp(setting->name, "input_player5_joypad_index"))
       *setting->value.integer = g_settings.input.joypad_map[4];
+   else if (!strcmp(setting->name, "input_player6_joypad_index"))
+      *setting->value.integer = g_settings.input.joypad_map[5];
+   else if (!strcmp(setting->name, "input_player7_joypad_index"))
+      *setting->value.integer = g_settings.input.joypad_map[6];
+   else if (!strcmp(setting->name, "input_player8_joypad_index"))
+      *setting->value.integer = g_settings.input.joypad_map[7];
 }
 
 static void general_write_handler(void *data)
@@ -2840,6 +2849,12 @@ static void general_write_handler(void *data)
       g_settings.input.joypad_map[3] = *setting->value.integer;
    else if (!strcmp(setting->name, "input_player5_joypad_index"))
       g_settings.input.joypad_map[4] = *setting->value.integer;
+   else if (!strcmp(setting->name, "input_player6_joypad_index"))
+      g_settings.input.joypad_map[5] = *setting->value.integer;
+   else if (!strcmp(setting->name, "input_player7_joypad_index"))
+      g_settings.input.joypad_map[6] = *setting->value.integer;
+   else if (!strcmp(setting->name, "input_player8_joypad_index"))
+      g_settings.input.joypad_map[7] = *setting->value.integer;
 #ifdef HAVE_NETPLAY
    else if (!strcmp(setting->name, "netplay_ip_address"))
       g_extern.has_set_netplay_ip_address = (setting->value.string[0] != '\0');
@@ -3200,6 +3215,18 @@ static bool setting_data_append_list_main_menu_options(
                group_info.name,
                subgroup_info.name);
          settings_data_list_current_add_flags(list, list_info, SD_FLAG_PUSH_ACTION);
+   }
+
+   if (g_settings.single_mode && g_settings.show_manuals) {
+         CONFIG_ACTION(
+               "core_list",
+               "Manual original",
+               group_info.name,
+               subgroup_info.name);
+         settings_data_list_current_add_flags(
+               list,
+               list_info,
+               SD_FLAG_PUSH_ACTION);
    }
 
    if (g_extern.main_is_init && !g_extern.libretro_dummy)
@@ -4260,6 +4287,18 @@ static bool setting_data_append_list_video_options(
   // settings_list_current_add_range(list, list_info, 0, 38, 1, true, true);
   */
 
+   CONFIG_BOOL(
+         g_settings.video.autores,
+         "video_autores",
+         "Auto-cambio de res",
+         video_autores,
+         "No",
+         sip,
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
    CONFIG_UINT(
          g_settings.video.viwidth,
          "video_viwidth",
@@ -4300,6 +4339,18 @@ static bool setting_data_append_list_video_options(
          "video_blendframe",
          "Mezclar imagen",
          video_blendframe,
+         "No",
+         sip,
+         group_info.name,
+         subgroup_info.name,
+         general_write_handler,
+         general_read_handler);
+
+	CONFIG_BOOL(
+         g_settings.video.prescale,
+         "video_prescale",
+         "Pre-escalar",
+         video_prescale,
          "No",
          sip,
          group_info.name,
@@ -5011,7 +5062,11 @@ static bool setting_data_append_list_input_options(
          general_write_handler,
          general_read_handler);*/
 #ifdef HAVE_5PLAY
-   for (player = 0; player < (MAX_PLAYERS - 11); player ++)
+   for (player = 0; player < (MAX_PLAYERS - 11); player ++) // 5 players
+#elif HAVE_6PLAY
+   for (player = 0; player < (MAX_PLAYERS - 10); player ++) // 6 players
+#elif HAVE_8PLAY
+   for (player = 0; player < (MAX_PLAYERS - 8); player ++) // 8 players
 #else
    for (player = 0; player < (MAX_PLAYERS - 12); player ++)
 #endif
@@ -5139,7 +5194,7 @@ static bool setting_data_append_list_input_options(
          subgroup_info.name,
          general_write_handler,
          general_read_handler);
-#ifdef HAVE_5PLAY
+#if defined HAVE_5PLAY || defined HAVE_6PLAY || defined HAVE_8PLAY
    settings_list_current_add_range(list, list_info, 0, 3, 1, true, true);
 #else
    settings_list_current_add_range(list, list_info, 0, 2, 1, true, true);
@@ -5239,7 +5294,11 @@ static bool setting_data_append_list_input_options(
    END_SUB_GROUP(list, list_info);
 
 #ifdef HAVE_5PLAY
-   for (player = 0; player < (MAX_PLAYERS - 11); player ++)
+   for (player = 0; player < (MAX_PLAYERS - 11); player ++) // 5 players
+#elif HAVE_6PLAY
+   for (player = 0; player < (MAX_PLAYERS - 10); player ++) // 6 players
+#elif HAVE_8PLAY
+   for (player = 0; player < (MAX_PLAYERS - 8); player ++) // 8 players
 #else
    for (player = 0; player < (MAX_PLAYERS - 12); player ++)
 #endif

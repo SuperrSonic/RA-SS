@@ -1121,7 +1121,9 @@ static void init_video_input(void)
    video.vbright = g_settings.video.vbright;
    video.vres = g_settings.video.vres;
    video.blendframe = g_settings.video.blendframe;
+   video.prescale = g_settings.video.prescale;
    video.blend_smooth = g_settings.video.blend_smooth;
+   video.autores = g_settings.video.autores;
    video.force_288p = g_settings.video.force_288p;
 #ifdef HAVE_RENDERSCALE
    video.renderscale = g_settings.video.renderscale;
@@ -1530,9 +1532,60 @@ bool driver_monitor_fps_statistics(double *refresh_rate,
    return true;
 }
 
+bool video_driver_translate_coord_viewport(
+      struct rarch_viewport *vp,
+      int mouse_x,           int mouse_y,
+      int16_t *res_x,        int16_t *res_y,
+      int16_t *res_screen_x, int16_t *res_screen_y)
+{
+   int scaled_screen_x, scaled_screen_y, scaled_x, scaled_y;
+   //struct video_viewport *vp = (struct video_viewport*)data;
+   int norm_vp_width         = (int)vp->width;
+   int norm_vp_height        = (int)vp->height;
+   int norm_full_vp_width    = (int)vp->full_width;
+   int norm_full_vp_height   = (int)vp->full_height;
 
+   if (norm_full_vp_width <= 0 || norm_full_vp_height <= 0)
+      return false;
 
+   if (mouse_x >= 0 && mouse_x <= norm_full_vp_width)
+      scaled_screen_x = ((2 * mouse_x * 0x7fff) / norm_full_vp_width)  - 0x7fff;
+   else
+      scaled_screen_x = -0x8000; /* OOB */
 
+   if (mouse_y >= 0 && mouse_y <= norm_full_vp_height)
+      scaled_screen_y = ((2 * mouse_y * 0x7fff) / norm_full_vp_height) - 0x7fff;
+   else
+      scaled_screen_y = -0x8000; /* OOB */
+
+   mouse_x           -= vp->x;
+   mouse_y           -= vp->y;
+
+   if (mouse_x >= 0 && mouse_x <= norm_vp_width)
+      scaled_x        = ((2 * mouse_x * 0x7fff) / norm_vp_width) - 0x7fff;
+   else
+      scaled_x        = -0x8000; /* OOB */
+
+   if (mouse_y >= 0 && mouse_y <= norm_vp_height)
+      scaled_y        = ((2 * mouse_y * 0x7fff) / norm_vp_height) - 0x7fff;
+   else
+      scaled_y        = -0x8000; /* OOB */
+
+   *res_x             = scaled_x;
+   *res_y             = scaled_y;
+   *res_screen_x      = scaled_screen_x;
+   *res_screen_y      = scaled_screen_y;
+
+   return true;
+}
+
+bool video_driver_get_viewport_info(struct rarch_viewport *viewport)
+{
+   if (!driver.video || !driver.video->viewport_info)
+      return false;
+   driver.video->viewport_info(driver.video_data, viewport);
+   return true;
+}
 
 
 void *driver_video_resolve(const video_driver_t **drv)

@@ -216,6 +216,9 @@ struct defaults
    char playlist_dir[PATH_MAX];
    char video_filter_dir[PATH_MAX];
    char extract_dir[PATH_MAX];
+#ifdef NEOGEO_FOLDER
+   char neogeo_dir[PATH_MAX];
+#endif
 
    struct
    {
@@ -255,7 +258,9 @@ struct settings
 	  float vbright;
 	  unsigned vres;
 	  bool blendframe;
+	  bool prescale;
 	  bool blend_smooth;
+	  bool autores;
 	  bool force_288p;
 #ifdef HAVE_RENDERSCALE
 	  unsigned renderscale;
@@ -358,6 +363,7 @@ struct settings
       float volume; /* dB scale. */
       char resampler[32];
 	  unsigned sinc_taps;
+	  //unsigned mute_frames;
    } audio;
 
    struct
@@ -417,6 +423,7 @@ struct settings
    bool hide_exit;
    bool hide_cursor;
    bool hide_curr_state;
+   bool show_manuals;
    unsigned title_posx;
    unsigned title_posy;
    unsigned item_posx;

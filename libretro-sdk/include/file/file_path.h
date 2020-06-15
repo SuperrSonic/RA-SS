@@ -58,6 +58,7 @@ bool path_contains_compressed_file(const char *path);
 bool path_is_directory(const char *path);
 
 bool path_file_exists(const char *path);
+bool path_is_valid(const char *path);
 
 /* Gets extension of file. Only '.'s after the last slash are considered. */
 const char *path_get_extension(const char *path);

@@ -140,6 +140,19 @@ bool path_is_directory(const char *path)
 #endif
 }
 
+bool path_is_valid(const char *path)
+{
+   FILE *dummy = fopen(path, "rb");
+
+   if (dummy)
+   {
+      fclose(dummy);
+      return true;
+   }
+
+   return false;
+}
+
 bool path_file_exists(const char *path)
 {
    FILE *dummy = fopen(path, "rb");

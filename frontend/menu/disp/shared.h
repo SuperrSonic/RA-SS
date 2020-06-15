@@ -5,7 +5,7 @@ static void get_title(const char *label, const char *dir,
       unsigned menu_type, char *title, size_t sizeof_title)
 {
    if (!strcmp(label, "core_list"))
-      snprintf(title, sizeof_title, "CORE SELECTION %s", dir);
+      snprintf(title, sizeof_title, g_settings.single_mode && g_settings.show_manuals ? "SELECT MANUAL" : "CORE SELECTION %s", dir);
    else if (!strcmp(label, "deferred_core_list"))
       snprintf(title, sizeof_title, "DETECTED CORES %s", dir);
    else if (!strcmp(label, "configurations"))
@@ -148,7 +148,10 @@ static void disp_set_label(file_list_t* list,
 
    if (type == MENU_FILE_CORE)
    {
-      strlcpy(type_str, "(CORE)", type_str_size);
+      if(g_settings.single_mode && g_settings.show_manuals)
+          strlcpy(type_str, " ", type_str_size); // (MANUAL) scrolls
+	  else
+          strlcpy(type_str, "(CORE)", type_str_size);
       menu_list_get_alt_at_offset(list, i, &path);
       *w = 6;
    }

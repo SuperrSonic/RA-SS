@@ -6,13 +6,21 @@ BIG_STACK		            = 0
 PC_DEVELOPMENT_IP_ADDRESS	= 255.255.255.255
 PC_DEVELOPMENT_UDP_PORT		= 3490
 HAVE_WIIUSE_MOD             = 0
-NO_BUILD_WARN               = 1
-DONT_CRASH                  = 1
 RENDER_SCALE_TEST           = 0
-HAVE_5PLAYERS               = 0
+NO_BUILD_WARN               = 1
+MAKE_NEOGEO_FOLDER          = 0
+DONT_CRASH                  = 1
 HAVE_WII_WHEEL              = 0
+
+HAVE_5PLAYERS               = 0
+HAVE_6PLAYERS               = 0
+HAVE_8PLAYERS               = 0
+
 NO_SCREEN_TEARING           = 0
 USE_ESP                     = 0
+
+EXTRA_RES                   = 0
+
 
 ifneq ($(EMSCRIPTEN),)
    platform = emscripten
@@ -52,6 +60,14 @@ ifeq ($(HAVE_5PLAYERS), 1)
 CFLAGS += -DHAVE_5PLAY
 endif
 
+ifeq ($(HAVE_6PLAYERS), 1)
+CFLAGS += -DHAVE_6PLAY
+endif
+
+ifeq ($(HAVE_8PLAYERS), 1)
+CFLAGS += -DHAVE_8PLAY
+endif
+
 ifeq ($(HAVE_WII_WHEEL), 1)
 CFLAGS += -DHAVE_WIIWHEEL
 endif
@@ -74,6 +90,14 @@ endif
 
 ifeq ($(DONT_CRASH), 1)
 CFLAGS += -DDONT_CRASH
+endif
+
+ifeq ($(MAKE_NEOGEO_FOLDER), 1)
+CFLAGS += -DNEOGEO_FOLDER
+endif
+
+ifeq ($(EXTRA_RES), 1)
+CFLAGS += -DEXTRA_RES
 endif
 
 TARGET_NAME := retroarch
