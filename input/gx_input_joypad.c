@@ -20,6 +20,8 @@
 #include <ogc/pad.h>
 #include <ogc/si.h>
 #include <wiiuse/wpad.h>
+#include "ds/network.h"
+#include "ds/3ds.h"
 #else
 #include <cafe/pads/wpad/wpad.h>
 #endif
@@ -129,6 +131,8 @@ static struct gx_mldata _gx_mldata;
 #ifdef HAVE_WIIWHEEL
 static int32_t ls_x_main;
 #endif
+
+extern bool isMenuAct;
 
 static uint64_t pad_state[MAX_PADS];
 static uint32_t pad_type[MAX_PADS];
@@ -275,6 +279,8 @@ static bool gx_joypad_init(void)
    WPADInit();
    WPAD_SetVRes(0, 640, 480);
    WPAD_SetDataFormat(WPAD_CHAN_ALL, WPAD_FMT_BTNS_ACC_IR);
+   if(g_settings.input.n3ds)
+     NetworkInit();
 #endif
 #ifdef HAVE_LIBSICKSAXIS
    int i;
@@ -524,7 +530,12 @@ static int16_t WPAD_StickY(WPADData *data, u8 right)
 
    return (int16_t)(val * 32767.0f);
 }
-
+/*
+static s8 OffsetX[4] = {0};
+static s8 OffsetY[4] = {0};
+static s8 OffsetCX[4] = {0};
+static s8 OffsetCY[4] = {0};
+*/
 static void gx_joypad_poll(void)
 {
    unsigned i, j, port;
@@ -535,7 +546,10 @@ static void gx_joypad_poll(void)
    pad_state[2] = 0;
    pad_state[3] = 0;
 
+   s16 tempStick;
+
    gcpad = PAD_ScanPads();
+   CTRScanPads();
 
 #ifdef HW_RVL
    WPAD_ReadPending(WPAD_CHAN_ALL, NULL);
@@ -547,7 +561,7 @@ static void gx_joypad_poll(void)
       uint64_t *state_cur = &pad_state[port];
 
 #ifdef HW_RVL
-      if (WPADProbe(port, &ptype) == WPAD_ERR_NONE)
+      if (WPADProbe(port, &ptype) == WPAD_ERR_NONE || ctr.data.held > 0)
       {
          WPADData *wpaddata = (WPADData*)WPAD_Data(port);
          expansion_t *exp = NULL;
@@ -598,6 +612,51 @@ static void gx_joypad_poll(void)
             *state_cur |= (down & WPAD_BUTTON_LEFT) ? (1ULL << GX_WIIMOTE_DOWN) : 0;
             *state_cur |= (down & WPAD_BUTTON_RIGHT) ? (1ULL << GX_WIIMOTE_UP) : 0;
          //}
+		 
+		 
+		 //3DS
+		 if (port == g_settings.input.n3ds_port) {
+           *state_cur |= (ctr.data.held & CTR_BUTTON_Y) ? (1ULL << g_settings.input.n3ds_y) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_X) ? (1ULL << g_settings.input.n3ds_x) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_B) ? (1ULL << g_settings.input.n3ds_b) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_A) ? (1ULL << g_settings.input.n3ds_a) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_START) ? (1ULL << g_settings.input.n3ds_start) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_SELECT) ? (1ULL << g_settings.input.n3ds_select) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_L) ? (1ULL << g_settings.input.n3ds_l) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_R) ? (1ULL << g_settings.input.n3ds_r) : 0;
+
+           *state_cur |= (ctr.data.held & CTR_BUTTON_LEFT) ? (1ULL << g_settings.input.n3ds_left) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_RIGHT) ? (1ULL << g_settings.input.n3ds_right) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_DOWN) ? (1ULL << g_settings.input.n3ds_down) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_UP) ? (1ULL << g_settings.input.n3ds_up) : 0;
+		 
+           *state_cur |= (ctr.data.held & CTR_STICK_LEFT) ? (1ULL << g_settings.input.n3ds_stick_left) : 0;
+           *state_cur |= (ctr.data.held & CTR_STICK_RIGHT) ? (1ULL << g_settings.input.n3ds_stick_right) : 0;
+           *state_cur |= (ctr.data.held & CTR_STICK_DOWN) ? (1ULL << g_settings.input.n3ds_stick_down) : 0;
+           *state_cur |= (ctr.data.held & CTR_STICK_UP) ? (1ULL << g_settings.input.n3ds_stick_up) : 0;
+		 } else if (isMenuAct) {
+           *state_cur |= (ctr.data.held & CTR_BUTTON_Y) ? (1ULL << GX_WIIMOTE_A) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_X) ? (1ULL << GX_WIIMOTE_B) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_B) ? (1ULL << GX_WIIMOTE_1) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_A) ? (1ULL << GX_WIIMOTE_2) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_START) ? (1ULL << GX_WIIMOTE_PLUS) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_SELECT) ? (1ULL << GX_WIIMOTE_MINUS) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_L) ? (1ULL << GX_GC_L_TRIGGER) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_R) ? (1ULL << GX_GC_R_TRIGGER) : 0;
+
+           *state_cur |= (ctr.data.held & CTR_BUTTON_LEFT) ? (1ULL << GX_WIIMOTE_LEFT) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_RIGHT) ? (1ULL << GX_WIIMOTE_RIGHT) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_DOWN) ? (1ULL << GX_WIIMOTE_DOWN) : 0;
+           *state_cur |= (ctr.data.held & CTR_BUTTON_UP) ? (1ULL << GX_WIIMOTE_UP) : 0;
+
+           *state_cur |= (ctr.data.held & CTR_STICK_LEFT) ? (1ULL << GX_WIIMOTE_LEFT) : 0;
+           *state_cur |= (ctr.data.held & CTR_STICK_RIGHT) ? (1ULL << GX_WIIMOTE_RIGHT) : 0;
+           *state_cur |= (ctr.data.held & CTR_STICK_DOWN) ? (1ULL << GX_WIIMOTE_DOWN) : 0;
+           *state_cur |= (ctr.data.held & CTR_STICK_UP) ? (1ULL << GX_WIIMOTE_UP) : 0;
+		 }
+		 //keep home working always
+		 *state_cur |= (ctr.data.held & CTR_TOUCH) ? (1ULL << GX_WIIMOTE_HOME) : 0;
+
 
          if (ptype == WPAD_EXP_CLASSIC)
          {
@@ -661,6 +720,24 @@ static void gx_joypad_poll(void)
             	down = PAD_ButtonsDown(port);
 			else
 				down = PAD_ButtonsHeld(port);
+			
+			if(g_settings.input.copy_dpad) {
+				int x = PAD_StickX(port);
+				int y = PAD_StickY(port);
+				
+				if(x < -g_settings.input.axis_threshold) {
+					*state_cur |= (1ULL << GX_WIIMOTE_LEFT);
+				}
+				if(x > g_settings.input.axis_threshold) {
+					*state_cur |= (1ULL << GX_WIIMOTE_RIGHT);
+				}
+				if(y < -g_settings.input.axis_threshold) {
+					*state_cur |= (1ULL << GX_WIIMOTE_DOWN);
+				}
+				if(y > g_settings.input.axis_threshold) {
+					*state_cur |= (1ULL << GX_WIIMOTE_UP);
+				}
+			}
 
 //Default
          if (g_settings.input.key_profile == 1) {
@@ -728,6 +805,48 @@ static void gx_joypad_poll(void)
             int16_t rs_x_cc = (int16_t)(rjs_val_x * 32767.0f);
             int16_t rs_y_cc = (int16_t)(rjs_val_y * 32767.0f);*/
 		  // GC sticks
+		  //nintendont fix
+#if 0
+		  if((Pad[port].button&0x1c00) == 0x1c00 || ((*PadUsed & (1 << port)) == 0))
+			{
+				OffsetX[port] = Pad[port].stickX;
+				OffsetY[port] = Pad[port].stickY;
+				OffsetCX[port] = Pad[port].substickX;
+				OffsetCY[port] = Pad[port].substickY;
+			}
+			tempStick = (s8)Pad[port].stickX;
+			tempStick -= OffsetX[port];
+			if (tempStick > 0x7F)
+				tempStick = 0x7F;
+			else if (tempStick < -0x80)
+				tempStick = -0x80;
+			Pad[port].stickX = (s8)tempStick;
+
+			tempStick = (s8)Pad[port].stickY;
+			tempStick -= OffsetY[port];
+			if (tempStick > 0x7F)
+				tempStick = 0x7F;
+			else if (tempStick < -0x80)
+				tempStick = -0x80;
+			Pad[port].stickY = (s8)tempStick;
+
+			tempStick = (s8)Pad[port].substickX;
+			tempStick -= OffsetCX[port];
+			if (tempStick > 0x7F)
+				tempStick = 0x7F;
+			else if (tempStick < -0x80)
+				tempStick = -0x80;
+			Pad[port].substickX = (s8)tempStick;
+
+			tempStick = (s8)Pad[port].substickY;
+			tempStick -= OffsetCY[port];
+			if (tempStick > 0x7F)
+				tempStick = 0x7F;
+			else if (tempStick < -0x80)
+				tempStick = -0x80;
+			Pad[port].substickY = (s8)tempStick;
+#endif
+
 		    ls_x = (int16_t)PAD_StickX(port) * 256;
             ls_y = (int16_t)PAD_StickY(port) * -256;
             rs_x = (int16_t)PAD_SubStickX(port) * 256;
@@ -771,7 +890,7 @@ static void gx_joypad_poll(void)
 		 else if (gcpad & (1 << port))
          {
             int16_t ls_x, ls_y, rs_x, rs_y;
-           // uint64_t menu_combo = 0;
+            uint64_t menu_combo = 0;
 
 			if (g_settings.input.gc_once)
             	down = PAD_ButtonsDown(port);
@@ -902,7 +1021,7 @@ static void gx_joypad_poll(void)
 
 		 analog_state[port][RETRO_DEVICE_INDEX_ANALOG_LEFT][RETRO_DEVICE_ID_ANALOG_X] = ls_x_main;
 #endif
-       /*  if (g_settings.input.menu_combos) {
+         if (g_settings.input.menu_combos) {
                 if (g_settings.input.menu_combos == 1) {
                     menu_combo = (1ULL << GX_WIIMOTE_PLUS) | (1ULL << GX_WIIMOTE_MINUS) | 
                       (1ULL << GX_GC_L_TRIGGER) | (1ULL << GX_GC_R_TRIGGER);
@@ -913,7 +1032,7 @@ static void gx_joypad_poll(void)
 
                 if ((*state_cur & menu_combo) == menu_combo)
                      *state_cur |= (1ULL << GX_WIIMOTE_HOME);
-            } */
+            }
 		//	ptype = WPAD_EXP_GAMECUBE; // Breaks things
          }
       }
@@ -926,6 +1045,24 @@ static void gx_joypad_poll(void)
          {
             int16_t ls_x, ls_y, rs_x, rs_y;
             uint64_t menu_combo = 0;
+			
+			if(g_settings.input.copy_dpad) {
+				int x = PAD_StickX(port);
+				int y = PAD_StickY(port);
+				
+				if(x < -g_settings.input.axis_threshold) {
+					*state_cur |= (1ULL << GX_WIIMOTE_LEFT);
+				}
+				if(x > g_settings.input.axis_threshold) {
+					*state_cur |= (1ULL << GX_WIIMOTE_RIGHT);
+				}
+				if(y < -g_settings.input.axis_threshold) {
+					*state_cur |= (1ULL << GX_WIIMOTE_DOWN);
+				}
+				if(y > g_settings.input.axis_threshold) {
+					*state_cur |= (1ULL << GX_WIIMOTE_UP);
+				}
+			}
 
 		if (g_settings.input.gc_once)
         	down = PAD_ButtonsDown(port);
